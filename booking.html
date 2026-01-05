@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendar Sessão | Se Chover Floresce</title>
+
+    <!-- Privacy / Construction Mode -->
+    <meta name="robots" content="noindex, nofollow">
+    <script src="access-control.js"></script>
+
+    <meta name="description"
+        content="Marque a sua sessão de Leitura de Aura ou participe nos nossos eventos e workshops de espiritualidade. Agenda aberta para consultas online e presenciais.">
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-content">
+            <div class="brand-container">
+                <div class="logo">Floresce Terapias</div>
+                <div class="header-socials">
+                    <a href="https://www.instagram.com/floresceterapias?igsh=MW90eXlmOG93em55ZA%3D%3D&utm_source=qr"
+                        target="_blank" aria-label="Instagram"><i data-lucide="instagram"></i></a>
+                    <a href="https://chat.whatsapp.com/BpCgpanA5Wx1VEGrmo4Wwt" target="_blank" aria-label="WhatsApp"><i
+                            data-lucide="message-circle"></i></a>
+                </div>
+            </div>
+
+            <ul class="nav-links">
+                <li><a href="index.html">Início</a></li>
+                <li><a href="index.html#about">Sobre</a></li>
+                <li><a href="index.html#services">Serviços</a></li>
+                <li><a href="index.html#events">Eventos</a></li>
+                <li><a href="dashboard.html">Área de Membros</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <!-- Points to calendar wrapper for smooth scroll -->
+                <a href="#booking-calendar" class="cta-button">Agendar</a>
+            </div>
+
+            <button class="menu-toggle" aria-label="Abrir menu">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu">
+        <button class="close-menu" aria-label="Fechar menu">
+            <i data-lucide="x"></i>
+        </button>
+        <ul class="mobile-links">
+            <li><a href="index.html">Início</a></li>
+            <li><a href="index.html#about">Sobre</a></li>
+            <li><a href="index.html#services">Serviços</a></li>
+            <li><a href="index.html#events">Eventos</a></li>
+            <li><a href="dashboard.html">Comunidade</a></li>
+            <li><a href="#contact" class="cta-button">Agendar</a></li>
+        </ul>
+    </div>
+
+    <!-- Booking Section -->
+    <section class="booking-page-section">
+        <div class="container">
+            <div class="booking-header">
+                <h2>Agenda a tua sessão</h2>
+            </div>
+
+            <div class="booking-form-wrapper"
+                style="max-width: 600px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                <p style="text-align: center; margin-bottom: 30px; color: var(--color-text-main);">
+                    Preenche o formulário para solicitar o teu agendamento. Serás encaminhado para o Whatsapp com a tua
+                    intenção de marcação.
+                </p>
+
+                <form id="whatsappBookingForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="bookingName">Nome</label>
+                        <input type="text" id="bookingName" required placeholder="O teu nome">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bookingEmail">Email</label>
+                        <input type="email" id="bookingEmail" required placeholder="tua.email@exemplo.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bookingSubject">Assunto (Opcional)</label>
+                        <textarea id="bookingSubject" placeholder="Breve descrição do assunto" rows="1"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bookingType">Tipo de Sessão</label>
+                        <select id="bookingType">
+                            <option value="Leitura de Aura">Leitura de Aura</option>
+                            <option value="Constelação Familiar">Constelação Familiar</option>
+                            <option value="Innerdance">Innerdance</option>
+                            <option value="Inscrição em Evento">Inscrição em Evento</option>
+                            <option value="Outro">Outro / Dúvida</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group checkbox-group"
+                        style="display: flex; gap: 10px; align-items: flex-start; margin-top: 20px;">
+                        <input type="checkbox" id="rgpdConsent" required style="width: auto; margin-top: 5px;">
+                        <label for="rgpdConsent" style="font-size: 0.75rem; color: #666; line-height: 1.4;">
+                            Autorizo o uso dos meus dados pessoais por Floresce Terapias, conforme o artigo 13.º do
+                            Regulamento Geral de Proteção de Dados (UE) 2016/679 do P.E. e do Conselho de 27 de Abril
+                            (RGPD), sendo seu uso exclusivo para comunicações referentes às atividades desenvolvidas
+                            pela Floresce Terapias.
+                        </label>
+                    </div>
+
+                    <button type="submit" class="cta-button primary full-width"
+                        style="margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                        <span>Enviar pedido de agendamento</span>
+                        <i data-lucide="message-circle"></i>
+                    </button>
+                    <p style="text-align: center; font-size: 0.8rem; margin-top: 15px; color: #888;">
+                        A confirmação final será feita via WhatsApp. Caso não tenha esta aplicação, envie email para
+                        floresceterapias@hotmail.com. Obrigada!
+                    </p>
+                </form>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Floresce Terapias. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { doc, getDoc, setDoc, updateDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.firebaseUtils = { doc, getDoc, setDoc, updateDoc, deleteField };
+    </script>
+    <script src="calendar.js" defer></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

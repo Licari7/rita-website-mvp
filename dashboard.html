@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Área de Membros | Se Chover Floresce</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <style>
+        /* Quill Font Support */
+        .ql-font-cormorant {
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        .ql-font-montserrat {
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        /* Toolbar Labels */
+        .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="cormorant"]::before,
+        .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="cormorant"]::before {
+            content: 'Cormorant';
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="montserrat"]::before,
+        .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="montserrat"]::before {
+            content: 'Montserrat';
+            font-family: 'Montserrat', sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-content">
+            <div class="brand-container">
+                <a href="index.html" class="logo">Floresce Terapias</a>
+            </div>
+
+            <ul class="nav-links">
+                <li><a href="index.html">Início</a></li>
+                <li><a href="index.html#about">Sobre</a></li>
+                <li><a href="index.html#services">Serviços</a></li>
+                <li><a href="index.html#events">Eventos</a></li>
+                <li><a href="booking.html">Agenda</a></li>
+                <li><a href="dashboard.html" class="active">Área de Membros</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <span id="user-name-display" class="desktop-only"
+                    style="margin-right: 15px; font-weight: 500;">Visitante</span>
+                <a href="#" id="logout-btn" class="btn btn-outline btn-sm">Sair</a>
+                <button class="menu-toggle" aria-label="Menu" style="margin-left: 15px;">
+                    <i data-lucide="menu"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu">
+        <button class="close-menu"><i data-lucide="x"></i></button>
+        <span style="display: block; margin-bottom: 20px; font-weight: 600; color: var(--color-primary);">Olá, <span
+                id="mobile-user-name">Visitante</span></span>
+
+        <ul class="mobile-links-list" style="list-style: none; padding: 0;">
+            <li><a href="index.html" style="display: block; padding: 10px 0; color: var(--color-text-main);">Início</a>
+            </li>
+            <li><a href="index.html#about"
+                    style="display: block; padding: 10px 0; color: var(--color-text-main);">Sobre</a></li>
+            <li><a href="index.html#services"
+                    style="display: block; padding: 10px 0; color: var(--color-text-main);">Serviços</a></li>
+            <li><a href="index.html#events"
+                    style="display: block; padding: 10px 0; color: var(--color-text-main);">Eventos</a></li>
+            <li><a href="booking.html"
+                    style="display: block; padding: 10px 0; color: var(--color-text-main);">Agenda</a></li>
+            <li><a href="dashboard.html"
+                    style="display: block; padding: 10px 0; color: var(--color-primary); font-weight: 600;">Área de
+                    Membros</a></li>
+        </ul>
+
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+
+        <a href="#" id="mobile-logout-btn" style="color: #e57373;">Sair da Conta</a>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container section-padding">
+        <header class="section-header text-center" style="margin-bottom: 40px;">
+            <h1 class="section-title">Área de Membros</h1>
+            <p>Acede aqui aos teus recursos e meditações.</p>
+            <button id="admin-toggle-btn" class="cta-button"
+                style="display: none; margin: 20px auto 0; background-color: #333; color: white;">
+                <i data-lucide="settings"></i> Gerir Site
+            </button>
+        </header>
+
+        <!-- ADMIN PANEL (Hidden by Default) -->
+        <section id="admin-panel"
+            style="display: none; max-width: 800px; margin: 0 auto 60px; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); border: 2px solid var(--color-primary);">
+            <h2
+                style="color: var(--color-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="settings"></i> Painel de Gestão (Eventos)
+            </h2>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+                <!-- Add Event Form -->
+                <div>
+                    <h3 style="font-family: var(--font-serif); margin-bottom: 15px;">Adicionar Novo Evento</h3>
+                    <form id="event-form" class="auth-form">
+                        <div class="form-group">
+                            <label>Título do Evento</label>
+                            <input type="text" id="evt-title" required placeholder="Ex: Workshop de Aura">
+                        </div>
+                        <div class="form-group-row" style="display: flex; gap: 10px;">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Data</label>
+                                <input type="date" id="evt-date" required>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Hora</label>
+                                <input type="time" id="evt-time" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Localização (Ex: Online Zoom)</label>
+                            <input type="text" id="evt-location" required placeholder="Ex: Lisboa ou Online">
+                        </div>
+                        <div class="form-group">
+                            <label>Descrição Curta</label>
+                            <textarea id="evt-desc" rows="3" placeholder="Descrição breve para o site"
+                                style="width: 100%; border: 1px solid #ddd; padding: 8px; border-radius: 8px;"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Imagem (Capa)</label>
+                            <input type="file" id="evt-image" accept="image/*">
+                            <small style="color: #666;">Será redimensionada automaticamente.</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Link de Inscrição (Opcional)</label>
+                            <input type="text" id="evt-link" placeholder="#contact ou link externo">
+                        </div>
+                        <button type="submit" class="cta-button primary full-width">Publicar Evento</button>
+                    </form>
+                </div>
+
+                <!-- Existing Events List -->
+                <div style="border-left: 1px solid #eee; padding-left: 40px;">
+                    <h3 style="font-family: var(--font-serif); margin-bottom: 15px;">Eventos Ativos</h3>
+                    <div id="admin-events-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <hr style="margin: 40px 0; border: 0; border-top: 1px solid #eee;">
+
+            <!-- CONTENT MANAGEMENT (HOME & ABOUT) -->
+            <h2
+                style="color: var(--color-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="layout"></i> Painel de Gestão (Início e Sobre)
+            </h2>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+                <!-- Home Section Form -->
+                <div>
+                    <h3 style="font-family: var(--font-serif); margin-bottom: 15px;">Página Inicial (Hero)</h3>
+                    <form id="home-content-form" class="auth-form">
+                        <div class="form-group">
+                            <label>Título Principal</label>
+                            <input type="text" id="home-title" placeholder="Encontra espaço em ti...">
+                        </div>
+                        <div class="form-group">
+                            <label>Subtítulo</label>
+                            <input type="text" id="home-subtitle" placeholder="Leitura de Aura...">
+                        </div>
+                        <div class="form-group">
+                            <label>Texto do Botão</label>
+                            <input type="text" id="home-cta" placeholder="Descobrir Mais">
+                        </div>
+                        <button type="submit" id="home-save-btn" class="cta-button primary full-width">Guardar
+                            Início</button>
+                    </form>
+                </div>
+
+                <!-- About Section Form -->
+                <div>
+                    <h3 style="font-family: var(--font-serif); margin-bottom: 15px;">Sobre Mim</h3>
+                    <form id="about-content-form" class="auth-form">
+                        <div class="form-group">
+                            <label>Título da Secção</label>
+                            <input type="text" id="about-title" placeholder="Uma jornada de luz">
+                        </div>
+                        <div class="form-group">
+                            <label>Foto de Perfil</label>
+                            <input type="text" id="about-image-url" placeholder="URL da imagem (ou upload abaixo)"
+                                style="margin-bottom:5px; background:whitesmoke; border:1px solid #ddd; width:100%; padding:10px; border-radius:8px;">
+                            <input type="file" id="about-image-file" accept="image/*">
+                        </div>
+                        <div class="form-group">
+                            <label>Texto (Biografia)</label>
+                            <textarea id="about-text" rows="6" placeholder="Escreve aqui a tua história..."
+                                style="width: 100%; border: 1px solid #ddd; padding: 8px; border-radius: 8px;"></textarea>
+                            <small style="color: #666;">Aceita HTML básico (parágrafos, negrito).</small>
+                        </div>
+                        <button type="submit" id="about-save-btn" class="cta-button primary full-width">Guardar
+                            Sobre</button>
+                    </form>
+                </div>
+            </div>
+
+            <hr style="margin: 40px 0; border: 0; border-top: 1px solid #eee;">
+
+            <!-- SERVICES MANAGEMENT -->
+            <h2
+                style="color: var(--color-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="sparkles"></i> Painel de Gestão (Serviços)
+            </h2>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+                <!-- Add Service Form -->
+                <div>
+                    <h3 style="font-family: var(--font-serif); margin-bottom: 15px;">Adicionar Novo Serviço</h3>
+                    <form id="service-form" class="auth-form">
+                        <input type="hidden" id="svc-id">
+                        <div class="form-group">
+                            <label>Nome do Serviço</label>
+                            <input type="text" id="svc-title" required placeholder="Ex: Leitura de Aura">
+                        </div>
+                        <div class="form-group">
+                            <label>Descrição Curta (para o cartão)</label>
+                            <textarea id="svc-desc" rows="3" required placeholder="Descrição para o cartão..."
+                                style="width: 100%; border: 1px solid #ddd; padding: 8px; border-radius: 8px;"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Descrição Completa (Editor Visual)</label>
+                            <div id="editor-container"
+                                style="height: 300px; background: white; border-radius: 8px 8px 0 0;"></div>
+                            <small style="color: #666; display: block; margin-top: 5px;">
+                                Escreve aqui o texto detalhado. Podes usar a barra acima para formatar (Negrito, Links,
+                                Títulos...).
+                            </small>
+                        </div>
+                        <div class="form-group">
+                            <label>Link Externo (Opcional)</label>
+                            <input type="text" id="svc-link" placeholder="Ex: https://forms.google.com/...">
+                            <small style="color: #666;">Preencher <b>apenas</b> se quiseres que este serviço abra um
+                                site externo. Para usar a página automática, podes deixar vazio ou ignorar este
+                                campo.</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Benefícios (Separados por vírgula)</label>
+                            <input type="text" id="svc-benefits" placeholder="Ex: Presencial, Online, À Distância">
+                            <small style="color: #666;">Estes itens aparecerão com ícones na lista.</small>
+                        </div>
+                        <!-- Hidden logic for visual style selection could go here, for now we stick to text inputs -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="form-group">
+                                <label>Tema do Cartão</label>
+                                <select id="svc-theme"
+                                    style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: whitesmoke;">
+                                    <option value="">Padrão (Verde/Bege)</option>
+                                    <option value="innerdance">Roxo (Místico/Innerdance)</option>
+                                    <option value="constellations">Rosa (Amor/Constelações)</option>
+                                    <option value="expansion">Azul (Clareza/Expansão)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Imagem de Cabeçalho (URL ou Upload)</label>
+                                <input type="text" id="svc-image" placeholder="https://..."
+                                    style="background: whitesmoke; width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 5px;">
+                                <input type="file" id="svc-image-file" accept="image/*"
+                                    style="width: 100%; padding: 8px;">
+                                <small style="color: #666;">Cola um link OU carrega uma imagem do teu PC. (O upload
+                                    acontece ao Clicar em Publicar)</small>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button type="submit" id="svc-submit-btn" class="cta-button primary full-width">Publicar
+                                Serviço</button>
+                            <button type="button" id="svc-cancel-btn" class="btn btn-outline" style="display: none;"
+                                onclick="window.resetServiceForm()">Cancelar</button>
+                        </div>
+                        <button type="button" id="seed-services-btn" class="btn btn-outline btn-sm full-width"
+                            style="margin-top: 10px;">Importar Serviços Originais</button>
+                    </form>
+                </div>
+
+                <!-- Existing Services List -->
+                <div style="border-left: 1px solid #eee; padding-left: 40px;">
+                    <h3 style="font-family: var(--font-serif); margin-bottom: 15px;">Serviços Ativos</h3>
+                    <div id="admin-services-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <hr style="margin: 40px 0; border: 0; border-top: 1px solid #eee;">
+
+            <!-- TESTIMONIALS MANAGEMENT -->
+            <h2
+                style="color: var(--color-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="message-circle"></i> Painel de Gestão (Testemunhos)
+            </h2>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+                <!-- Add Review Form -->
+                <div>
+                    <h3 style="font-family: var(--font-serif); margin-bottom: 15px;">Adicionar Novo Testemunho</h3>
+                    <form id="review-form" class="auth-form">
+                        <div class="form-group">
+                            <label>Nome do Cliente</label>
+                            <input type="text" id="rev-name" required placeholder="Ex: Maria Silva">
+                        </div>
+                        <div class="form-group">
+                            <label>Título/Role (Opcional)</label>
+                            <input type="text" id="rev-role" placeholder="Ex: Cliente de Leitura de Aura">
+                        </div>
+                        <div class="form-group">
+                            <label>Mensagem</label>
+                            <textarea id="rev-text" rows="3" required placeholder="O testemunho..."
+                                style="width: 100%; border: 1px solid #ddd; padding: 8px; border-radius: 8px;"></textarea>
+                        </div>
+                        <button type="submit" class="cta-button primary full-width">Publicar Testemunho</button>
+                    </form>
+                </div>
+
+                <!-- Existing Reviews List -->
+                <div style="border-left: 1px solid #eee; padding-left: 40px;">
+                    <h3 style="font-family: var(--font-serif); margin-bottom: 15px;">Testemunhos Ativos</h3>
+                    <div id="admin-reviews-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- MEDITATIONS MANAGEMENT -->
+            <hr style="margin: 40px 0; border: 0; border-top: 1px solid #eee;">
+
+            <h2
+                style="color: var(--color-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="headphones"></i> Painel de Gestão (Meditações)
+            </h2>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+                <!-- Add Meditation Form -->
+                <div>
+                    <h3 style="font-family: var(--font-serif); margin-bottom: 15px;">Adicionar Meditação/Recurso</h3>
+                    <form id="meditation-form" class="auth-form">
+                        <input type="hidden" id="med-id">
+                        <div class="form-group">
+                            <label>Título</label>
+                            <input type="text" id="med-title" required placeholder="Ex: Meditação de Enraizamento">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tema</label>
+                            <select id="med-theme" required
+                                style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: whitesmoke;">
+                                <option value="enraizamento">Enraizamento</option>
+                                <option value="limpeza">Limpeza Energética</option>
+                                <option value="protecao">Proteção</option>
+                                <option value="intuicao">Intuição</option>
+                                <option value="chakras">Chakras</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tipo de Conteúdo</label>
+                            <select id="med-type" required
+                                style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: whitesmoke;">
+                                <option value="audio">Áudio (Link MP3/SoundCloud)</option>
+                                <option value="video">Vídeo (YouTube/Vimeo)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Link do Recurso (URL ou Iframe)</label>
+                            <input type="text" id="med-url" required
+                                placeholder="https://youtube.com/... ou <iframe...>">
+                            <small style="color: #666;">YouTube, Vimeo ou link direto para ficheiro áudio.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Descrição Opcional</label>
+                            <textarea id="med-desc" rows="2" placeholder="Breve descrição..."
+                                style="width: 100%; border: 1px solid #ddd; padding: 8px; border-radius: 8px;"></textarea>
+                        </div>
+
+                        <div style="display: flex; gap: 10px;">
+                            <button type="submit" id="med-submit-btn" class="cta-button primary full-width">Publicar
+                                Recurso</button>
+                            <button type="button" id="med-cancel-btn" class="btn btn-outline" style="display: none;"
+                                onclick="window.resetMeditationForm()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Existing Meditations List -->
+                <div style="border-left: 1px solid #eee; padding-left: 40px;">
+                    <h3 style="font-family: var(--font-serif); margin-bottom: 15px;">Recursos Ativos</h3>
+                    <div id="admin-meditations-list">
+                        <!-- Populated by JS -->
+                        <p style="color: #666;">A carregar lista...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- End of Admin Panel -->
+        </section>
+
+        <!-- Carousel Section -->
+        <section class="content-section">
+            <h2 class="section-title text-center" style="margin-bottom: 20px; color: var(--color-primary);">As Minhas
+                Meditações</h2>
+
+            <div class="carousel-wrapper" style="position: relative;">
+                <button class="carousel-nav prev" aria-label="Anterior"><i data-lucide="chevron-left"></i></button>
+
+                <div class="carousel-container">
+                    <!-- Card 1: Grounding -->
+                    <a href="theme.html?id=enraizamento" class="carousel-card">
+                        <div class="carousel-image" style="background: #e8f5e9;">
+                            <i data-lucide="anchor" size="32" color="#2e7d32"></i>
+                        </div>
+                        <div class="carousel-content">
+                            <h3>Enraizamento</h3>
+                            <p>Conexão com a Terra e estabilidade.</p>
+                        </div>
+                    </a>
+
+                    <!-- Card 2: Cleaning -->
+                    <a href="theme.html?id=limpeza" class="carousel-card">
+                        <div class="carousel-image" style="background: #e3f2fd;">
+                            <i data-lucide="droplets" size="32" color="#1565c0"></i>
+                        </div>
+                        <div class="carousel-content">
+                            <h3>Limpeza Energética</h3>
+                            <p>Purificação do campo áurico.</p>
+                        </div>
+                    </a>
+
+                    <!-- Card 3: Protection -->
+                    <a href="theme.html?id=protecao" class="carousel-card">
+                        <div class="carousel-image" style="background: #f3e5f5;">
+                            <i data-lucide="shield" size="32" color="#7b1fa2"></i>
+                        </div>
+                        <div class="carousel-content">
+                            <h3>Proteção</h3>
+                            <p>Escudos e limites energéticos.</p>
+                        </div>
+                    </a>
+
+                    <!-- Card 4: Intuition -->
+                    <a href="theme.html?id=intuicao" class="carousel-card">
+                        <div class="carousel-image" style="background: #fff3e0;">
+                            <i data-lucide="eye" size="32" color="#ef6c00"></i>
+                        </div>
+                        <div class="carousel-content">
+                            <h3>Intuição</h3>
+                            <p>Despertar a visão interior.</p>
+                        </div>
+                    </a>
+
+                    <!-- Card 5: Chakras -->
+                    <a href="theme.html?id=chakras" class="carousel-card">
+                        <div class="carousel-image" style="background: #e1bee7;">
+                            <i data-lucide="aperture" size="32" color="#8e24aa"></i>
+                        </div>
+                        <div class="carousel-content">
+                            <h3>Meditações - Chakras</h3>
+                            <p>Equilíbrio dos 7 centros de energia.</p>
+                        </div>
+                    </a>
+                </div>
+
+                <button class="carousel-nav next" aria-label="Seguinte"><i data-lucide="chevron-right"></i></button>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Handle Mobile Logout
+        const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+        if (mobileLogoutBtn) {
+            mobileLogoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const mainLogoutBtn = document.getElementById('logout-btn');
+                if (mainLogoutBtn) mainLogoutBtn.click();
+            });
+        }
+
+        // Sync User Name for Mobile Menu
+        const nameDisplay = document.getElementById('user-name-display');
+        const mobileNameDisplay = document.getElementById('mobile-user-name');
+
+        // Load Saved Name
+        const savedName = localStorage.getItem('userName');
+        if (savedName && nameDisplay) {
+            nameDisplay.textContent = savedName;
+        }
+
+        // Observer to copy name when it changes (populated by Firebase)
+        const observer = new MutationObserver(() => {
+            if (mobileNameDisplay) mobileNameDisplay.textContent = nameDisplay.textContent;
+        });
+        if (nameDisplay) {
+            // Initial sync
+            if (mobileNameDisplay) mobileNameDisplay.textContent = nameDisplay.textContent;
+            observer.observe(nameDisplay, { childList: true, characterData: true, subtree: true });
+        }
+        // Carousel Navigation
+        const carousel = document.querySelector('.carousel-container');
+        const prevBtn = document.querySelector('.carousel-nav.prev');
+        const nextBtn = document.querySelector('.carousel-nav.next');
+
+        if (carousel && prevBtn && nextBtn) {
+            prevBtn.addEventListener('click', () => {
+                carousel.scrollBy({ left: -300, behavior: 'smooth' });
+            });
+            nextBtn.addEventListener('click', () => {
+                carousel.scrollBy({ left: 300, behavior: 'smooth' });
+            });
+        }
+    </script>
+
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="init-firebase.js"></script>
+
+    <!-- CMS Logic -->
+    <script src="cms.js"></script>
+    <script>
+        // Initialize CMS
+        if (window.initCMS) {
+            window.initCMS();
+        } else {
+            console.error("initCMS not found");
+        }
+    </script>
+
+    <script>
+        // Protect Route (Hybrid Check)
+        const localUser = localStorage.getItem('userEmail');
+
+        if (!localUser) {
+            // No local session? Check Firebase if available
+            if (window.auth) {
+                auth.onAuthStateChanged(async (user) => {
+                    if (!user) {
+                        window.location.href = 'login.html';
+                    } else {
+                        // 1. Basic Session Recovery
+                        localStorage.setItem('userEmail', user.email);
+                        localStorage.setItem('isMember', 'true');
+
+                        // 2. Determine Name (Display Name -> Firestore -> Email Split -> "Membro")
+                        let finalName = user.displayName;
+
+                        if (!finalName) {
+                            try {
+                                const userDocRef = doc(db, "users", user.email);
+                                const userDocSnap = await getDoc(userDocRef);
+                                if (userDocSnap.exists()) {
+                                    finalName = userDocSnap.data().name;
+                                }
+                            } catch (e) {
+                                console.error("Error fetching user profile:", e);
+                            }
+                        }
+
+                        // Fallback if still empty
+                        if (!finalName) {
+                            finalName = user.email.split('@')[0]; // fallback to email prefix
+                        }
+
+                        // 3. Update UI & Storage (Force Update)
+                        // Only update if different to avoid flicker, but here we prioritize correctness
+                        localStorage.setItem('userName', finalName);
+                        localStorage.setItem('userEmail', user.email);
+
+                        const nameDisplay = document.getElementById('user-name-display');
+                        const mobileNameDisplay = document.getElementById('mobile-user-name');
+
+                        if (nameDisplay) nameDisplay.textContent = finalName;
+                        if (mobileNameDisplay) mobileNameDisplay.textContent = finalName;
+                    }
+                });
+            } else {
+                // If no firebase and no local user -> Redirect
+                window.location.href = 'login.html';
+            }
+        } else {
+            console.log("Membro logado (Local):", localUser);
+            // Re-verify name even if local session exists to ensure it's fresh
+            if (window.auth) {
+                auth.onAuthStateChanged(async (user) => {
+                    if (user) {
+                        // Check if the logged in user matches the local storage user
+                        if (user.email !== localUser) {
+                            // Mismatch! The cached user is wrong. Update everything.
+                            localStorage.setItem('userEmail', user.email);
+                        }
+
+                        let finalName = user.displayName;
+                        if (!finalName) {
+                            try {
+                                const userDocRef = doc(db, "users", user.email);
+                                const userDocSnap = await getDoc(userDocRef);
+                                if (userDocSnap.exists()) finalName = userDocSnap.data().name;
+                            } catch (e) { }
+                        }
+
+                        if (!finalName) finalName = user.email.split('@')[0];
+
+                        localStorage.setItem('userName', finalName);
+                        const nameDisplay = document.getElementById('user-name-display');
+                        const mobileNameDisplay = document.getElementById('mobile-user-name');
+
+                        if (nameDisplay) nameDisplay.textContent = finalName;
+                        if (mobileNameDisplay) mobileNameDisplay.textContent = finalName;
+                    }
+                });
+            }
+        }
+
+        // Logout
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                auth.signOut().then(() => {
+                    localStorage.clear(); // Clear all: email, name, isMember
+                    window.location.href = 'index.html';
+                }).catch((error) => {
+                    localStorage.clear();
+                    window.location.href = 'index.html';
+                });
+            });
+        }
+
+        // Initialize Admin CMS Logic
+        if (window.initCMS) {
+            window.initCMS();
+        }
+    </script>
+</body>
+
+</html>

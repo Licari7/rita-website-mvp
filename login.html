@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Se Chover Floresce</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="auth-page">
+
+    <div class="auth-container">
+        <a href="index.html" class="back-link">&larr; Voltar ao site</a>
+
+        <div class="auth-card">
+            <div class="text-center">
+                <div class="logo-small">Floresce Terapias</div>
+                <h2>Área Reservada</h2>
+            </div>
+
+            <div id="loginForm" class="auth-form">
+                <div class="form-group hidden" id="nameGroup" style="display: none;">
+                    <label for="signupName">Nome</label>
+                    <input type="text" id="signupName" placeholder="Como te podemos chamar?">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required placeholder="oteu@email.com">
+                </div>
+                <!-- ... existing password ... -->
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div style="position: relative;">
+                        <input type="password" id="password" required style="padding-right: 40px;">
+                        <button type="button" id="togglePassword"
+                            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #666;">
+                            <i data-lucide="eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- Button type="button" to prevent form submission -->
+                <button type="button" id="loginBtn" class="btn btn-primary full-width">Entrar</button>
+            </div>
+
+            <p class="auth-footer text-center" id="authFooter">
+                Ainda não és membro? <a href="#" id="toggleSignupBtn">Subscrever agora</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="init-firebase.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("LOGIN SCRIPT STARTED");
+            lucide.createIcons();
+
+            const loginBtn = document.getElementById('loginBtn');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+
+            // --- REAL AUTH SYSTEM ONLY ---
+            function ensureAuth() {
+                if (window.auth) {
+                    return Promise.resolve(window.auth);
+                } else {
+                    console.error("Firebase not loaded correctly.");
+                    alert("Erro de conexão. Por favor recarregue a página.");
+                    return Promise.reject("Firebase unavailable");
+                }
+            }
+
+            // Initialize Auth Persistence
+            if (window.auth) {
+                auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => { });
+            }
+
+            // Toggle Signup/Login Mode (Delegated)
+            const authFooter = document.getElementById('authFooter');
+            const nameGroup = document.getElementById('nameGroup');
+            const authTitle = document.querySelector('.auth-card h2');
+            let isSignupMode = false;
+
+            if (authFooter) {
+                authFooter.addEventListener('click', (e) => {
+                    if (e.target.id === 'toggleSignupBtn' || e.target.id === 'toggleLoginBtn') {
+                        e.preventDefault();
+                        isSignupMode = !isSignupMode;
+
+                        if (isSignupMode) {
+                            nameGroup.style.display = 'block';
+                            authTitle.textContent = 'Criar Conta';
+                            loginBtn.textContent = 'Registar';
+                            authFooter.innerHTML = 'Já tens conta? <a href="#" id="toggleLoginBtn">Entrar</a>';
+                        } else {
+                            nameGroup.style.display = 'none';
+                            authTitle.textContent = 'Área Reservada';
+                            loginBtn.textContent = 'Entrar';
+                            authFooter.innerHTML = 'Ainda não és membro? <a href="#" id="toggleSignupBtn">Subscrever agora</a>';
+                        }
+                    }
+                });
+            }
+
+            // Better Toggle Implementation to avoid Event Listener issues
+            // I'll replace the *entire* DOMContentLoaded block with a cleaner version in next step if I can't do it here.
+            // But let's try to make it work here.
+
+            // Login/Signup Action
+            if (loginBtn) {
+                loginBtn.addEventListener('click', async () => {
+                    const email = emailInput.value;
+                    const password = passwordInput.value;
+                    const name = document.getElementById('signupName').value;
+
+                    if (!email || !password) {
+                        alert("Por favor preencha email e password.");
+                        return;
+                    }
+
+                    if (isSignupMode && !name) {
+                        alert("Por favor diz-nos o teu nome.");
+                        return;
+                    }
+
+                    const originalText = loginBtn.textContent;
+                    loginBtn.textContent = isSignupMode ? "A Registar..." : "A entrar...";
+                    loginBtn.disabled = true;
+
+                    // Ensure auth is ready
+                    await ensureAuth();
+
+                    try {
+                        let userCredential;
+
+                        if (isSignupMode) {
+                            // --- REGISTRATION ---
+                            userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
+                            const user = userCredential.user;
+
+                            // Save Name to Firestore
+                            try {
+                                if (window.db) {
+                                    await window.db.collection("users").doc(email).set({
+                                        name: name,
+                                        email: email,
+                                        createdAt: new Date()
+                                    });
+                                }
+                                // Also update Auth Profile for faster access
+                                if (user.updateProfile) {
+                                    await user.updateProfile({ displayName: name });
+                                }
+                            } catch (error) {
+                                console.error("Error saving profile:", error);
+                            }
+
+                        } else {
+                            // --- LOGIN ---
+                            userCredential = await window.auth.signInWithEmailAndPassword(email, password);
+                        }
+
+                        // Success Handling (Common)
+                        console.log("Auth Successful:", userCredential.user.email);
+                        localStorage.setItem('userEmail', userCredential.user.email);
+                        localStorage.setItem('isMember', 'true');
+
+                        if (isSignupMode && name) {
+                            localStorage.setItem('userName', name);
+                        }
+
+                        alert((isSignupMode ? "Registo" : "Login") + " com sucesso! A redirecionar...");
+                        window.location.href = 'dashboard.html';
+
+                    } catch (error) {
+                        console.error("Auth Failed:", error);
+                        let msg = "Erro desconhecido: " + error.message;
+
+                        // Map Codes to Portuguese
+                        if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                            msg = "Email ou Password inválidos.";
+                        } else if (error.code === 'auth/email-already-in-use') {
+                            msg = "Este email já está registado. Tente fazer login.";
+                        } else if (error.code === 'auth/weak-password') {
+                            msg = "A password deve ter pelo menos 6 caracteres.";
+                        }
+
+                        alert(msg);
+                        loginBtn.textContent = originalText;
+                        loginBtn.disabled = false;
+                    }
+                });
+            } else {
+                console.error("Button not found");
+            }
+
+            // Password Toggle
+            const togglePasswordBtn = document.getElementById('togglePassword');
+            if (togglePasswordBtn) {
+                togglePasswordBtn.addEventListener('click', (e) => {
+                    // Prevent form submission if any
+                    e.preventDefault();
+
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+
+                    // Update icon by replacing innerHTML
+                    if (type === 'text') {
+                        togglePasswordBtn.innerHTML = '<i data-lucide="eye-off"></i>';
+                    } else {
+                        togglePasswordBtn.innerHTML = '<i data-lucide="eye"></i>';
+                    }
+                    lucide.createIcons();
+                });
+            }
+
+            // Allow Enter key
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') loginBtn.click();
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

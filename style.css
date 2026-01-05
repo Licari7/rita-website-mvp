@@ -1,25 +1,28 @@
 /* CSS Variables & Theme */
 :root {
-    /* Spiritual Palette */
-    --color-bg: #FDFBF7;
-    /* Off-white, warm paper texture vibe */
-    --color-text-main: #2C2C2C;
-    /* Soft black */
-    --color-text-muted: #666666;
+    /* Spiritual Palette - Final V4 */
+    --color-bg: #6e664c;
+    /* Green - Index Background */
+    --color-text-main: #e1d7ce;
+    /* Beige Text (Contrast on Green) */
+    --color-text-muted: #dccbb5;
+    /* Slightly darker Beige */
 
-    --color-primary: #9D84B7;
-    /* Soft Lavender/Purple */
-    --color-primary-dark: #7A6095;
-    --color-secondary: #B4D2CC;
-    /* Soft Teal/Sage */
+    --color-primary: #b16a4c;
+    /* Terracotta - Buttons/Accents */
+    --color-primary-dark: #8a523b;
+    /* Darker Terracotta */
+
+    /* Secondary Colors */
+    --color-secondary-beige: #e1d7ce;
+    --color-secondary-blue: #7b8b99;
 
     --color-accent-gold: #D4AF37;
-    /* Subtle gold for highlights */
 
     --font-serif: 'Cormorant Garamond', serif;
     --font-sans: 'Montserrat', sans-serif;
 
-    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.05);
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.1);
     --radius-md: 8px;
     --radius-lg: 16px;
 
@@ -110,7 +113,46 @@ ul {
 
 .btn-outline:hover {
     background-color: var(--color-text-main);
-    color: #fff;
+    color: var(--color-primary);
+    /* Green text on Beige hover */
+}
+
+.cta-button {
+    display: inline-block;
+    padding: 10px 24px;
+    background-color: #6e664c;
+    /* Green */
+    color: #e1d7ce !important;
+    /* Beige Text */
+    border-radius: 50px;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.cta-button:hover {
+    background-color: #5c5540;
+    /* Darker Green */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.cta-button {
+    display: inline-block;
+    padding: 10px 24px;
+    background-color: #6e664c;
+    /* Green */
+    color: #e1d7ce !important;
+    /* Beige Text */
+    border-radius: 50px;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.cta-button:hover {
+    background-color: #5c5540;
+    /* Darker Green */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .full-width {
@@ -124,10 +166,13 @@ ul {
     left: 0;
     width: 100%;
     padding: 20px 0;
-    background: rgba(253, 251, 247, 0.9);
-    backdrop-filter: blur(10px);
+    background: #e1d7ce;
+    /* Beige Background for Navbar */
+    color: #6e664c;
+    /* Green Text for Navbar Links */
     z-index: 1000;
     transition: 0.3s;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .nav-content {
@@ -138,7 +183,8 @@ ul {
 
 .logo {
     font-size: 2rem;
-    color: var(--color-primary-dark);
+    color: #6e664c;
+    /* Green Logo */
 }
 
 .nav-links {
@@ -150,7 +196,11 @@ ul {
 .nav-links a:not(.btn) {
     font-size: 0.95rem;
     position: relative;
+    color: #6e664c;
+    /* Green Links */
+    font-weight: 500;
 }
+
 
 .nav-links a:not(.btn)::after {
     content: '';
@@ -214,14 +264,15 @@ ul {
 
 .hero-bg {
     position: absolute;
-    top: -20%;
-    left: -20%;
-    width: 140%;
-    height: 140%;
-    background: radial-gradient(circle at 50% 50%, rgba(180, 210, 204, 0.3), rgba(157, 132, 183, 0.2), transparent 70%);
-    filter: blur(80px);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--color-bg);
+    /* Solid Green */
+    /* Optional: Very subtle gradient/overlay if needed for depth, but user asked for less. */
+    background: linear-gradient(to bottom, #6e664c, #655d45);
     z-index: -1;
-    animation: pulseBg 10s infinite alternate;
 }
 
 @keyframes pulseBg {
@@ -237,14 +288,15 @@ ul {
 }
 
 .hero-content {
-    max-width: 600px;
+    max-width: 800px;
 }
 
 .hero-title {
-    font-size: 4rem;
-    line-height: 1.1;
+    font-size: 2.8rem;
+    line-height: 1.2;
     margin-bottom: 20px;
-    color: var(--color-primary-dark);
+    color: var(--color-text-main);
+    /* Beige for readability on Green */
 }
 
 .hero-subtitle {
@@ -379,7 +431,8 @@ ul {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: var(--color-text-muted);
+    color: #666;
+    /* More readable, same as p */
     font-size: 0.95rem;
 }
 
@@ -389,7 +442,7 @@ ul {
 }
 
 .service-visual {
-    height: 180px;
+    height: 240px;
     background: linear-gradient(135deg, var(--color-secondary) 0%, #fff 100%);
     position: relative;
     display: flex;
@@ -443,6 +496,8 @@ ul {
 
 .event-card {
     display: flex;
+    flex-direction: column;
+    /* Stack Image and Content vertically */
     gap: 20px;
     padding: 30px;
     background: #fff;
@@ -465,7 +520,8 @@ ul {
     border-radius: var(--radius-md);
     min-width: 70px;
     height: 80px;
-    color: var(--color-primary-dark);
+    color: #e1d7ce;
+    /* Beige Text */
 }
 
 .event-date .day {
@@ -486,7 +542,8 @@ ul {
 
 .event-meta {
     font-size: 0.9rem;
-    color: var(--color-text-muted);
+    color: #8a523b;
+    /* Brown/Dark Terracotta */
     margin-bottom: 15px;
     display: flex;
     align-items: center;
@@ -602,6 +659,220 @@ ul {
     border-color: var(--color-primary);
 }
 
+/* =========================================
+   New Header Layout & Mobile Polish
+   ========================================= */
+
+/* Brand & Socials Container */
+.brand-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    /* Space between logo and socials */
+}
+
+/* Ensure Logo is left-aligned */
+.logo {
+    margin-right: 0;
+    line-height: 1;
+}
+
+/* Header Socials - Below Brand */
+.header-socials {
+    display: flex;
+    gap: 15px;
+    margin: 0;
+    /* Reset margins */
+}
+
+.header-socials a {
+    color: var(--color-primary);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.header-socials a:hover {
+    color: var(--color-primary-dark);
+    transform: translateY(-2px);
+}
+
+.header-socials svg {
+    width: 18px;
+    /* Slightly smaller for elegance */
+    height: 18px;
+}
+
+/* Navbar Layout Updates */
+.nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Nav Links - Center/Right Aligned */
+.nav-links {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    margin: 0 auto;
+    /* Pushes to center if possible, or adjust flex */
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+}
+
+/* Fix Booking Page Header Overlap */
+/* The layout above (Space Between) handles this naturally, 
+   but we ensure specific spacing for the booking page wrapper */
+.booking-page-section {
+    padding-top: 140px;
+    /* More space for the taller header */
+}
+
+/* Mobile & Responsive Refinements */
+@media (max-width: 900px) {
+
+    .nav-links,
+    .nav-actions {
+        display: none;
+        /* Hide desktop nav items on tablet/mobile */
+    }
+
+    .menu-toggle {
+        display: block;
+        /* Show hamburger */
+    }
+}
+
+@media (max-width: 600px) {
+
+    /* Navbar padding compression */
+    .navbar {
+        padding: 5px 0;
+    }
+
+    .container.nav-content {
+        width: 95%;
+        /* Use more width on mobile */
+    }
+
+    /* Reduce Brand Size */
+    .logo {
+        font-size: 1.2rem;
+    }
+
+    /* Social Icons Mobile */
+    .header-socials {
+        display: flex;
+        gap: 12px;
+        margin-left: 0;
+        margin-top: 5px;
+    }
+
+    .header-socials svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    /* Mobile Menu */
+    .mobile-menu {
+        padding: 70px 20px;
+        width: 100%;
+    }
+
+    /* Calendar Mobile Optimization (Portrait Fix) */
+    .booking-page-section {
+        padding: 110px 10px 40px;
+        /* Reduced side padding */
+        width: 100%;
+        overflow-x: hidden;
+    }
+
+    .booking-header h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .calendar-wrapper {
+        padding: 10px;
+        /* Minimal padding */
+        border-radius: 12px;
+        width: 100%;
+        max-width: 100%;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        /* Subtle border instead of shadow for space */
+        box-shadow: none;
+    }
+
+    .calendar-header {
+        margin-bottom: 0.8rem;
+    }
+
+    .calendar-header h3 {
+        font-size: 1rem;
+    }
+
+    /* The Grid - FORCE 7 columns */
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 2px;
+        width: 100%;
+    }
+
+    /* Days - Responsive calculation */
+    .calendar-day {
+        width: 100%;
+        aspect-ratio: 1;
+        height: auto;
+        /* let aspect ratio handle it */
+        font-size: 0.75rem;
+        /* Smaller text */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+
+    .weekday {
+        font-size: 0.6rem;
+        margin-bottom: 4px;
+    }
+
+    /* Hide desktop CTA on mobile */
+    .nav-actions .cta-button {
+        display: none;
+    }
+}
+
+/* Landscape Mode Optimization (Reduced Height) */
+@media (max-height: 600px) and (orientation: landscape) {
+    .booking-page-section {
+        padding-top: 80px;
+        padding-bottom: 20px;
+        min-height: auto;
+    }
+
+    .calendar-wrapper {
+        padding: 0.5rem;
+        max-width: 400px;
+        /* Strictly limit width to limit height */
+        margin: 0 auto;
+    }
+
+    .calendar-day {
+        font-size: 0.8rem;
+    }
+
+    .booking-header {
+        margin-bottom: 1rem;
+    }
+}
+
 /* Footer */
 .footer {
     background: #1a1a1a;
@@ -663,4 +934,1045 @@ ul {
         margin-top: 10px;
         width: 100%;
     }
+}
+
+/* Authentication Pages */
+.auth-page {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 50% 50%, #FDFBF7 0%, #E6E6FA 100%);
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+.back-link {
+    display: block;
+    margin-bottom: 20px;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+}
+
+.auth-card {
+    background: #fff;
+    padding: 40px;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.auth-card .logo {
+    margin-bottom: 10px;
+    font-size: 2.5rem;
+}
+
+.auth-form {
+    margin: 30px 0;
+}
+
+.auth-footer {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+}
+
+.auth-footer a {
+    color: var(--color-primary-dark);
+    font-weight: 500;
+}
+
+/* Dashboard & Audio */
+.section-padding {
+    padding-top: 120px;
+    /* Space for fixed navbar */
+    padding-bottom: 80px;
+}
+
+.welcome-msg {
+    color: var(--color-primary-dark);
+    font-weight: 500;
+}
+
+.meditations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.audio-card {
+    background: #fff;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+    transition: 0.3s;
+    display: flex;
+    flex-direction: column;
+}
+
+.audio-card:hover {
+    transform: translateY(-3px);
+}
+
+.audio-visual {
+    height: 150px;
+    background: linear-gradient(135deg, var(--color-secondary) 0%, #fff 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary-dark);
+}
+
+.audio-visual svg {
+    width: 48px;
+    height: 48px;
+    opacity: 0.7;
+}
+
+.audio-visual.relax {
+    background: linear-gradient(135deg, #E6E6FA 0%, #fff 100%);
+}
+
+.audio-visual.locked-bg {
+    background: #f0f0f0;
+    color: #999;
+}
+
+.audio-info {
+    padding: 20px;
+}
+
+.audio-info h3 {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+}
+
+.audio-info p {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    margin-bottom: 15px;
+}
+
+.audio-player {
+    width: 100%;
+    margin-top: 10px;
+    height: 35px;
+}
+
+/* Audio Player Customization (Basic Webkit) */
+audio::-webkit-media-controls-panel {
+    background-color: #f7f7f7;
+}
+
+/* Marketing Popup */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+}
+
+.popup-card {
+    background: #fff;
+    width: 90%;
+    max-width: 400px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.close-popup {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    z-index: 10;
+}
+
+.popup-visual {
+    height: 120px;
+    background: linear-gradient(135deg, var(--color-primary) 0%, #fff 100%);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.popup-aura {
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
+}
+
+.popup-content {
+    padding: 30px;
+}
+
+.popup-content h2 {
+    color: var(--color-primary-dark);
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+}
+
+.popup-content p {
+    color: var(--color-text-muted);
+    margin-bottom: 20px;
+}
+
+
+/* =========================================
+   Booking & Calendar Styles
+   ========================================= */
+
+.booking-page-section {
+    padding: 120px 20px 80px;
+    min-height: 80vh;
+    background-color: var(--color-bg);
+}
+
+.booking-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.booking-header h2 {
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    color: #e1d7ce;
+    /* Beige */
+    margin-bottom: 0.5rem;
+}
+
+.calendar-wrapper {
+    max-width: 600px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: var(--shadow-soft);
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+/* Premium Admin Animation */
+.calendar-wrapper.admin-mode {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 30px rgba(157, 132, 183, 0.15);
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.calendar-header h3 {
+    font-family: var(--font-serif);
+    font-size: 1.8rem;
+    font-weight: 500;
+    color: #8a523b;
+    /* Dark Terracotta for Title */
+}
+
+/* Carousel Navigation Buttons */
+.carousel-wrapper {
+    position: relative;
+    padding: 0 40px;
+    /* Space for arrows */
+}
+
+.carousel-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    color: var(--color-item-text);
+    transition: all 0.3s ease;
+}
+
+.carousel-nav:hover {
+    color: var(--color-primary-dark);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-nav.prev {
+    left: -5px;
+}
+
+.carousel-nav.next {
+    right: -5px;
+}
+
+/* Ensure container handles nav */
+.carousel-container {
+    /* existing styles... keep them? No, this block replaces previous .carousel-nav block, 
+       but I need to accept that I am REPLACING the previous block I added. 
+       The previous block started around line 1572. */
+}
+
+.calendar-header button {
+    background: transparent;
+    border: 1px solid var(--color-secondary);
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--color-text-muted);
+}
+
+.calendar-header button:hover {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
+}
+
+/* Grid Layout */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 15px;
+    /* Increased gap for elegance */
+    text-align: center;
+}
+
+.weekday {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+}
+
+.calendar-day {
+    height: 50px;
+    width: 50px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #8a523b;
+    /* Dark Terracotta Text */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    border: 1px solid transparent;
+}
+
+/* Hover States */
+.calendar-day:hover:not(.empty):not(.past) {
+    background-color: var(--color-bg);
+    color: var(--color-primary);
+    border-color: var(--color-secondary);
+}
+
+.calendar-day.selected {
+    background-color: var(--color-primary);
+    color: #fff !important;
+    box-shadow: 0 5px 15px rgba(157, 132, 183, 0.4);
+}
+
+/* Availability Indicator */
+.calendar-day.available {
+    background-color: #dcedc8;
+    /* Light Green */
+    color: #33691e;
+    /* Darker Green Text */
+    font-weight: 600;
+    border: 1px solid #aed581;
+}
+
+.calendar-day.available:hover {
+    background-color: #c5e1a5;
+    transform: scale(1.1);
+}
+
+.calendar-day .indicator {
+    display: none;
+    /* Hide dot since we use background now */
+}
+
+.calendar-day.selected .indicator {
+    background-color: #fff;
+}
+
+/* Admin Mode Specifics */
+.calendar-wrapper.admin-mode .calendar-day:hover:not(.empty) {
+    background-color: #f0f0f0;
+    transform: scale(1.1);
+}
+
+.calendar-wrapper.admin-mode .calendar-day.available {
+    background-color: rgba(157, 132, 183, 0.1);
+    color: var(--color-primary-dark);
+}
+
+/* Past Days - Cleaner Look */
+.calendar-day.past {
+    color: #ddd;
+    cursor: default;
+    pointer-events: none;
+}
+
+.calendar-day.empty {
+    pointer-events: none;
+}
+
+/* Time Slots */
+.time-slots-container {
+    max-width: 600px;
+    margin: 3rem auto 0;
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    animation: fadeIn 0.5s ease;
+}
+
+.time-slots-container.hidden {
+    display: none;
+}
+
+.time-slots-container h4 {
+    margin-bottom: 2rem;
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: var(--color-text-main);
+}
+
+.slots-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+
+.time-slot-btn {
+    padding: 12px 25px;
+    background: #fff;
+    border: 1px solid var(--color-secondary);
+    border-radius: 50px;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    color: var(--color-text-main);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.time-slot-btn:hover {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(157, 132, 183, 0.3);
+}
+
+.no-slots {
+    color: var(--color-text-muted);
+    font-style: italic;
+    opacity: 0.7;
+}
+
+/* Ensure Modal CSS is correct (refreshing/ensuring layout) */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(44, 36, 32, 0.4);
+    /* Softer overlay */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+
+.modal-overlay.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 2.5rem;
+    border-radius: 20px;
+    max-width: 450px;
+    width: 90%;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.3s ease-out;
+}
+
+.modal-content h3 {
+    text-align: center;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+}
+
+#bookingDetailsText {
+    text-align: center;
+    font-size: 0.95rem;
+    color: var(--color-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+}
+
+/* Ensure Select Matches Inputs */
+.auth-form select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    background-color: #e1d7ce !important;
+    font-size: 1rem;
+    color: #5c5540 !important;
+    transition: all 0.3s ease;
+    appearance: none;
+    /* Remove default arrow */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235c5540' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+}
+
+.auth-form select:focus {
+    border-color: #6e664c;
+    background-color: #e1d7ce;
+    outline: none;
+}
+
+background: none;
+border: none;
+font-size: 2rem;
+color: var(--color-secondary);
+cursor: pointer;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Carousel for Dashboard */
+.carousel-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 20px;
+    padding: 20px 5px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.carousel-container::-webkit-scrollbar {
+    display: none;
+    /* Chrome/Safari */
+}
+
+.carousel-card {
+    min-width: 280px;
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.carousel-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-image {
+    height: 160px;
+    background: #fcfcfc;
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+}
+
+.carousel-content {
+    padding: 20px;
+}
+
+.carousel-content h3 {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    color: var(--color-primary-dark);
+}
+
+.carousel-content p {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+}
+
+/* --- Dashboard Layout --- */
+body.dashboard-body {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    min-height: 100vh;
+    background: #fdfbf7;
+}
+
+/* Sidebar */
+.sidebar {
+    background: #fff;
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+}
+
+.sidebar-header {
+    margin-bottom: 40px;
+}
+
+/* Override logo size for sidebar */
+.sidebar .logo {
+    font-size: 1.5rem;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: 0.2s;
+    font-weight: 500;
+}
+
+.nav-item:hover,
+.nav-item.active {
+    background: var(--bg-color-alt);
+    color: var(--color-primary-dark);
+}
+
+.nav-item i {
+    width: 20px;
+}
+
+.sidebar-footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding-top: 20px;
+}
+
+.user-info .user-name {
+    font-weight: 600;
+    color: var(--color-primary-dark);
+    margin-bottom: 5px;
+}
+
+.logout-link {
+    color: #e57373;
+    font-size: 0.85rem;
+    text-decoration: none;
+}
+
+/* Main Dashboard Area */
+.dashboard-main {
+    padding: 40px;
+    overflow-y: auto;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.dashboard-header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    color: var(--color-primary-dark);
+}
+
+.date-display {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.stat-card.highlight {
+    background: linear-gradient(135deg, var(--color-secondary) 0%, #fff 100%);
+}
+
+.stat-card h3 {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-primary-dark);
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+
+/* --- Section Color Themes (Alternating) --- */
+
+/* Default Body is Terracotta (#b16a4c), Text Beige */
+
+/* Navbar & Footer (Matching Green) -> Footer Only now */
+.footer {
+    background-color: #6e664c;
+    /* Verde Seco */
+    color: #e1d7ce;
+    /* Beige Text */
+}
+
+.navbar.scrolled {
+    background-color: #e1d7ce;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Beige Sections (About, Events - Contact has special handling) */
+.about-section,
+.events-section {
+    background-color: var(--color-secondary-beige);
+    color: #b16a4c;
+    /* Terracotta text on Beige */
+}
+
+/* Blue Sections (Services, Reviews) */
+.services-section,
+.reviews-section {
+    background-color: var(--color-secondary-blue);
+    color: #fff;
+}
+
+/* Headings colors correction */
+.about-section h2,
+.events-section h2,
+.about-section h3,
+.events-section h3 {
+    color: #6e664c;
+    /* Green headings on Beige */
+}
+
+.services-section h2,
+.reviews-section h2 {
+    color: #fff;
+}
+
+/* Contact Section (Special: Beige Section, Terracotta Card) */
+.contact-section {
+    background-color: var(--color-secondary-beige);
+    color: #b16a4c;
+}
+
+.contact-section .section-title,
+.contact-section p {
+    color: #6e664c;
+    /* Green text outside form */
+}
+
+/* Contact Form Specifics */
+.contact-form-wrapper {
+    background-color: #b16a4c;
+    /* Terracotta Card */
+    color: #e1d7ce;
+    /* Beige Text inside card */
+    padding: 30px;
+    border-radius: 12px;
+}
+
+.contact-form-wrapper h3 {
+    color: #e1d7ce !important;
+    /* Force Beige heading */
+}
+
+.contact-form-wrapper label {
+    color: #e1d7ce !important;
+}
+
+/* Inputs (Beige Background) */
+.contact-form-wrapper input,
+.contact-form-wrapper select,
+.contact-form-wrapper textarea {
+    background-color: #e1d7ce !important;
+    color: #6e664c !important;
+    /* Green text inside inputs */
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.contact-form-wrapper input::placeholder,
+.contact-form-wrapper textarea::placeholder {
+    color: rgba(110, 102, 76, 0.6);
+}
+
+/* Buttons in form */
+.contact-form-wrapper .btn-primary {
+    background-color: #6e664c;
+    /* Green button on Terracotta */
+    color: #fff;
+}
+
+.contact-form-wrapper .btn-primary:hover {
+    background-color: #5c5540;
+}
+
+/* Card Overrides */
+.services-card {
+    background-color: #fff;
+    color: #6e664c;
+}
+
+.services-card h3 {
+    color: #b16a4c;
+}
+
+.services-card p {
+    color: #666;
+}
+
+.event-card {
+    background-color: #fff;
+}
+
+.event-date {
+    background-color: #b16a4c;
+    /* Terracotta badge */
+}
+
+/* Review Cards */
+.review-card {
+    background: transparent;
+    border: none;
+    padding: 20px;
+    /* Keep spacing/padding for layout, remove visual box */
+    text-align: center;
+    /* Ensure centered text */
+}
+
+.review-card .author {
+    color: #e1d7ce;
+}
+
+@media (max-width: 768px) {
+    body.dashboard-body {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        display: none;
+        /* Mobile menu needed later, simplified for now */
+    }
+}
+
+/* --- Login / Auth Page Theme --- */
+body.auth-page {
+    background-color: #b16a4c !important;
+    /* Terracotta Background Force */
+    background-image: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.auth-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.auth-card {
+    background-color: #6e664c;
+    /* Green Card */
+    color: #e1d7ce;
+    /* Beige Text (Titles/Labels) */
+    padding: 2.5rem;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.auth-card h2 {
+    color: #e1d7ce;
+    margin-bottom: 20px;
+}
+
+.auth-form .form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.auth-form label {
+    display: block;
+    margin-bottom: 5px;
+    color: #e1d7ce;
+    font-size: 0.9rem;
+}
+
+/* Inputs: Beige BG, Brown Text */
+.auth-form input,
+.auth-form textarea {
+    background-color: #e1d7ce !important;
+    color: #5c5540 !important;
+    /* Brown Text inside inputs */
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 12px;
+    width: 100%;
+    font-family: var(--font-sans);
+}
+
+.auth-form input::placeholder {
+    color: rgba(92, 85, 64, 0.6);
+}
+
+.auth-card .btn-primary {
+    background-color: #b16a4c;
+    /* Terracotta Button */
+    color: #fff;
+    margin-top: 20px;
+    border: none;
+    width: 100%;
+}
+
+.auth-card .btn-primary:hover {
+    background-color: #8a523b;
+}
+
+.auth-footer {
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: #e1d7ce;
+}
+
+.auth-footer a {
+    color: #fff;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.back-link {
+    color: #fff;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-weight: 500;
+}
+
+/* Fix Logout Button Visibility */
+#logout-btn.btn-outline {
+    color: #6e664c !important;
+    border-color: #6e664c !important;
+}
+
+#logout-btn.btn-outline:hover {
+    background-color: #6e664c !important;
+    color: #e1d7ce !important;
+}
+
+.footer-bottom {
+    text-align: center;
+    width: 100%;
+    margin-top: 20px;
 }

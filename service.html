@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sessão | Floresce Terapias</title>
+
+    <!-- Privacy / Construction Mode -->
+    <meta name="robots" content="noindex, nofollow">
+    <script src="access-control.js"></script>
+
+    <meta name="description" content="Detalhes da sessão terapêutica.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .service-detail-header {
+            background: var(--bg-color-alt);
+            padding: 120px 20px 60px;
+            text-align: center;
+        }
+
+        .service-detail-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 20px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-color);
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 40px;
+        }
+
+        .testimonial-card-highlight {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            font-style: italic;
+        }
+
+        .cta-actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 60px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-content">
+            <div class="brand-container">
+                <a href="index.html" class="logo">Se Chover Floresce</a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Voltar ao Início</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="service-detail-header">
+        <h1 class="section-title" id="svc-title">A carregar...</h1>
+        <p class="hero-subtitle" id="svc-subtitle"></p>
+    </header>
+
+    <!-- Main Content -->
+    <main class="service-detail-content">
+        <div id="svc-content">
+            <!-- Dynamic Content Here -->
+            <p style="text-align: center;">A carregar detalhes do serviço...</p>
+        </div>
+
+        <!-- Optional: Testimonials Placeholder (Future: Dynamic) -->
+        <!-- 
+        <div id="svc-testimonials-section" style="display:none;">
+            <h3 class="section-title" style="text-align: center; margin-top: 80px; font-size: 2rem;">Experiências Reais</h3>
+            <div class="testimonials-grid" id="svc-testimonials-list"></div>
+        </div>
+        -->
+
+        <!-- CTA Buttons -->
+        <div class="cta-actions">
+            <a href="booking.html" class="btn btn-primary">Agendar Agora</a>
+            <a href="index.html#contact" class="btn btn-outline">Tenho Dúvidas</a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <p class="logo-text">Floresce Terapias</p>
+            <p class="copyright">&copy; 2025. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="init-firebase.js"></script>
+
+    <script src="script.js"></script>
+    <script>
+        lucide.createIcons();
+
+        // Load Service Data
+        async function loadServiceDetail() {
+            const params = new URLSearchParams(window.location.search);
+            const serviceId = params.get('id');
+
+            if (!serviceId) {
+                document.getElementById('svc-content').innerHTML = '<p style="text-align: center; color: red;">Serviço não especificado. <a href="index.html">Voltar</a></p>';
+                document.getElementById('svc-title').textContent = 'Erro';
+                return;
+            }
+
+            // Wait for DB
+            const checkDb = () => {
+                if (window.db) {
+                    fetchData(serviceId);
+                } else {
+                    setTimeout(checkDb, 200);
+                }
+            };
+            checkDb();
+        }
+
+        async function fetchData(id) {
+            try {
+                // Try fetching by Doc ID first (simple migration)
+                // If we used the "seed" where we set IDs manually... wait, `add()` auto-generates IDs.
+                // The seed script used `add()`, so IDs are random strings like '7s8df76...'.
+                // The `link` in the seed data was `service.html?id=aura` which implies we might want to query by a slug or something?
+                // BUT, `script.js` renders links using `data.link`.
+                // 
+                // Strategy:
+                // Since I populated the seed data with `link: "service.html?id=aura"`, that's just a query param. 
+                // I need to find the document where `link` contains this ID OR just rely on the user clicking the card generated by `script.js`?
+                // 
+                // Wait, `script.js` generates cards using `data.link`.
+                // If I update `script.js` to point to `service.html?id=[DOC_ID]`, then this page just needs to `doc(id).get()`.
+                // This is the cleanest way.
+
+                let docSnap = await window.db.collection('services').doc(id).get();
+
+                if (!docSnap.exists) {
+                    // Fallback: Maybe the user manually typed ?id=aura and we want to search/filter?
+                    // For now, assume ID is DocID.
+                    document.getElementById('svc-content').innerHTML = '<p style="text-align: center;">Serviço não encontrado.</p>';
+                    return;
+                }
+
+                const data = docSnap.data();
+
+                // Update Page Title
+                document.title = `${data.title} | Floresce Terapias`;
+
+                // Header
+                document.getElementById('svc-title').textContent = data.title;
+                document.getElementById('svc-subtitle').textContent = data.description;
+
+                // Content
+                document.getElementById('svc-content').innerHTML = data.long_description || "<p>Sem descrição detalhada.</p>";
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('svc-content').innerHTML = '<p>Erro ao carregar sessão.</p>';
+            }
+        }
+
+        loadServiceDetail();
+    </script>
+</body>
+
+</html>

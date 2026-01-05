@@ -1,0 +1,11 @@
+{
+    "name": "rita-website-mvp",
+    "version": 2,
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "/$1"
+        }
+    ],
+    "cleanUrls": true
+}

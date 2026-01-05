@@ -4,17 +4,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rita | Espiritualidade e Leitura de Aura</title>
-    <meta name="description" content="Leituras de aura, eventos espirituais e cura. Conecte-se com a sua essência.">
+    <title>Se Chover Floresce | Leitura de Aura e Espiritualidade</title>
+
+    <!-- Privacy / Construction Mode -->
+    <meta name="robots" content="noindex, nofollow">
+    <script src="access-control.js"></script>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Descubra a cura e o autoconhecimento através da Leitura de Aura e Constelações Familiares. Terapia Holística Online e Espiritualidade.">
+    <meta name="keywords"
+        content="Leitura de Aura, Constelações Familiares, Espiritualidade, Terapia Holística, Autoconhecimento, Online">
+    <meta name="author" content="Rita Barata">
+    <link rel="canonical" href="https://sechoverfloresce.pt/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sechoverfloresce.pt/">
+    <meta property="og:title" content="Se Chover Floresce | Espiritualidade e Cura">
+    <meta property="og:description" content="Junte-se a nós numa jornada de autodescoberta e cura interior.">
+    <!-- <meta property="og:image" content="LINK_PARA_IMAGEM_HERO.jpg"> -->
+
+    <!-- Schema.org (JSON-LD) for AI/Google -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "name": "Rita Barata",
+          "jobTitle": "Terapeuta Holística",
+          "url": "https://sechoverfloresce.pt/",
+          "sameAs": [] 
+        },
+        {
+          "@type": "Service",
+          "name": "Leitura de Aura",
+          "description": "Terapia energética para limpeza e leitura do campo energético.",
+          "provider": {
+            "@type": "Person",
+            "name": "Rita Barata"
+          }
+        },
+        {
+          "@type": "WebSite",
+          "name": "Se Chover Floresce",
+          "url": "https://sechoverfloresce.pt/"
+        }
+      ]
+    }
+    </script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap"
         rel="stylesheet">
 
-    <!-- Styles -->
     <link rel="stylesheet" href="style.css">
 
     <!-- Icons -->
@@ -26,15 +77,28 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="container nav-content">
-            <a href="#" class="logo">Rita.</a>
-            <div class="nav-links">
-                <a href="#home">Início</a>
-                <a href="#about">Sobre</a>
-                <a href="#services">Consultas</a>
-                <a href="#events">Eventos</a>
-                <a href="#community">Comunidade</a>
-                <a href="#contact" class="btn btn-outline">Agendar</a>
+            <div class="brand-container">
+                <div class="logo">Floresce Terapias</div>
+                <div class="header-socials">
+                    <a href="https://www.instagram.com/floresceterapias?igsh=MW90eXlmOG93em55ZA%3D%3D&utm_source=qr"
+                        target="_blank" aria-label="Instagram"><i data-lucide="instagram"></i></a>
+                    <a href="https://chat.whatsapp.com/BpCgpanA5Wx1VEGrmo4Wwt" target="_blank" aria-label="WhatsApp"><i
+                            data-lucide="phone"></i></a>
+                </div>
             </div>
+
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">Início</a></li>
+                <li><a href="#about">Sobre</a></li>
+                <li><a href="#services">Sessões</a></li>
+                <li><a href="#events">Eventos</a></li>
+                <li><a href="dashboard.html">Área de Membros</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <a href="booking.html" class="cta-button">Agendar</a>
+            </div>
+
             <button class="menu-toggle" aria-label="Menu">
                 <i data-lucide="menu"></i>
             </button>
@@ -46,9 +110,9 @@
         <button class="close-menu"><i data-lucide="x"></i></button>
         <a href="#home">Início</a>
         <a href="#about">Sobre</a>
-        <a href="#services">Consultas</a>
+        <a href="#services">Sessões</a>
         <a href="#events">Eventos</a>
-        <a href="#community">Comunidade</a>
+        <li><a href="dashboard.html">Área de Membros</a></li>
         <a href="#contact">Agendar</a>
     </div>
 
@@ -56,10 +120,12 @@
     <section id="home" class="hero">
         <div class="hero-bg"></div>
         <div class="container hero-content">
-            <h1 class="hero-title fade-in">Conecte-se com a<br>sua essência.</h1>
-            <p class="hero-subtitle fade-in-delay">Leitura de Aura, Eventos Espirituais e Cura Interior.</p>
+            <h1 id="hero-title-display" class="hero-title fade-in">Encontra espaço em ti para ti e relembra-te de quem
+                és</h1>
+            <p id="hero-subtitle-display" class="hero-subtitle fade-in-delay">Leitura de Aura, Eventos Espirituais e
+                Cura Interior.</p>
             <div class="hero-actions fade-in-delay-2">
-                <a href="#services" class="btn btn-primary">Descobrir Mais</a>
+                <a id="hero-cta-display" href="#services" class="btn btn-primary">Descobrir Mais</a>
             </div>
         </div>
     </section>
@@ -69,17 +135,18 @@
         <div class="container">
             <div class="section-header">
                 <span class="section-tag">Sobre Mim</span>
-                <h2 class="section-title">Uma jornada de luz</h2>
+                <h2 id="about-title-display" class="section-title">Uma jornada de luz</h2>
             </div>
             <div class="about-grid">
-                <div class="about-text">
-                    <p>Olá, sou a Rita. A minha missão é ajudar-te a encontrar clareza e paz interior através da
+                <div id="about-text-display" class="about-text">
+                    <p>Olá, sou a Rita (Floresce Terapias). A minha missão é ajudar-te a encontrar clareza e paz
+                        interior através da
                         espiritualidade.</p>
                     <p>Com a Leitura de Aura e eventos de conexão, criamos um espaço seguro para o teu desenvolvimento
                         pessoal.</p>
                 </div>
                 <!-- Placeholder for Image -->
-                <div class="about-image-placeholder">
+                <div id="about-image-display" class="about-image-placeholder">
                     <span>Foto da Rita</span>
                 </div>
             </div>
@@ -90,90 +157,12 @@
     <section id="services" class="section services-section">
         <div class="container">
             <div class="section-header text-center">
-                <span class="section-tag">O que faço</span>
-                <h2 class="section-title">Consultas de Leitura de Aura</h2>
+
+                <h2 class="section-title">Sessões individuais</h2>
             </div>
-            <div class="services-grid">
-                <!-- Card 1: Leituras de Aura -->
-                <div class="services-card">
-                    <div class="service-visual">
-                        <div class="aura-circle"></div>
-                    </div>
-                    <div class="service-content">
-                        <h3>Leitura de Aura</h3>
-                        <p>Acede à tua energia, liberta bloqueios e ganha clareza sobre o teu caminho espiritual.</p>
-                        <div class="service-benefits">
-                            <h4>Modalidades</h4>
-                            <ul>
-                                <li><i data-lucide="map-pin"></i> Presenciais</li>
-                                <li><i data-lucide="video"></i> Online (Zoom)</li>
-                                <li><i data-lucide="wifi"></i> À Distância</li>
-                            </ul>
-                        </div>
-                        <a href="#contact" class="btn btn-primary full-width text-center">Marcar Leitura</a>
-                    </div>
-                </div>
-
-                <!-- Card 2: Innerdance -->
-                <div class="services-card">
-                    <div class="service-visual innerdance">
-                        <div class="aura-circle innerdance"></div>
-                    </div>
-                    <div class="service-content">
-                        <h3>Innerdance</h3>
-                        <p>Uma jornada sonora vibracional que ativa o teu processo de autocura e expansão da
-                            consciência.</p>
-                        <div class="service-benefits">
-                            <h4>Benefícios</h4>
-                            <ul>
-                                <li><i data-lucide="waves"></i> Desbloqueio Emocional</li>
-                                <li><i data-lucide="sparkles"></i> Activação Energética</li>
-                                <li><i data-lucide="moon"></i> Estado Alterado de Consciência</li>
-                            </ul>
-                        </div>
-                        <a href="#contact" class="btn btn-outline full-width text-center">Saber Mais</a>
-                    </div>
-                </div>
-
-                <!-- Card 3: Constelações -->
-                <div class="services-card">
-                    <div class="service-visual constellations">
-                        <div class="aura-circle constellations"></div>
-                    </div>
-                    <div class="service-content">
-                        <h3>Constelações</h3>
-                        <p>Harmoniza o teu sistema familiar e liberta padrões herdados para viveres com mais leveza.</p>
-                        <div class="service-benefits">
-                            <h4>Modalidades</h4>
-                            <ul>
-                                <li><i data-lucide="users"></i> Presenciais</li>
-                                <li><i data-lucide="monitor"></i> Online</li>
-                            </ul>
-                        </div>
-                        <a href="#contact" class="btn btn-outline full-width text-center">Agendar</a>
-                    </div>
-                </div>
-
-                <!-- Card 4: Ciclos de Expansão -->
-                <div class="services-card">
-                    <div class="service-visual expansion">
-                        <div class="aura-circle expansion"></div>
-                    </div>
-                    <div class="service-content">
-                        <h3>Ciclos de Expansão</h3>
-                        <p>Programas de longa duração para quem procura um compromisso profundo com o seu crescimento.
-                        </p>
-                        <div class="service-benefits">
-                            <h4>Inclui</h4>
-                            <ul>
-                                <li><i data-lucide="infinity"></i> Mentoria Contínua</li>
-                                <li><i data-lucide="users"></i> Grupo de Apoio</li>
-                                <li><i data-lucide="book-open"></i> Acesso a Recursos</li>
-                            </ul>
-                        </div>
-                        <a href="#contact" class="btn btn-outline full-width text-center">Candidatar-me</a>
-                    </div>
-                </div>
+            <div class="services-grid" id="dynamic-services-container">
+                <!-- Loading State -->
+                <p style="text-align:center; width:100%; grid-column: 1 / -1;">A carregar serviços...</p>
             </div>
         </div>
     </section>
@@ -185,72 +174,29 @@
                 <span class="section-tag">Agenda</span>
                 <h2 class="section-title">Próximos Eventos</h2>
             </div>
-            <div class="events-grid">
-                <!-- Event Card 1 -->
-                <article class="event-card">
-                    <div class="event-date">
-                        <span class="day">15</span>
-                        <span class="month">JAN</span>
-                    </div>
-                    <div class="event-details">
-                        <h3>Círculo de Meditação</h3>
-                        <p class="event-meta"><i data-lucide="map-pin"></i> Lisboa &bull; 19:00</p>
-                        <p>Um encontro para reconexão e partilha em grupo.</p>
-                        <a href="#contact" class="link-arrow">Inscrever <i data-lucide="arrow-right"></i></a>
-                    </div>
-                </article>
-                <!-- Event Card 2 -->
-                <article class="event-card">
-                    <div class="event-date">
-                        <span class="day">28</span>
-                        <span class="month">JAN</span>
-                    </div>
-                    <div class="event-details">
-                        <h3>Workshop Iniciação à Aura</h3>
-                        <p class="event-meta"><i data-lucide="video"></i> Online (Zoom) &bull; 10:00</p>
-                        <p>Aprende os conceitos básicos da energia e autoproteção.</p>
-                        <a href="#contact" class="link-arrow">Inscrever <i data-lucide="arrow-right"></i></a>
-                    </div>
-                </article>
+            <div class="events-grid" id="dynamic-events-container">
+                <!-- Loading State -->
+                <p style="text-align:center; grid-column: span 2; width:100%;">A carregar eventos...</p>
             </div>
         </div>
     </section>
 
-    <!-- Community & Newsletter -->
-    <section id="community" class="section community-section">
-        <div class="container text-center">
-            <h2 class="section-title">Junta-te à Comunidade</h2>
-            <p>Recebe inspiração diária e novidades sobre os eventos.</p>
-            <div class="social-links">
-                <a href="#" class="social-btn instagram"><i data-lucide="instagram"></i> Instagram</a>
-                <a href="#" class="social-btn whatsapp"><i data-lucide="message-circle"></i> Grupo WhatsApp</a>
-            </div>
-
-            <div class="newsletter-box">
-                <h3>Newsletter</h3>
-                <form class="newsletter-form">
-                    <input type="email" placeholder="O teu melhor email" required>
-                    <button type="submit" class="btn btn-primary">Subscrever</button>
-                </form>
-            </div>
-        </div>
-    </section>
+    <!-- Firebase SDKs for Public Data -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="init-firebase.js"></script>
 
     <!-- Reviews/Feedback -->
     <section class="section reviews-section">
         <div class="container">
             <div class="section-header text-center">
-                <h2 class="section-title">O que dizem</h2>
+                <h2 class="section-title">Testemunhos</h2>
             </div>
-            <div class="reviews-grid">
-                <div class="review-card">
-                    <p>"Uma experiência transformadora. A leitura trouxe-me a clareza que precisava."</p>
-                    <span class="author">- Joana M.</span>
-                </div>
-                <div class="review-card">
-                    <p>"Senti uma paz incrível durante o evento. A Rita tem uma energia maravilhosa."</p>
-                    <span class="author">- Pedro S.</span>
-                </div>
+            <div class="reviews-grid" id="dynamic-testimonials-container">
+                <!-- Loading State -->
+                <p style="text-align:center; width:100%;">A carregar testemunhos...</p>
             </div>
         </div>
     </section>
@@ -263,9 +209,9 @@
                     <h2 class="section-title">Vamos conversar?</h2>
                     <p>Tens dúvidas ou queres agendar? Envia uma mensagem.</p>
                     <ul class="info-list">
-                        <li><i data-lucide="mail"></i> contacto@rita-espiritualidade.pt</li>
-                        <li><i data-lucide="phone"></i> +351 912 345 678</li>
-                        <li><i data-lucide="instagram"></i> @rita.aura</li>
+                        <li><i data-lucide="mail"></i> floresceterapias@hotmail.com</li>
+                        <li><i data-lucide="phone"></i> +351 913 515 406</li>
+                        <li><i data-lucide="instagram"></i> @floresceterapias</li>
                     </ul>
                 </div>
                 <div class="contact-form-wrapper">
@@ -283,10 +229,7 @@
                                 <option value="duvida">Outro / Dúvidas</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="date-preferida">Data Preferencial (para consultas)</label>
-                            <input type="date" id="date-preferida" name="date">
-                        </div>
+
                         <div class="form-group">
                             <label for="message">Mensagem</label>
                             <textarea id="message" name="message" rows="4" required></textarea>
@@ -310,12 +253,12 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <p class="logo-text">Rita.</p>
+                <p class="logo-text">Floresce Terapias</p>
                 <div class="footer-links">
                     <a href="#">Privacidade</a>
                     <a href="#">Termos</a>
                 </div>
-                <p class="copyright">&copy; 2025 Rita Espiritualidade. Todos os direitos reservados.</p>
+                <p class="copyright">&copy; 2026 Floresce Terapias. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tema | Floresce Terapias</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <script src="access-control.js"></script>
+    <style>
+        .theme-header {
+            background: var(--bg-color-alt);
+            padding: 80px 20px 40px;
+            text-align: center;
+        }
+
+        .meditation-list {
+            max-width: 800px;
+            margin: 40px auto;
+            display: grid;
+            gap: 20px;
+        }
+
+        .meditation-item {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .meditation-item:hover {
+            transform: scale(1.02);
+        }
+
+        .play-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--color-primary);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container nav-content">
+            <div class="brand-container">
+                <a href="dashboard.html" class="logo">Floresce Terapias</a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Voltar</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="theme-header">
+        <h1 class="section-title">Tema Específico</h1>
+        <p>Explora as meditações e recursos para este tema.</p>
+    </header>
+
+    <main class="container">
+        <div class="meditation-list">
+            <!-- Item 1 -->
+            <div class="meditation-item">
+                <div class="play-icon"><i data-lucide="play"></i></div>
+                <div>
+                    <h3>Meditação Guiada 1</h3>
+                    <p style="font-size: 0.9rem; color: #666;">10 Minutos &bull; Iniciante</p>
+                </div>
+            </div>
+            <!-- Item 2 -->
+            <div class="meditation-item">
+                <div class="play-icon"><i data-lucide="play"></i></div>
+                <div>
+                    <h3>Meditação Guiada 2</h3>
+                    <p style="font-size: 0.9rem; color: #666;">15 Minutos &bull; Profundo</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
