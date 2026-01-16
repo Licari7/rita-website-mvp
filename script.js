@@ -566,10 +566,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // Production Price ID (Replace if changed)
             const PRICE_ID = 'price_1SpXX63pFxyWJ0vQGfDPRFxi';
 
+            // Ensure absolute URL for Stripe
+            const finalSuccessUrl = new URL(redirectUrl || window.location.href, window.location.origin).href;
+            const finalCancelUrl = window.location.href;
+
             const result = await createSession({
                 priceId: PRICE_ID,
-                successUrl: redirectUrl || window.location.href,
-                cancelUrl: window.location.href
+                successUrl: finalSuccessUrl,
+                cancelUrl: finalCancelUrl
             });
 
             const sessionId = result.data.sessionId;
