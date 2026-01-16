@@ -5,11 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Área de Membros | Floresce Terapias</title>
+    <script src="theme-loader.js"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@300;400;500&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://js.stripe.com/v3/"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
     <style>
         /* Hide API Key Warning - Minimal & Safe */
@@ -24,7 +26,7 @@
             background: white;
             border: 1px solid #eee;
             border-radius: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             overflow: hidden;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
             transition: all 0.2s ease;
@@ -40,17 +42,16 @@
         }
 
         summary.admin-card-header {
-            padding: 20px;
+            padding: 12px 16px;
             cursor: move;
-            /* Indicate draggable */
             font-weight: 600;
             font-family: var(--font-serif);
-            font-size: 1.1em;
+            font-size: 13px;
+            /* Exact Request */
             display: flex;
             justify-content: space-between;
             align-items: center;
             list-style: none;
-            /* Hide default triangle */
             color: var(--color-primary);
             background: #fff;
             user-select: none;
@@ -62,7 +63,8 @@
 
         summary.admin-card-header::after {
             content: '+';
-            font-size: 1.5em;
+            font-size: 1.2em;
+            /* Adjusted for smaller header */
             font-weight: 300;
             color: #999;
             transition: transform 0.2s;
@@ -79,13 +81,53 @@
         }
 
         .admin-card-body {
-            padding: 25px;
+            padding: 6px;
+            /* Exact Request */
             border-top: 1px solid #eee;
             background: #fafafa;
             animation: slideDown 0.3s ease-out;
             cursor: default !important;
-            /* Reset cursor in body */
+            font-size: 12px;
+            /* Exact Request */
+            color: #1f2937;
+            /* Dark Gray */
         }
+
+        /* Compact form groups inside admin cards */
+        .admin-card-body .form-group {
+            margin-bottom: 8px;
+            /* Tighter layout */
+        }
+
+        /* Ensure all inputs and labels inside obey the 12px rule */
+        .admin-card-body label {
+            font-size: 12px;
+            margin-bottom: 2px;
+            display: block;
+            font-weight: 600;
+            color: #111827;
+            /* Darker Label */
+        }
+
+        .admin-card-body input,
+        .admin-card-body select,
+        .admin-card-body textarea,
+        .admin-card-body button {
+            font-size: 12px !important;
+            padding: 8px;
+            /* Slightly reduced padding for inputs */
+            color: #000 !important;
+            /* Force Black */
+        }
+
+        .admin-card-body h3 {
+            font-size: 13px;
+            margin-bottom: 10px;
+            color: #111827;
+            /* Dark Title */
+        }
+
+
 
         @keyframes slideDown {
             from {
@@ -102,6 +144,56 @@
 </head>
 
 <body>
+
+    <!-- Subscription Modal (Hidden by default) -->
+    <div id="subscriptionModal"
+        class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4"
+        style="z-index: 9999;">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center animate-fade-in relative overflow-hidden"
+            style="position: relative;">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-500 to-pink-500"
+                style="position: absolute; top:0; left:0; width:100%; height:8px; background: linear-gradient(90deg, #9333ea, #db2777);">
+            </div>
+
+            <div class="mb-6 inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 text-purple-600"
+                style="background: #f3e8ff; color: #9333ea; width: 64px; height: 64px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+                <i data-lucide="crown" class="w-8 h-8" style="width: 32px; height: 32px;"></i>
+            </div>
+
+            <h2 class="text-2xl font-bold text-gray-800 mb-2"
+                style="font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 8px;">Torna-te Membro</h2>
+            <p class="text-gray-600 mb-6" style="color: #4b5563; margin-bottom: 24px;">Acesso mensal a todas as
+                meditações, eventos e conteúdos da comunidade Floresce.</p>
+
+            <div class="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-100"
+                style="background: #f9fafb; border-radius: 12px; padding: 16px; margin-bottom: 24px; border: 1px solid #f3f4f6;">
+                <div class="text-sm text-gray-500 uppercase tracking-wide font-semibold"
+                    style="font-size: 0.875rem; color: #6b7280; letter-spacing: 0.025em; font-weight: 600;">Mensalidade
+                </div>
+                <div class="flex items-baseline justify-center gap-1 mt-1"
+                    style="display: flex; justify-content: center; align-items: baseline; gap: 4px; margin-top: 4px;">
+                    <span class="text-3xl font-bold text-gray-900"
+                        style="font-size: 1.875rem; font-weight: 700; color: #111827;">20,00€</span>
+                    <span class="text-gray-500" style="color: #6b7280;">/mês</span>
+                </div>
+            </div>
+
+            <button onclick="startSubscription()" id="subscribeBtn"
+                class="w-full py-3 px-6 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2"
+                style="width: 100%; padding: 12px 24px; background: linear-gradient(90deg, #9333ea, #db2777); color: white; border-radius: 12px; font-weight: 500; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <span>Subscrever Agora</span>
+                <i data-lucide="arrow-right" class="w-4 h-4" style="width: 16px; height: 16px;"></i>
+            </button>
+            <p id="subLoading" class="hidden text-sm text-gray-500 mt-3 animate-pulse"
+                style="display: none; font-size: 0.875rem; color: #6b7280; margin-top: 12px;">A preparar pagamento
+                seguro...</p>
+
+            <button onclick="logoutFromModal()" class="mt-4 text-xs text-gray-400 hover:text-gray-600 underline"
+                style="margin-top: 16px; font-size: 0.75rem; color: #9ca3af; background: none; border: none; cursor: pointer; text-decoration: underline;">
+                Sair e tentar com outra conta
+            </button>
+        </div>
+    </div>
 
     <!-- Navigation -->
     <nav class="navbar">
@@ -133,20 +225,17 @@
 
     <!-- Mobile Menu Overlay -->
     <div class="mobile-menu">
-        <button class="close-menu"><i data-lucide="x"></i></button>
-        <span style="display: block; margin-bottom: 20px; font-weight: 600; color: var(--color-primary);">Olá, <span
-                id="mobile-user-name">Visitante</span></span>
+        <button class="close-menu" aria-label="Fechar Menu">
+            <i data-lucide="x"></i>
+        </button>
+        <span class="mobile-logo">Floresce</span>
 
-        <ul class="mobile-links-list" style="list-style: none; padding: 0;">
-            <li><a href="index.html" style="display: block; padding: 10px 0; color: var(--color-bg);">Início</a>
-            </li>
-            <li><a href="index.html#about" style="display: block; padding: 10px 0; color: var(--color-bg);">Sobre</a>
-            </li>
-            <li><a href="index.html#services"
-                    style="display: block; padding: 10px 0; color: var(--color-bg);">Serviços</a></li>
-            <li><a href="index.html#events" style="display: block; padding: 10px 0; color: var(--color-bg);">Eventos</a>
-            </li>
-            <li><a href="booking.html" style="display: block; padding: 10px 0; color: var(--color-bg);">Agenda</a></li>
+        <ul class="mobile-links-list">
+            <li><a href="index.html">Início</a></li>
+            <li><a href="index.html#about">Sobre</a></li>
+            <li><a href="index.html#services">Serviços</a></li>
+            <li><a href="index.html#events">Eventos</a></li>
+            <li><a href="booking.html">Agenda</a></li>
             <li><a href="dashboard.html"
                     style="display: block; padding: 10px 0; color: var(--color-primary); font-weight: 600;">Área de
                     Membros</a></li>
@@ -154,7 +243,14 @@
 
         <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
 
-        <a href="#" id="mobile-logout-btn" style="color: #e57373;">Sair da Conta</a>
+        <a href="#" id="mobile-logout-btn" style="color: #e57373; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="log-out" style="width: 18px;"></i> Sair da Conta
+        </a>
+
+        <div class="mobile-socials">
+            <a href="https://instagram.com/floresceterapias" target="_blank"><i data-lucide="instagram"></i></a>
+            <a href="https://wa.me/351912345678" target="_blank"><i data-lucide="message-circle"></i></a>
+        </div>
     </div>
 
     <!-- Main Content -->
@@ -316,6 +412,28 @@
                             <button type="submit" id="home-about-save-btn" class="cta-button primary full-width">Guardar
                                 Resumo</button>
                         </form>
+                    </div>
+                </details>
+
+                <!-- 3. MEMBER MANAGEMENT ACCORDION (NEW) -->
+                <details class="admin-card draggable-card" id="card-members" draggable="true">
+                    <summary class="admin-card-header">
+                        <span><i data-lucide="users" style="margin-right: 10px; width: 18px;"></i> Gestão de
+                            Membros</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <div class="admin-panel-content" id="panel-members">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <h3 style="font-family: var(--font-serif); margin: 0;">Lista de Membros</h3>
+                                <button class="btn btn-outline btn-sm" onclick="window.loadMembers()">Atualizar
+                                    Lista</button>
+                            </div>
+
+                            <div id="admin-members-list" style="max-height: 500px; overflow-y: auto;">
+                                <p>A carregar membros...</p>
+                            </div>
+                        </div>
                     </div>
                 </details>
 
@@ -561,6 +679,12 @@
                                     </div>
 
                                     <div class="form-group">
+                                        <label>Imagem de Capa (Opcional)</label>
+                                        <input type="file" id="med-image" accept="image/*">
+                                        <input type="hidden" id="med-image-url">
+                                    </div>
+
+                                    <div class="form-group">
                                         <label>Descrição Opcional</label>
                                         <textarea id="med-desc" rows="2" placeholder="Breve descrição..."
                                             style="width: 100%; border: 1px solid #ddd; padding: 8px; border-radius: 8px;"></textarea>
@@ -588,6 +712,175 @@
                         </div>
                     </div>
                 </details>
+
+                <!-- 8. FOOTER MANAGEMENT ACCORDION -->
+                <details class="admin-card draggable-card" id="card-footer" draggable="true">
+                    <summary class="admin-card-header">
+                        <span><i data-lucide="layout-template" style="margin-right: 10px; width: 18px;"></i> Gestão do
+                            Rodapé</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <form id="footer-form" class="auth-form"
+                            onsubmit="event.preventDefault(); window.handleFooterSubmit();">
+                            <div class="form-group">
+                                <label>Título / Logótipo do Rodapé</label>
+                                <input type="text" id="footer-title-input" placeholder="Ex: Floresce Terapias">
+                            </div>
+                            <div class="form-group">
+                                <label>Direitos Reservados (Copyright)</label>
+                                <input type="text" id="footer-copyright-input"
+                                    placeholder="Ex: &copy; 2026 Floresce Terapias. Todos os direitos reservados.">
+                            </div>
+                            <div class="form-group">
+                                <label>Créditos / Desenvolvido por</label>
+                                <input type="text" id="footer-dev-input"
+                                    placeholder="Ex: CREATED IN PORTUGAL WITH ❤️ BY CALB">
+                            </div>
+                            <button type="submit" class="cta-button primary full-width">Guardar Alterações do
+                                Rodapé</button>
+                        </form>
+                    </div>
+                </details>
+
+                </details>
+
+                <!-- 9. CONTACT MANAGEMENT ACCORDION -->
+                <details class="admin-card draggable-card" id="card-contact" draggable="true">
+                    <summary class="admin-card-header">
+                        <span><i data-lucide="phone" style="margin-right: 10px; width: 18px;"></i> Gestão de
+                            Contactos</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <form id="contact-form" class="auth-form"
+                            onsubmit="event.preventDefault(); window.handleContactSubmit();">
+                            <div class="form-group">
+                                <label>Título da Secção</label>
+                                <input type="text" id="contact-title-input" placeholder="Ex: Vamos conversar?">
+                            </div>
+                            <div class="form-group">
+                                <label>Subtítulo / Descrição</label>
+                                <textarea id="contact-subtitle-input"
+                                    placeholder="Ex: Tens dúvidas ou queres agendar? Envia uma mensagem." rows="2"
+                                    style="width: 100%; border: 1px solid #ddd; padding: 8px; border-radius: 8px;"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="text" id="contact-email-input"
+                                    placeholder="Ex: floresceterapias@hotmail.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Telefone</label>
+                                <input type="text" id="contact-phone-input" placeholder="Ex: +351 913 515 406">
+                            </div>
+                            <div class="form-group">
+                                <label>Instagram</label>
+                                <input type="text" id="contact-instagram-input" placeholder="Ex: @floresceterapias">
+                            </div>
+                            <button type="submit" class="cta-button primary full-width">Guardar Contactos</button>
+                        </form>
+                    </div>
+                </details>
+
+                <!-- Visual Customization -->
+                <details class="admin-card draggable-card" id="card-theme" draggable="true">
+                    <summary class="admin-card-header">
+                        <span><i data-lucide="palette" style="margin-right: 10px; width: 18px;"></i> Personalização
+                            Visual</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <p style="margin-bottom:20px; color:#666;">Altere as cores do site. As alterações são
+                            instantâneas para os visitantes.</p>
+
+                        <form id="theme-form" class="auth-form"
+                            style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+                            <div class="form-group">
+                                <label>Fundo Geral (Background)</label>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="color" id="theme-bg" value="#6e664c"
+                                        style="width: 50px; height: 50px; padding: 0; border: none; cursor: pointer;">
+                                    <input type="text" id="theme-bg-hex" value="#6e664c" maxlength="7"
+                                        style="width: 90px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-transform: uppercase;">
+                                    <span style="font-size: 0.9rem; color: #666;">Cor principal de fundo</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Texto Principal</label>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="color" id="theme-text" value="#e1d7ce"
+                                        style="width: 50px; height: 50px; padding: 0; border: none; cursor: pointer;">
+                                    <input type="text" id="theme-text-hex" value="#e1d7ce" maxlength="7"
+                                        style="width: 90px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-transform: uppercase;">
+                                    <span style="font-size: 0.9rem; color: #666;">Títulos e texto corpo</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Cor Primária (Botões/Destaques)</label>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="color" id="theme-primary" value="#b16a4c"
+                                        style="width: 50px; height: 50px; padding: 0; border: none; cursor: pointer;">
+                                    <input type="text" id="theme-primary-hex" value="#b16a4c" maxlength="7"
+                                        style="width: 90px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-transform: uppercase;">
+                                    <span style="font-size: 0.9rem; color: #666;">Botões e ícones</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Fundo do Cabeçalho (Navbar)</label>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="color" id="theme-header" value="#e1d7ce"
+                                        style="width: 50px; height: 50px; padding: 0; border: none; cursor: pointer;">
+                                    <input type="text" id="theme-header-hex" value="#e1d7ce" maxlength="7"
+                                        style="width: 90px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-transform: uppercase;">
+                                    <span style="font-size: 0.9rem; color: #666;">Barra de navegação</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label style="display:block; margin-bottom: 8px;">Cor Secundária 1 (Bege -
+                                    Sobre/Agenda)</label>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="color" id="theme-secondary-1" value="#e1d7ce"
+                                        style="width: 50px; height: 50px; padding: 0; border: none; cursor: pointer;">
+                                    <input type="text" id="theme-secondary-1-hex" value="#E1D7CE" maxlength="7"
+                                        style="width: 90px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-transform: uppercase;">
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label style="display:block; margin-bottom: 8px;">Cor Secundária 2 (Azul -
+                                    Sessões/Testemunhos)</label>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="color" id="theme-secondary-2" value="#7b8b99"
+                                        style="width: 50px; height: 50px; padding: 0; border: none; cursor: pointer;">
+                                    <input type="text" id="theme-secondary-2-hex" value="#7B8B99" maxlength="7"
+                                        style="width: 90px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-transform: uppercase;">
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label style="display:block; margin-bottom: 8px;">Fundo do Rodapé</label>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="color" id="theme-footer" value="#b16a4c"
+                                        style="width: 50px; height: 50px; padding: 0; border: none; cursor: pointer;">
+                                    <input type="text" id="theme-footer-hex" value="#B16A4C" maxlength="7"
+                                        style="width: 90px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-transform: uppercase;">
+                                </div>
+                            </div>
+
+
+                            <!-- Theme Preview -->
+                            <div style="grid-column: 1 / -1; margin-top: 20px; display: flex; gap: 15px;">
+                                <button type="submit" id="theme-save-btn" class="cta-button primary">Guardar
+                                    Tema</button>
+                                <button type="button" id="theme-reset-btn" class="btn btn-outline"
+                                    style="border-color: #E57373; color: #E57373;">Restaurar Padrões</button>
+                            </div>
+                        </form>
+                    </div>
+                </details>
             </div>
         </section>
 
@@ -602,8 +895,9 @@
                 <div class="carousel-container">
                     <!-- Card 1: Grounding -->
                     <a href="theme.html#enraizamento" class="carousel-card">
-                        <div class="carousel-image" style="background: #e8f5e9;">
+                        <div class="carousel-image" style="background: #e8f5e9; position: relative;">
                             <i data-lucide="anchor" size="32" color="#2e7d32"></i>
+                            <!-- Place for image if needed: <img src="..." class="card-bg-img"> -->
                         </div>
                         <div class="carousel-content">
                             <h3>Enraizamento</h3>
@@ -613,7 +907,7 @@
 
                     <!-- Card 2: Cleaning -->
                     <a href="theme.html#limpeza" class="carousel-card">
-                        <div class="carousel-image" style="background: #e3f2fd;">
+                        <div class="carousel-image" style="background: #e3f2fd; position: relative;">
                             <i data-lucide="droplets" size="32" color="#1565c0"></i>
                         </div>
                         <div class="carousel-content">
@@ -624,7 +918,7 @@
 
                     <!-- Card 3: Protection -->
                     <a href="theme.html#protecao" class="carousel-card">
-                        <div class="carousel-image" style="background: #f3e5f5;">
+                        <div class="carousel-image" style="background: #f3e5f5; position: relative;">
                             <i data-lucide="shield" size="32" color="#7b1fa2"></i>
                         </div>
                         <div class="carousel-content">
@@ -635,7 +929,7 @@
 
                     <!-- Card 4: Intuition -->
                     <a href="theme.html#intuicao" class="carousel-card">
-                        <div class="carousel-image" style="background: #fff3e0;">
+                        <div class="carousel-image" style="background: #fff3e0; position: relative;">
                             <i data-lucide="eye" size="32" color="#ef6c00"></i>
                         </div>
                         <div class="carousel-content">
@@ -646,7 +940,7 @@
 
                     <!-- Card 5: Chakras -->
                     <a href="theme.html#chakras" class="carousel-card">
-                        <div class="carousel-image" style="background: #e1bee7;">
+                        <div class="carousel-image" style="background: #e1bee7; position: relative;">
                             <i data-lucide="aperture" size="32" color="#8e24aa"></i>
                         </div>
                         <div class="carousel-content">
@@ -737,11 +1031,31 @@
 
             // 2. Setup Drag Events
             cards.forEach(card => {
-                card.addEventListener('dragstart', () => {
+                // Feature: Dynamic Draggable Toggle
+                // When mouse enters form elements, disable dragging on the card to allow text select.
+                const formElements = card.querySelectorAll('input, textarea, select, button, label, .editor-container');
+                formElements.forEach(el => {
+                    el.addEventListener('mouseenter', () => {
+                        card.setAttribute('draggable', 'false');
+                    });
+                    el.addEventListener('mouseleave', () => {
+                        card.setAttribute('draggable', 'true');
+                    });
+                    // Touch support
+                    el.addEventListener('touchstart', () => {
+                        card.setAttribute('draggable', 'false');
+                    }, { passive: true });
+                    el.addEventListener('touchend', () => {
+                        card.setAttribute('draggable', 'true');
+                    });
+                });
+
+                card.addEventListener('dragstart', (e) => {
                     card.classList.add('dragging');
                 });
 
                 card.addEventListener('dragend', () => {
+                    card.setAttribute('draggable', 'true'); // Reset just in case
                     card.classList.remove('dragging');
                     saveOrder();
                 });
@@ -797,6 +1111,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js"></script>
     <script src="init-firebase.js?v=2"></script>
 
     <!-- CMS Logic -->
@@ -817,7 +1132,58 @@
 
     <script>
         // Protect Route & Auth Logic
+        // Protect Route & Auth Logic
         const localUser = localStorage.getItem('userEmail');
+
+        // Helper: Check Status
+        // Helper: Check Status and Show Modal if needed
+        async function verifyUserStatus(email) {
+            if (!window.db) return true;
+            try {
+                const docSnap = await window.db.collection("users").doc(email).get();
+                if (docSnap.exists) {
+                    const data = docSnap.data();
+
+                    // If user is pending or blocked, SHOW MODAL
+                    if (data.status === 'pending' || data.status === 'blocked') {
+                        console.log("User status requires action:", data.status);
+
+                        // Show Modal
+                        const modal = document.getElementById('subscriptionModal');
+                        if (modal) {
+                            modal.classList.remove('hidden');
+                            modal.classList.add('flex'); // Ensure flex is added specifically
+                        }
+
+                        // Freeze background scrolling
+                        document.body.style.overflow = 'hidden';
+                        return false; // Stop further loading
+                    }
+                }
+            } catch (error) {
+                console.error("Status check failed", error);
+            }
+            return true;
+        }
+
+        async function logoutAndRedirect() {
+            if (window.auth) await auth.signOut();
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        // Modal Actions
+        function logoutFromModal() {
+            logoutAndRedirect();
+        }
+
+        // Modal Actions
+        function logoutFromModal() {
+            logoutAndRedirect();
+        }
+
+        // startSubscription is now global in script.js
+        // resetBtn is now global in script.js
 
         if (!localUser) {
             if (window.auth) {
@@ -825,15 +1191,18 @@
                     if (!user) {
                         window.location.href = 'login.html';
                     } else {
+                        // Check Status
+                        await verifyUserStatus(user.email);
+
                         localStorage.setItem('userEmail', user.email);
                         localStorage.setItem('isMember', 'true');
 
                         let finalName = user.displayName;
                         if (!finalName) {
                             try {
-                                const userDocRef = doc(db, "users", user.email);
-                                const userDocSnap = await getDoc(userDocRef);
-                                if (userDocSnap.exists()) finalName = userDocSnap.data().name;
+                                const userDocRef = window.db.collection("users").doc(user.email);
+                                const userDocSnap = await userDocRef.get();
+                                if (userDocSnap.exists) finalName = userDocSnap.data().name;
                             } catch (e) { }
                         }
                         if (!finalName) finalName = user.email.split('@')[0];
@@ -846,11 +1215,18 @@
                 window.location.href = 'login.html';
             }
         } else {
-            // Re-verify in background
+            // Already logged in locally, but verify status in background
             if (window.auth) {
                 auth.onAuthStateChanged(async (user) => {
-                    if (user && user.email !== localUser) {
-                        localStorage.setItem('userEmail', user.email);
+                    if (user) {
+                        if (user.email !== localUser) {
+                            localStorage.setItem('userEmail', user.email);
+                        }
+                        // Verify Status Background Check
+                        await verifyUserStatus(user.email);
+                    } else {
+                        // Session expired
+                        await logoutAndRedirect();
                     }
                 });
             }

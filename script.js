@@ -6,10 +6,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (navbar) {
         const updateNavbar = () => {
             if (window.scrollY > 50) {
-                navbar.style.background = '#e1d7ce'; // Beige Solid
+                // Scrolled state
+                navbar.style.background = 'var(--nav-bg)';
                 navbar.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
             } else {
-                navbar.style.background = '#e1d7ce'; // Beige Solid (Always Beige to support Green Text)
+                // Initial state
+                navbar.style.background = 'var(--nav-bg)';
                 navbar.style.boxShadow = 'none';
             }
         };
@@ -36,6 +38,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Close menu when clicking a link
         mobileLinks.forEach(link => {
             link.addEventListener('click', toggleMenu);
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', (e) => {
+            if (mobileMenu.classList.contains('active') &&
+                !mobileMenu.contains(e.target) &&
+                !menuToggle.contains(e.target)) {
+                toggleMenu();
+            }
         });
     }
 
@@ -428,13 +439,39 @@ document.addEventListener('DOMContentLoaded', () => {
                     const aboutImg = document.getElementById('home-about-image-display');
 
                     if (aboutTitle && data.home_about.title) aboutTitle.textContent = data.home_about.title;
-                    if (aboutText && data.home_about.text) aboutText.textContent = data.home_about.text;
+                    if (aboutText && data.home_about.text) aboutText.innerHTML = data.home_about.text;
 
                     if (aboutImg && data.home_about.image_url) {
                         aboutImg.innerHTML = `<img src="${data.home_about.image_url}" alt="Sobre Mim - Resumo">`;
                         // Ensure generic styles don't conflict
                         aboutImg.style.backgroundImage = 'none';
                     }
+                }
+
+                // Footer Content
+                if (data.footer) {
+                    const footerTitle = document.getElementById('footer-title');
+                    const footerCopyright = document.getElementById('footer-copyright');
+                    const footerCredit = document.getElementById('footer-credit');
+
+                    if (footerTitle && data.footer.title) footerTitle.innerHTML = data.footer.title;
+                    if (footerCopyright && data.footer.copyright) footerCopyright.innerHTML = data.footer.copyright;
+                    if (footerCredit && data.footer.dev_credit) footerCredit.innerHTML = data.footer.dev_credit;
+                }
+
+                // Contact Content
+                if (data.contact) {
+                    const contactTitle = document.getElementById('contact-title');
+                    const contactSubtitle = document.getElementById('contact-subtitle');
+                    const contactEmail = document.getElementById('contact-email');
+                    const contactPhone = document.getElementById('contact-phone');
+                    const contactInstagram = document.getElementById('contact-instagram');
+
+                    if (contactTitle && data.contact.title) contactTitle.innerHTML = data.contact.title;
+                    if (contactSubtitle && data.contact.subtitle) contactSubtitle.innerHTML = data.contact.subtitle;
+                    if (contactEmail && data.contact.email) contactEmail.innerHTML = data.contact.email;
+                    if (contactPhone && data.contact.phone) contactPhone.innerHTML = data.contact.phone;
+                    if (contactInstagram && data.contact.instagram) contactInstagram.innerHTML = data.contact.instagram;
                 }
             }
         } catch (error) {
@@ -460,5 +497,78 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = originalHtml + originalHtml + originalHtml + originalHtml;
     }
     setupDashboardLoop();
+
+    // --- GLOBAL: Subscription Logic ---
+    window.startSubscription = async function (redirectUrl) {
+        const btn = document.getElementById('subscribeBtn');
+        const loading = document.getElementById('subLoading'); // Optional loader el
+
+        if (btn) {
+            btn.disabled = true;
+            btn.style.opacity = "0.7";
+            if (btn.textContent) {
+                btn.setAttribute('data-original-text', btn.textContent);
+                btn.textContent = "A iniciar Stripe...";
+            }
+        }
+        if (loading) loading.style.display = 'block';
+
+        try {
+            if (!window.firebase) throw new Error("Firebase não inicializado.");
+
+            // 1. Get Session ID from Cloud Function
+            const createSession = window.firebase.functions().httpsCallable('createCheckoutSession');
+
+            // Production Price ID (Replace if changed)
+            const PRICE_ID = 'price_1SpXX63pFxyWJ0vQGfDPRFxi';
+
+            const result = await createSession({
+                priceId: PRICE_ID,
+                successUrl: redirectUrl || window.location.href,
+                cancelUrl: window.location.href
+            });
+
+            const sessionId = result.data.sessionId;
+
+            // 2. Redirect to Stripe Checkout
+            // Ensure Stripe.js is loaded in the page using this
+            const stripeKey = 'pk_test_51SpXAa3pFxyWJ0vQ6JTPbY9GRIR9rpjylMe79XCUlDpfouFC2EZ22od62flAKRp4aAOzXaDzb3uwTIhibl02h1uC00pE9oRNJE';
+            const stripe = Stripe(stripeKey);
+
+            const { error } = await stripe.redirectToCheckout({ sessionId });
+
+            if (error) {
+                alert(error.message);
+                if (btn) resetBtn(btn, loading);
+            }
+
+        } catch (error) {
+            console.error("Checkout failed:", error);
+            alert("Erro ao iniciar pagamento: " + error.message);
+            if (btn) resetBtn(btn, loading);
+        }
+    };
+
+    function resetBtn(btn, loading) {
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        const orig = btn.getAttribute('data-original-text');
+        if (orig) btn.textContent = orig;
+        if (loading) loading.style.display = 'none';
+    }
+
+    // --- GLOBAL: User Name Display ---
+    // Runs on every page to update header if logged in
+    const headerNameDisplay = document.getElementById('user-name-display');
+    const mobileNameDisplay = document.getElementById('mobile-user-name');
+
+    if (headerNameDisplay || mobileNameDisplay) {
+        const savedName = localStorage.getItem('userName');
+        if (savedName) {
+            const greeting = `Olá, ${savedName.split(' ')[0]}`;
+            if (headerNameDisplay) headerNameDisplay.textContent = greeting;
+            if (mobileNameDisplay) mobileNameDisplay.textContent = greeting;
+        }
+    }
 
 });

@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Floresce Terapias | Leitura de Aura e Espiritualidade</title>
 
+    <!-- Theme Loader (Must be first to avoid FOUC) -->
+    <script src="theme-loader.js"></script>
+
     <!-- Privacy / Construction Mode -->
     <meta name="robots" content="noindex, nofollow">
     <script src="access-control.js"></script>
@@ -107,13 +110,24 @@
 
     <!-- Mobile Menu Overlay -->
     <div class="mobile-menu">
-        <button class="close-menu"><i data-lucide="x"></i></button>
-        <a href="#home">Início</a>
-        <a href="#about">Sobre</a>
-        <a href="#services">Sessões</a>
-        <a href="#events">Eventos</a>
-        <li><a href="dashboard.html">Área de Membros</a></li>
-        <a href="#contact">Agendar</a>
+        <button class="close-menu" aria-label="Fechar Menu">
+            <i data-lucide="x"></i>
+        </button>
+        <span class="mobile-logo">Floresce</span>
+
+        <ul class="mobile-links-list">
+            <li><a href="index.html">Início</a></li>
+            <li><a href="index.html#about">Sobre</a></li>
+            <li><a href="index.html#services">Serviços</a></li>
+            <li><a href="index.html#events">Eventos</a></li>
+            <li><a href="booking.html">Agenda</a></li>
+            <li><a href="dashboard.html" style="color: var(--color-primary); font-weight: 600;">Área de Membros</a></li>
+        </ul>
+
+        <div class="mobile-socials">
+            <a href="https://instagram.com/floresceterapias" target="_blank"><i data-lucide="instagram"></i></a>
+            <a href="https://wa.me/351912345678" target="_blank"><i data-lucide="message-circle"></i></a>
+        </div>
     </div>
 
     <!-- Hero Section -->
@@ -125,7 +139,7 @@
             <p id="hero-subtitle-display" class="hero-subtitle fade-in-delay">Leitura de Aura, Eventos Espirituais e
                 Cura Interior.</p>
             <div class="hero-actions fade-in-delay-2">
-                <a id="hero-cta-display" href="#services" class="btn btn-primary">Descobrir Mais</a>
+                <a id="hero-cta-display" href="#services" class="btn btn-primary">Quero Marcar</a>
             </div>
         </div>
     </section>
@@ -209,12 +223,15 @@
         <div class="container">
             <div class="contact-layout">
                 <div class="contact-info">
-                    <h2 class="section-title">Vamos conversar?</h2>
-                    <p>Tens dúvidas ou queres agendar? Envia uma mensagem.</p>
+                    <h2 class="section-title" id="contact-title">Vamos conversar?</h2>
+                    <p id="contact-subtitle">Tens dúvidas ou queres agendar? Envia uma mensagem.</p>
                     <ul class="info-list">
-                        <li><i data-lucide="mail"></i> floresceterapias@hotmail.com</li>
-                        <li><i data-lucide="phone"></i> +351 913 515 406</li>
-                        <li><i data-lucide="instagram"></i> @floresceterapias</li>
+                        <li id="contact-email-container"><i data-lucide="mail"></i> <span
+                                id="contact-email">floresceterapias@hotmail.com</span></li>
+                        <li id="contact-phone-container"><i data-lucide="phone"></i> <span id="contact-phone">+351 913
+                                515 406</span></li>
+                        <li id="contact-instagram-container"><i data-lucide="instagram"></i> <span
+                                id="contact-instagram">@floresceterapias</span></li>
                     </ul>
                 </div>
                 <div class="contact-form-wrapper">
@@ -256,13 +273,14 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <p class="logo-text">Floresce Terapias</p>
+                <p class="logo-text" id="footer-title">Floresce Terapias</p>
                 <div class="footer-links">
-                    <a href="#">Privacidade</a>
-                    <a href="#">Termos</a>
+                    <a href="privacidade.html">Privacidade</a>
+                    <a href="termos.html">Termos</a>
                 </div>
-                <p class="copyright">&copy; 2026 Floresce Terapias. Todos os direitos reservados.</p>
-                <p class="developer-credit">CREATED IN PORTUGAL WITH ❤️ BY CALB</p>
+                <p class="copyright" id="footer-copyright">&copy; 2026 Floresce Terapias. Todos os direitos reservados.
+                </p>
+                <p class="developer-credit" id="footer-credit">CREATED IN PORTUGAL WITH ❤️ BY CALB</p>
             </div>
         </div>
     </footer>

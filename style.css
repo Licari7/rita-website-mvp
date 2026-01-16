@@ -17,7 +17,8 @@
     --color-secondary-beige: #e1d7ce;
     --color-secondary-blue: #7b8b99;
 
-    --color-accent-gold: #D4AF37;
+    /* Footer */
+    --color-footer-bg: #b16a4c;
 
     --font-serif: 'Cormorant Garamond', serif;
     --font-sans: 'Montserrat', sans-serif;
@@ -105,6 +106,11 @@ ul {
     box-shadow: var(--shadow-soft);
 }
 
+.footer {
+    background-color: var(--color-footer-bg);
+    color: var(--color-text-main);
+}
+
 .btn-outline {
     border-color: var(--color-text-main);
     color: var(--color-text-main);
@@ -120,9 +126,9 @@ ul {
 .cta-button {
     display: inline-block;
     padding: 10px 24px;
-    background-color: #6e664c;
+    background-color: var(--color-bg);
     /* Green */
-    color: #e1d7ce !important;
+    color: var(--color-text-main) !important;
     /* Beige Text */
     border-radius: 50px;
     font-weight: 600;
@@ -130,8 +136,9 @@ ul {
 }
 
 .cta-button:hover {
-    background-color: #5c5540;
+    background-color: var(--color-bg);
     /* Darker Green */
+    filter: brightness(0.9);
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
@@ -139,9 +146,9 @@ ul {
 .cta-button {
     display: inline-block;
     padding: 10px 24px;
-    background-color: #6e664c;
+    background-color: var(--color-bg);
     /* Green */
-    color: #e1d7ce !important;
+    color: var(--color-text-main) !important;
     /* Beige Text */
     border-radius: 50px;
     font-weight: 600;
@@ -149,7 +156,10 @@ ul {
 }
 
 .cta-button:hover {
-    background-color: #5c5540;
+    background-color: var(--color-bg);
+    /* Darker Green - technically should be a darker variant but using bg for now or primary dark */
+    /* Let's stick to variable to allow override. Actually old code was #5c5540 which is dark green */
+    filter: brightness(0.9);
     /* Darker Green */
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -166,9 +176,9 @@ ul {
     left: 0;
     width: 100%;
     padding: 20px 0;
-    background: #e1d7ce;
+    background: var(--nav-bg, #e1d7ce);
     /* Beige Background for Navbar */
-    color: #6e664c;
+    color: var(--color-bg);
     /* Green Text for Navbar Links */
     z-index: 1000;
     transition: 0.3s;
@@ -183,7 +193,7 @@ ul {
 
 .logo {
     font-size: 2rem;
-    color: #6e664c;
+    color: var(--color-bg);
     /* Green Logo */
 }
 
@@ -282,9 +292,7 @@ ul {
     width: 100%;
     height: 100%;
     background: var(--color-bg);
-    /* Solid Green */
-    /* Optional: Very subtle gradient/overlay if needed for depth, but user asked for less. */
-    background: linear-gradient(to bottom, #6e664c, #655d45);
+    /* Solid Color from Theme */
     z-index: -1;
 }
 
@@ -558,7 +566,7 @@ ul {
     border-radius: var(--radius-md);
     min-width: 70px;
     height: 80px;
-    color: #e1d7ce;
+    color: var(--color-text-main);
     /* Beige Text */
 }
 
@@ -1776,14 +1784,14 @@ body.dashboard-body {
 
 /* Navbar & Footer (Matching Green) -> Footer Only now */
 .footer {
-    background-color: #6e664c;
+    background-color: var(--color-footer-bg);
     /* Verde Seco */
-    color: #e1d7ce;
+    color: var(--color-text-main);
     /* Beige Text */
 }
 
 .navbar.scrolled {
-    background-color: #e1d7ce;
+    background-color: var(--color-secondary-beige);
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 

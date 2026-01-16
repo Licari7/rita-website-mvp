@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tema | Floresce Terapias</title>
+    <script src="theme-loader.js"></script>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link
@@ -112,11 +113,40 @@
             <div class="brand-container">
                 <a href="dashboard.html" class="logo">Floresce Terapias</a>
             </div>
+
+            <!-- Full Nav Links (Desktop) -->
             <ul class="nav-links">
+                <li><a href="index.html">Início</a></li>
                 <li><a href="dashboard.html">Voltar à Área de Membros</a></li>
             </ul>
+
+            <button class="menu-toggle" aria-label="Abrir menu">
+                <i data-lucide="menu"></i>
+            </button>
         </div>
     </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu">
+        <button class="close-menu" aria-label="Fechar Menu">
+            <i data-lucide="x"></i>
+        </button>
+        <span class="mobile-logo">Floresce</span>
+
+        <ul class="mobile-links-list">
+            <li><a href="index.html">Início</a></li>
+            <li><a href="index.html#about">Sobre</a></li>
+            <li><a href="index.html#services">Serviços</a></li>
+            <li><a href="index.html#events">Eventos</a></li>
+            <li><a href="booking.html">Agenda</a></li>
+            <li><a href="dashboard.html" style="color: var(--color-primary); font-weight: 600;">Área de Membros</a></li>
+        </ul>
+
+        <div class="mobile-socials">
+            <a href="https://instagram.com/floresceterapias" target="_blank"><i data-lucide="instagram"></i></a>
+            <a href="https://wa.me/351912345678" target="_blank"><i data-lucide="message-circle"></i></a>
+        </div>
+    </div>
 
     <header class="theme-header">
         <h1 class="section-title" id="theme-title">A carregar...</h1>
@@ -301,15 +331,22 @@
 
                     const iconName = data.type === 'video' ? 'video' : 'music';
 
+                    // Image HTML
+                    let imageHtml = '';
+                    if (data.image_url) {
+                        imageHtml = `<div style="margin-bottom:15px; border-radius:8px; overflow:hidden;"><img src="${data.image_url}" style="width:100%; max-height:300px; object-fit:cover;"></div>`;
+                    }
+
                     html += `
                     <div class="meditation-item">
                         <div class="med-header">
                             <div class="med-icon-wrapper"><i data-lucide="${iconName}"></i></div>
                             <div class="med-info">
                                 <h3>${data.title}</h3>
-                                ${data.description ? `<p>${data.description}</p>` : ''}
+                                ${data.description ? `<div style="color:#666; font-size:0.95rem;">${data.description}</div>` : ''}
                             </div>
                         </div>
+                        ${imageHtml}
                         ${playerHtml}
                     </div>`;
                 });
@@ -337,6 +374,7 @@
         }
     </script>
     </script>
+    <script src="script.js"></script>
     <footer class="footer" style="margin-top: 60px;">
         <div class="container text-center">
             <p class="copyright">&copy; 2026 Floresce Terapias. Todos os direitos reservados.</p>

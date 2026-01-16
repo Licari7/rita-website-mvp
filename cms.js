@@ -2,11 +2,12 @@
 
 // Admin Emails
 const ADMIN_EMAILS = [
-    "floresceterapias@hotmail.com",
+    "floresceterapias@gmail.com",
     "barata.rita@outlook.com",
     "carlos.barata@example.com"
 ];
 
+// Helper: Convert File to Base64 (No Compression)
 // Helper: Convert File to Base64 (No Compression)
 const fileToBase64 = (file) => {
     return new Promise((resolve, reject) => {
@@ -114,6 +115,22 @@ window.initCMS = function () {
     if (seedBtn) {
         seedBtn.addEventListener('click', window.seedDefaultServices);
     }
+
+    // Auto-Init TinyMCE on Accordion Open
+    const details = document.querySelectorAll('details.admin-card');
+    details.forEach(detail => {
+        detail.addEventListener('toggle', (e) => {
+            if (detail.open) {
+                const textareas = detail.querySelectorAll('textarea');
+                textareas.forEach(ta => {
+                    // ID white-list to avoid unwanted inits
+                    if (['evt-desc', 'home-about-text-input', 'med-desc', 'rev-text', 'svc-desc', 'about-text'].includes(ta.id)) {
+                        initTinyMCE(ta.value, ta.id);
+                    }
+                });
+            }
+        });
+    });
 };
 
 // Global Tab Switching Logic to Fix TinyMCE hidden init issues
@@ -173,7 +190,8 @@ async function handleEventSubmit(e) {
         const date = document.getElementById('evt-date').value;
         const time = document.getElementById('evt-time').value;
         const location = document.getElementById('evt-location').value;
-        const description = document.getElementById('evt-desc').value;
+        // Get Content from TinyMCE if active
+        const description = (window.tinymce && tinymce.get('evt-desc')) ? tinymce.get('evt-desc').getContent() : document.getElementById('evt-desc').value;
         const link = document.getElementById('evt-link').value;
         const fileInput = document.getElementById('evt-image');
 
@@ -271,6 +289,7 @@ window.editEvent = function (id) {
     document.getElementById('evt-time').value = data.time || '';
     document.getElementById('evt-location').value = data.location || '';
     document.getElementById('evt-desc').value = data.description || '';
+    if (window.tinymce && tinymce.get('evt-desc')) tinymce.get('evt-desc').setContent(data.description || '');
     document.getElementById('evt-link').value = data.registration_link || '';
 
     // Update Button Text
@@ -328,7 +347,7 @@ async function handleReviewSubmit(e) {
         const id = idInput.value;
         const name = document.getElementById('rev-name').value;
         const role = document.getElementById('rev-role').value;
-        const text = document.getElementById('rev-text').value;
+        const text = (window.tinymce && tinymce.get('rev-text')) ? tinymce.get('rev-text').getContent() : document.getElementById('rev-text').value;
 
         const reviewData = {
             name,
@@ -427,6 +446,7 @@ window.editReview = (id) => {
     document.getElementById('rev-name').value = data.name;
     document.getElementById('rev-role').value = data.role || "";
     document.getElementById('rev-text').value = data.text;
+    if (window.tinymce && tinymce.get('rev-text')) tinymce.get('rev-text').setContent(data.text || '');
 
     // UI Feedback
     const btn = document.querySelector('#review-form button[type="submit"]');
@@ -503,7 +523,7 @@ async function handleServiceSubmit(e) {
     try {
         const id = document.getElementById('svc-id').value; // Check for ID
         const title = document.getElementById('svc-title').value;
-        const description = document.getElementById('svc-desc').value;
+        const description = (window.tinymce && tinymce.get('svc-desc')) ? tinymce.get('svc-desc').getContent() : document.getElementById('svc-desc').value;
         const link = document.getElementById('svc-link').value;
 
         // Get content from TinyMCE
@@ -620,7 +640,10 @@ window.editService = async (id) => {
         // Populate Form
         document.getElementById('svc-id').value = id;
         document.getElementById('svc-title').value = data.title;
+        document.getElementById('svc-title').value = data.title;
         document.getElementById('svc-desc').value = data.description;
+        if (window.tinymce && tinymce.get('svc-desc')) tinymce.get('svc-desc').setContent(data.description || '');
+        document.getElementById('svc-link').value = data.link;
         document.getElementById('svc-link').value = data.link;
 
         // Populate TinyMCE (Nuclear Re-init)
@@ -777,7 +800,15 @@ async function handleMeditationSubmit(e) {
             }
         }
 
-        const desc = document.getElementById('med-desc').value;
+        // Image Processing
+        let imageUrl = document.getElementById('med-image-url').value;
+        const imageFile = document.getElementById('med-image').files[0];
+        if (imageFile) {
+            btn.innerText = "A processar imagem...";
+            imageUrl = await fileToBase64(imageFile);
+        }
+
+        const desc = (window.tinymce && tinymce.get('med-desc')) ? tinymce.get('med-desc').getContent() : document.getElementById('med-desc').value;
 
         const data = {
             title,
@@ -785,6 +816,7 @@ async function handleMeditationSubmit(e) {
             type, // audio, video
             url,
             description: desc,
+            image_url: imageUrl,
             active: true,
             created_at: new Date().toISOString()
         };
@@ -914,8 +946,12 @@ window.editMeditation = (id) => {
     document.getElementById('med-title').value = data.title;
     document.getElementById('med-theme').value = data.theme;
     document.getElementById('med-type').value = data.type;
+    document.getElementById('med-type').value = data.type;
     document.getElementById('med-url').value = data.url;
     document.getElementById('med-desc').value = data.description || '';
+    if (window.tinymce && tinymce.get('med-desc')) tinymce.get('med-desc').setContent(data.description || '');
+    document.getElementById('med-image-url').value = data.image_url || '';
+    document.getElementById('med-image').value = ''; // Reset file input
 
     document.getElementById('med-submit-btn').innerText = "Atualizar Recurso";
     document.getElementById('med-cancel-btn').style.display = "inline-block";
@@ -929,6 +965,7 @@ window.resetMeditationForm = () => {
     const form = document.getElementById('meditation-form');
     if (form) form.reset();
     document.getElementById('med-id').value = "";
+    document.getElementById('med-image-url').value = "";
     document.getElementById('med-submit-btn').innerText = "Publicar Recurso";
     document.getElementById('med-cancel-btn').style.display = "none";
 };
@@ -966,6 +1003,22 @@ async function loadSiteContent() {
                 if (document.getElementById('home-about-title-input')) document.getElementById('home-about-title-input').value = data.home_about.title || '';
                 if (document.getElementById('home-about-text-input')) document.getElementById('home-about-text-input').value = data.home_about.text || '';
                 if (document.getElementById('home-about-image-url')) document.getElementById('home-about-image-url').value = data.home_about.image_url || '';
+            }
+
+            // Populate Footer Form
+            if (data.footer) {
+                if (document.getElementById('footer-title-input')) document.getElementById('footer-title-input').value = data.footer.title || '';
+                if (document.getElementById('footer-copyright-input')) document.getElementById('footer-copyright-input').value = data.footer.copyright || '';
+                if (document.getElementById('footer-dev-input')) document.getElementById('footer-dev-input').value = data.footer.dev_credit || '';
+            }
+
+            // Populate Contact Form
+            if (data.contact) {
+                if (document.getElementById('contact-title-input')) document.getElementById('contact-title-input').value = data.contact.title || '';
+                if (document.getElementById('contact-subtitle-input')) document.getElementById('contact-subtitle-input').value = data.contact.subtitle || '';
+                if (document.getElementById('contact-email-input')) document.getElementById('contact-email-input').value = data.contact.email || '';
+                if (document.getElementById('contact-phone-input')) document.getElementById('contact-phone-input').value = data.contact.phone || '';
+                if (document.getElementById('contact-instagram-input')) document.getElementById('contact-instagram-input').value = data.contact.instagram || '';
             }
         }
     } catch (error) {
@@ -1085,7 +1138,7 @@ async function handleHomeAboutSubmit(e) {
         const data = {
             home_about: {
                 title: document.getElementById('home-about-title-input').value,
-                text: document.getElementById('home-about-text-input').value,
+                text: (window.tinymce && tinymce.get('home-about-text-input')) ? tinymce.get('home-about-text-input').getContent() : document.getElementById('home-about-text-input').value,
                 image_url: imageUrl
             }
         };
@@ -1102,6 +1155,249 @@ async function handleHomeAboutSubmit(e) {
     }
 }
 
+window.handleFooterSubmit = async () => {
+    const btn = document.querySelector('#footer-form button');
+    const originalText = btn ? btn.textContent : 'Guardar';
+    if (btn) btn.textContent = "A guardar...";
+
+    const title = document.getElementById('footer-title-input').value;
+    const copyright = document.getElementById('footer-copyright-input').value;
+    const devCredit = document.getElementById('footer-dev-input').value;
+
+    try {
+        await window.db.collection('site_content').doc('main').set({
+            footer: {
+                title: title,
+                copyright: copyright,
+                dev_credit: devCredit
+            }
+        }, { merge: true });
+
+        alert("Rodapé atualizado com sucesso!");
+    } catch (error) {
+        console.error("Error saving Footer content:", error);
+        alert("Erro ao guardar rodapé.");
+    } finally {
+        if (btn) btn.textContent = originalText;
+    }
+};
+
+window.handleContactSubmit = async () => {
+    const btn = document.querySelector('#contact-form button');
+    const originalText = btn ? btn.textContent : 'Guardar';
+    if (btn) btn.textContent = "A guardar...";
+
+    const title = document.getElementById('contact-title-input').value;
+    const subtitle = document.getElementById('contact-subtitle-input').value;
+    const email = document.getElementById('contact-email-input').value;
+    const phone = document.getElementById('contact-phone-input').value;
+    const instagram = document.getElementById('contact-instagram-input').value;
+
+    try {
+        await window.db.collection('site_content').doc('main').set({
+            contact: {
+                title: title,
+                subtitle: subtitle,
+                email: email,
+                phone: phone,
+                instagram: instagram
+            }
+        }, { merge: true });
+
+        alert("Contactos atualizados com sucesso!");
+    } catch (error) {
+        console.error("Error saving Contact content:", error);
+        alert("Erro ao guardar contactos.");
+    } finally {
+        if (btn) btn.textContent = originalText;
+    }
+};
+
+// --- Theme Management ---
+// Default Values (Must match style.css :root)
+const DEFAULT_THEME = {
+    bg_color: '#6e664c',
+    text_color: '#e1d7ce',
+    primary_color: '#b16a4c',
+    header_bg: '#e1d7ce',
+    secondary_beige: '#e1d7ce',
+    secondary_blue: '#7b8b99',
+    footer_bg: '#b16a4c'
+};
+
+async function loadThemeSettings() {
+    try {
+        const doc = await window.db.collection('site_content').doc('main').get();
+        if (doc.exists) {
+            const data = doc.data().theme || {};
+
+            // Set inputs to saved values or defaults
+            if (document.getElementById('theme-bg')) document.getElementById('theme-bg').value = data.bg_color || DEFAULT_THEME.bg_color;
+            if (document.getElementById('theme-text')) document.getElementById('theme-text').value = data.text_color || DEFAULT_THEME.text_color;
+            if (document.getElementById('theme-primary')) document.getElementById('theme-primary').value = data.primary_color || DEFAULT_THEME.primary_color;
+            if (document.getElementById('theme-header')) document.getElementById('theme-header').value = data.header_bg || DEFAULT_THEME.header_bg;
+            if (document.getElementById('theme-secondary-1')) document.getElementById('theme-secondary-1').value = data.secondary_beige || DEFAULT_THEME.secondary_beige;
+            if (document.getElementById('theme-secondary-2')) document.getElementById('theme-secondary-2').value = data.secondary_blue || DEFAULT_THEME.secondary_blue;
+            if (document.getElementById('theme-footer')) document.getElementById('theme-footer').value = data.footer_bg || DEFAULT_THEME.footer_bg;
+
+            // Update HEX inputs
+            updateHexInputs();
+
+            // Update Local Storage immediately for consistency
+            if (doc.data().theme) {
+                localStorage.setItem('site_theme', JSON.stringify(data));
+                applyTheme(data);
+            }
+        }
+    } catch (error) {
+        console.error("Error loading theme:", error);
+    }
+}
+
+function updateHexInputs() {
+    if (document.getElementById('theme-bg')) document.getElementById('theme-bg-hex').value = document.getElementById('theme-bg').value;
+    if (document.getElementById('theme-text')) document.getElementById('theme-text-hex').value = document.getElementById('theme-text').value;
+    if (document.getElementById('theme-primary')) document.getElementById('theme-primary-hex').value = document.getElementById('theme-primary').value;
+    if (document.getElementById('theme-header')) document.getElementById('theme-header-hex').value = document.getElementById('theme-header').value;
+    if (document.getElementById('theme-secondary-1')) document.getElementById('theme-secondary-1-hex').value = document.getElementById('theme-secondary-1').value;
+    if (document.getElementById('theme-secondary-2')) document.getElementById('theme-secondary-2-hex').value = document.getElementById('theme-secondary-2').value;
+    if (document.getElementById('theme-footer')) document.getElementById('theme-footer-hex').value = document.getElementById('theme-footer').value;
+}
+
+function setupHexListeners() {
+    const pairs = [
+        { color: 'theme-bg', hex: 'theme-bg-hex' },
+        { color: 'theme-text', hex: 'theme-text-hex' },
+        { color: 'theme-primary', hex: 'theme-primary-hex' },
+        { color: 'theme-header', hex: 'theme-header-hex' },
+        { color: 'theme-secondary-1', hex: 'theme-secondary-1-hex' },
+        { color: 'theme-secondary-2', hex: 'theme-secondary-2-hex' },
+        { color: 'theme-footer', hex: 'theme-footer-hex' }
+    ];
+
+    pairs.forEach(pair => {
+        const colorInput = document.getElementById(pair.color);
+        const hexInput = document.getElementById(pair.hex);
+
+        if (colorInput && hexInput) {
+            // Color picker changes -> Update Hex
+            colorInput.addEventListener('input', (e) => {
+                hexInput.value = e.target.value.toUpperCase();
+            });
+
+            // Hex input changes -> Update Color picker (if valid)
+            hexInput.addEventListener('input', (e) => {
+                let val = e.target.value;
+                if (!val.startsWith('#')) {
+                    val = '#' + val;
+                }
+                // Validate Hex
+                if (/^#[0-9A-F]{6}$/i.test(val)) {
+                    colorInput.value = val;
+                }
+            });
+
+            // On blur, format nicely
+            hexInput.addEventListener('blur', (e) => {
+                let val = e.target.value;
+                if (!val.startsWith('#')) val = '#' + val;
+                if (/^#[0-9A-F]{6}$/i.test(val)) {
+                    e.target.value = val.toUpperCase();
+                    colorInput.value = val;
+                } else {
+                    // Revert to picker value if invalid
+                    e.target.value = colorInput.value.toUpperCase();
+                }
+            });
+        }
+    });
+}
+
+function applyTheme(colors) {
+    const root = document.documentElement;
+    if (colors.bg_color) root.style.setProperty('--color-bg', colors.bg_color);
+    if (colors.text_color) root.style.setProperty('--color-text-main', colors.text_color);
+    if (colors.primary_color) root.style.setProperty('--color-primary', colors.primary_color);
+    if (colors.header_bg) root.style.setProperty('--nav-bg', colors.header_bg);
+    if (colors.secondary_beige) root.style.setProperty('--color-secondary-beige', colors.secondary_beige);
+    if (colors.secondary_blue) root.style.setProperty('--color-secondary-blue', colors.secondary_blue);
+    if (colors.footer_bg) root.style.setProperty('--color-footer-bg', colors.footer_bg);
+}
+
+async function handleThemeSubmit(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const btn = document.getElementById('theme-save-btn');
+    if (!btn) return;
+    const originalText = btn.textContent;
+    btn.textContent = "A guardar...";
+
+    try {
+        const newTheme = {
+            bg_color: document.getElementById('theme-bg').value,
+            text_color: document.getElementById('theme-text').value,
+            primary_color: document.getElementById('theme-primary').value,
+            header_bg: document.getElementById('theme-header').value,
+            secondary_beige: document.getElementById('theme-secondary-1').value,
+            secondary_blue: document.getElementById('theme-secondary-2').value,
+            footer_bg: document.getElementById('theme-footer').value
+        };
+
+        // 1. Save to Cloud
+        await window.db.collection('site_content').doc('main').set({
+            theme: newTheme
+        }, { merge: true });
+
+        // 2. Update Local Storage (Instant Load for next time)
+        localStorage.setItem('site_theme', JSON.stringify(newTheme));
+
+        // 3. Apply now
+        applyTheme(newTheme);
+
+        alert("Tema atualizado com sucesso!");
+
+    } catch (error) {
+        console.error("Error saving theme:", error);
+        alert("Erro ao guardar tema.");
+    } finally {
+        btn.textContent = originalText;
+    }
+}
+
+async function resetThemeSettings() {
+    if (!confirm("Tem a certeza? Isto irá restaurar as cores originais do site.")) return;
+
+    try {
+        // 1. Save Defaults to Cloud
+        await window.db.collection('site_content').doc('main').set({
+            theme: DEFAULT_THEME
+        }, { merge: true });
+
+        // 2. Clear Local Storage
+        localStorage.removeItem('site_theme');
+        // Or set to defaults: localStorage.setItem('site_theme', JSON.stringify(DEFAULT_THEME));
+
+        // 3. Reset UI inputs
+        document.getElementById('theme-bg').value = DEFAULT_THEME.bg_color;
+        document.getElementById('theme-text').value = DEFAULT_THEME.text_color;
+        document.getElementById('theme-primary').value = DEFAULT_THEME.primary_color;
+        document.getElementById('theme-header').value = DEFAULT_THEME.header_bg;
+        document.getElementById('theme-secondary-1').value = DEFAULT_THEME.secondary_beige;
+        document.getElementById('theme-secondary-2').value = DEFAULT_THEME.secondary_blue;
+        document.getElementById('theme-footer').value = DEFAULT_THEME.footer_bg;
+
+        updateHexInputs(); // Update the text inputs too
+
+        // 4. Apply Defaults
+        applyTheme(DEFAULT_THEME);
+
+        alert("Cores originais restauradas!");
+
+    } catch (error) {
+        console.error("Error resetting theme:", error);
+        alert("Erro ao restaurar.");
+    }
+}
+
 // Attach listeners
 document.addEventListener('DOMContentLoaded', () => {
     // ... existing existing listeners logic if any ...
@@ -1114,5 +1410,124 @@ document.addEventListener('DOMContentLoaded', () => {
     const homeAboutForm = document.getElementById('home-about-form');
     if (homeAboutForm) homeAboutForm.addEventListener('submit', handleHomeAboutSubmit);
 
+    // Theme Listeners
+    const themeForm = document.getElementById('theme-form');
+    if (themeForm) themeForm.addEventListener('submit', handleThemeSubmit);
+
+    const themeResetBtn = document.getElementById('theme-reset-btn');
+    if (themeResetBtn) themeResetBtn.addEventListener('click', resetThemeSettings);
+
     loadSiteContent();
+    loadThemeSettings(); // Load Theme Settings
+    setupHexListeners(); // Initialize Hex Sync
 });
+// --- Member Management Logic ---
+
+window.membersCache = {};
+
+window.loadMembers = async function () {
+    const listContainer = document.getElementById('admin-members-list');
+    if (!listContainer) return;
+    listContainer.innerHTML = '<p>A carregar membros...</p>';
+
+    try {
+        const querySnapshot = await window.db.collection("users").orderBy("createdAt", "desc").get();
+
+        if (querySnapshot.empty) {
+            listContainer.innerHTML = '<p>Sem membros registados.</p>';
+            return;
+        }
+
+        // Table Header
+        let html = `
+        <table style="width:100%; border-collapse: collapse; font-size:12px;">
+            <thead>
+                <tr style="text-align:left; border-bottom:2px solid #eee;">
+                    <th style="padding:8px;">Membro</th>
+                    <th style="padding:8px;">Status</th>
+                    <th style="padding:8px;">Último Login</th>
+                    <th style="padding:8px; text-align:right;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+        `;
+
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            window.membersCache[doc.id] = data;
+
+            let statusColor = '#666';
+            if (data.status === 'active') statusColor = 'green';
+            if (data.status === 'pending') statusColor = 'orange';
+            if (data.status === 'blocked') statusColor = 'red';
+
+            const statusLabel = {
+                'active': 'Ativo',
+                'pending': 'Pendente',
+                'blocked': 'Bloqueado'
+            }[data.status] || data.status;
+
+            const lastLoginDate = data.lastLogin && data.lastLogin.toDate ? new Date(data.lastLogin.toDate()).toLocaleDateString() : 'N/A';
+            const lastPaymentDate = data.lastPaymentDate && data.lastPaymentDate.toDate ? new Date(data.lastPaymentDate.toDate()).toLocaleDateString() : null;
+
+            html += `
+                <tr style="border-bottom:1px solid #eee;">
+                    <td style="padding:8px;">
+                        <strong>${data.name || 'Sem nome'}</strong><br>
+                        <span style="color:#888;">${data.email}</span>
+                        ${lastPaymentDate ? `<div style="font-size:10px; color:green;">Pagou: ${lastPaymentDate}</div>` : ''}
+                    </td>
+                    <td style="padding:8px;">
+                        <span style="color:${statusColor}; font-weight:600;">● ${statusLabel}</span>
+                    </td>
+                    <td style="padding:8px; color:#666;">
+                        ${lastLoginDate}
+                    </td>
+                    <td style="padding:8px; text-align:right;">
+                         <div style="display:flex; gap:5px; justify-content:flex-end;">
+                            ${data.status !== 'active' ? `<button class="btn-outline" style="color:green; border-color:#d4edda; background:#f0fff4; padding:2px 6px; font-size:11px;" onclick="window.approveMember('${doc.id}')">Aprovar</button>` : ''}
+                            ${data.status !== 'blocked' ? `<button class="btn-outline" style="color:red; border-color:#f8d7da; background:#fff5f5; padding:2px 6px; font-size:11px;" onclick="window.blockMember('${doc.id}')">Bloquear</button>` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+        html += '</tbody></table>';
+        listContainer.innerHTML = html;
+
+    } catch (error) {
+        console.error("Error loading members:", error);
+        listContainer.innerHTML = '<p style="color:red">Erro ao carregar membros.</p>';
+    }
+};
+
+window.approveMember = async function (email) {
+    if (!confirm(`Tem a certeza que quer APROVAR ${email} manualmente? (Isto dá acesso sem pagamento)`)) return;
+
+    try {
+        await window.db.collection("users").doc(email).update({
+            status: 'active',
+            manualApproval: true,
+            updatedAt: new Date()
+        });
+        alert("Membro aprovado com sucesso! ✅");
+        window.loadMembers();
+    } catch (error) {
+        alert("Erro: " + error.message);
+    }
+};
+
+window.blockMember = async function (email) {
+    if (!confirm(`Tem a certeza que quer BLOQUEAR o acesso de ${email}?`)) return;
+
+    try {
+        await window.db.collection("users").doc(email).update({
+            status: 'blocked',
+            updatedAt: new Date()
+        });
+        alert("Membro bloqueado. ⛔");
+        window.loadMembers();
+    } catch (error) {
+        alert("Erro: " + error.message);
+    }
+};

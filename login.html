@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | Floresce Terapias</title>
+    <script src="theme-loader.js"></script>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,9 +13,31 @@
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap"
         rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://js.stripe.com/v3/"></script>
 </head>
 
 <body class="auth-page">
+
+    <div class="mobile-menu">
+        <button class="close-menu" aria-label="Fechar Menu">
+            <i data-lucide="x"></i>
+        </button>
+        <span class="mobile-logo">Floresce</span>
+
+        <ul class="mobile-links-list">
+            <li><a href="index.html">Início</a></li>
+            <li><a href="index.html#about">Sobre</a></li>
+            <li><a href="index.html#services">Serviços</a></li>
+            <li><a href="index.html#events">Eventos</a></li>
+            <li><a href="booking.html">Agenda</a></li>
+            <li><a href="dashboard.html" style="color: var(--color-primary); font-weight: 600;">Área de Membros</a></li>
+        </ul>
+
+        <div class="mobile-socials">
+            <a href="https://instagram.com/floresceterapias" target="_blank"><i data-lucide="instagram"></i></a>
+            <a href="https://wa.me/351912345678" target="_blank"><i data-lucide="message-circle"></i></a>
+        </div>
+    </div>
 
     <div class="auth-container">
         <a href="index.html" class="back-link">&larr; Voltar ao site</a>
@@ -119,10 +142,6 @@
                 });
             }
 
-            // Better Toggle Implementation to avoid Event Listener issues
-            // I'll replace the *entire* DOMContentLoaded block with a cleaner version in next step if I can't do it here.
-            // But let's try to make it work here.
-
             // Login/Signup Action
             if (loginBtn) {
                 loginBtn.addEventListener('click', async () => {
@@ -141,63 +160,170 @@
                     }
 
                     const originalText = loginBtn.textContent;
-                    loginBtn.textContent = isSignupMode ? "A Registar..." : "A entrar...";
+                    loginBtn.textContent = "A processar...";
                     loginBtn.disabled = true;
 
                     // Ensure auth is ready
                     await ensureAuth();
 
                     try {
-                        let userCredential;
+                        const db = window.db; // helper
 
                         if (isSignupMode) {
-                            // --- REGISTRATION ---
-                            userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
+                            // --- INTELLIGENT REGISTRATION ---
+
+                            // 1. Check if user already exists in DB (even if Auth is missing/messy)
+                            let existingStatus = null;
+                            if (db) {
+                                const docCheck = await db.collection("users").doc(email).get();
+                                if (docCheck.exists) {
+                                    existingStatus = docCheck.data().status;
+                                }
+                            }
+
+                            if (existingStatus === 'active') {
+                                alert("Já existe uma conta ativa com este email! Por favor faz Login.");
+                                loginBtn.textContent = originalText;
+                                loginBtn.disabled = false;
+                                document.getElementById('toggleLoginBtn').click(); // Switch to login
+                                return;
+                            } else if (existingStatus === 'pending' || existingStatus === 'inactive') {
+                                // User exists but needs to pay
+                                if (confirm("Já tens conta criada, mas a subscrição não está ativa. Queres reativar agora?")) {
+                                    // TRIGGER STRIPE
+                                    // Use 'startSubscription' from script.js, but we need to ensure we are logged in first? 
+                                    // Actually, createCheckoutSession requires Auth.
+                                    // So we must log them in.
+                                    try {
+                                        await window.auth.signInWithEmailAndPassword(email, password);
+                                        await window.startSubscription('dashboard.html');
+                                        return; // Redirecting...
+                                    } catch (e) {
+                                        alert("Por favor faz login com a tua password para reativar.");
+                                        document.getElementById('toggleLoginBtn').click();
+                                        return;
+                                    }
+                                }
+                                loginBtn.textContent = originalText;
+                                loginBtn.disabled = false;
+                                return;
+                            }
+
+                            // 2. Create New User
+                            let userCredential;
+                            try {
+                                userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
+                            } catch (err) {
+                                if (err.code === 'auth/email-already-in-use') {
+                                    alert("Este email já está registado. Tente fazer Login.");
+                                    document.getElementById('toggleLoginBtn').click();
+                                    loginBtn.textContent = originalText;
+                                    loginBtn.disabled = false;
+                                    return;
+                                }
+                                throw err;
+                            }
+
                             const user = userCredential.user;
 
-                            // Save Name to Firestore
+                            // 3. Save User to Firestore with 'pending' status
                             try {
-                                if (window.db) {
-                                    await window.db.collection("users").doc(email).set({
+                                if (db) {
+                                    await db.collection("users").doc(email).set({
+                                        uid: user.uid,
                                         name: name,
                                         email: email,
-                                        createdAt: new Date()
+                                        status: 'pending', // Default status
+                                        createdAt: new Date(),
+                                        lastLogin: new Date()
                                     });
                                 }
-                                // Also update Auth Profile for faster access
+                                // Update Auth Profile
                                 if (user.updateProfile) {
                                     await user.updateProfile({ displayName: name });
                                 }
+
+                                // 4. IMMEDIATE REDIRECT TO PAYMENT
+                                if (confirm("Conta criada! Vamos ativar a tua subscrição?")) {
+                                    await window.startSubscription('dashboard.html');
+                                } else {
+                                    alert("Podes ativar a subscrição mais tarde fazendo login.");
+                                    window.location.reload();
+                                }
+
                             } catch (error) {
                                 console.error("Error saving profile:", error);
+                                alert("Erro ao guardar perfil. Contacte o suporte.");
                             }
 
                         } else {
                             // --- LOGIN ---
-                            userCredential = await window.auth.signInWithEmailAndPassword(email, password);
+                            const userCredential = await window.auth.signInWithEmailAndPassword(email, password);
+                            const user = userCredential.user;
+
+                            // 1. Check Status in Firestore
+                            let userNameFromDb = '';
+                            if (window.db) {
+                                const docSnap = await window.db.collection("users").doc(user.email).get();
+
+                                if (docSnap.exists) {
+                                    const userData = docSnap.data();
+                                    userNameFromDb = userData.name;
+
+                                    if (userData.status === 'pending' || userData.status === 'inactive') {
+                                        // Show Payment Option
+                                        if (confirm("A tua conta está pendente/inativa. Queres ativar a subscrição agora?")) {
+                                            await window.startSubscription('dashboard.html');
+                                            return;
+                                        }
+                                        // Allow login but they won't force logout here, 
+                                        // dashboard.html handles the lock if they proceed without paying.
+                                        // But maybe we should block here? dashboard.html has the modal.
+                                        // Let's rely on dashboard.html modal.
+                                    }
+
+                                    if (userData.status === 'blocked') {
+                                        alert("Esta conta foi suspensa. Contacta a administração.");
+                                        await window.auth.signOut();
+                                        loginBtn.textContent = originalText;
+                                        loginBtn.disabled = false;
+                                        return;
+                                    }
+
+                                    // If active, update last login
+                                    window.db.collection("users").doc(user.email).update({
+                                        lastLogin: new Date()
+                                    }).catch(e => console.log("Erro a atualizar lastLogin", e));
+                                } else {
+                                    // Legacy/Sync Issue
+                                    try {
+                                        await window.db.collection("users").doc(user.email).set({
+                                            uid: user.uid,
+                                            name: user.displayName || name || 'Membro',
+                                            email: user.email,
+                                            status: 'active', // Assume legacy users are active? Or pending? Safer pending.
+                                            createdAt: new Date(),
+                                            lastLogin: new Date()
+                                        });
+                                    } catch (e) { }
+                                }
+                            }
+
+                            // Success Handling
+                            localStorage.setItem('userEmail', user.email);
+                            localStorage.setItem('isMember', 'true');
+                            const finalName = user.displayName || userNameFromDb || 'Membro';
+                            localStorage.setItem('userName', finalName);
+
+                            window.location.href = 'dashboard.html';
                         }
-
-                        // Success Handling (Common)
-                        console.log("Auth Successful:", userCredential.user.email);
-                        localStorage.setItem('userEmail', userCredential.user.email);
-                        localStorage.setItem('isMember', 'true');
-
-                        if (isSignupMode && name) {
-                            localStorage.setItem('userName', name);
-                        }
-
-                        alert((isSignupMode ? "Registo" : "Login") + " com sucesso! A redirecionar...");
-                        window.location.href = 'dashboard.html';
 
                     } catch (error) {
                         console.error("Auth Failed:", error);
                         let msg = "Erro desconhecido: " + error.message;
 
-                        // Map Codes to Portuguese
                         if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
                             msg = "Email ou Password inválidos.";
-                        } else if (error.code === 'auth/email-already-in-use') {
-                            msg = "Este email já está registado. Tente fazer login.";
                         } else if (error.code === 'auth/weak-password') {
                             msg = "A password deve ter pelo menos 6 caracteres.";
                         }

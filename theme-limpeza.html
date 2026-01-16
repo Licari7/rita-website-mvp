@@ -11,9 +11,10 @@
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap"
         rel="stylesheet">
     <script src="access-control.js"></script>
+    <script src="theme-loader.js"></script>
     <style>
         .theme-header {
-            background: var(--bg-color-alt);
+            background: var(--color-bg);
             padding: 80px 20px 40px;
             text-align: center;
         }
@@ -60,11 +61,40 @@
             <div class="brand-container">
                 <a href="dashboard.html" class="logo">Floresce Terapias</a>
             </div>
-            <ul class="nav-links">
-                <li><a href="dashboard.html">Voltar</a></li>
-            </ul>
+
+            <div class="nav-actions">
+                <!-- Desktop Links if needed, or keep hidden/minimal -->
+                <a href="dashboard.html" class="btn btn-outline" style="padding: 8px 16px; font-size: 0.8em;">Voltar</a>
+            </div>
+
+            <button class="menu-toggle" aria-label="Abrir Menu">
+                <i data-lucide="menu"></i>
+            </button>
         </div>
     </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu">
+        <button class="close-menu" aria-label="Fechar Menu">
+            <i data-lucide="x"></i>
+        </button>
+
+        <a href="index.html" class="mobile-logo">Floresce</a>
+
+        <ul class="mobile-links-list">
+            <li><a href="index.html">Início</a></li>
+            <li><a href="dashboard.html">Voltar ao Dashboard</a></li>
+            <li><a href="index.html#about">Sobre</a></li>
+            <li><a href="index.html#services">Serviços</a></li>
+            <li><a href="index.html#events">Eventos</a></li>
+            <li><a href="booking.html" style="color: var(--color-primary); font-weight: 600;">Agendar Sessão</a></li>
+        </ul>
+
+        <div class="mobile-socials">
+            <a href="https://instagram.com/floresceterapias" target="_blank"><i data-lucide="instagram"></i></a>
+            <a href="https://wa.me/351912345678" target="_blank"><i data-lucide="message-circle"></i></a>
+        </div>
+    </div>
 
     <header class="theme-header">
         <h1 class="section-title">Tema Específico</h1>
@@ -95,6 +125,7 @@
     <script>
         lucide.createIcons();
     </script>
+    <script src="script.js"></script>
     <footer class="footer" style="margin-top: 60px;">
         <div class="container text-center">
             <p class="copyright">&copy; 2026 Floresce Terapias. Todos os direitos reservados.</p>
