@@ -587,6 +587,68 @@
                     </div>
                 </details>
 
+                <!-- 5.5 HEADER MANAGEMENT -->
+                <details class="admin-card draggable-card" id="card-header" draggable="true">
+                    <summary class="admin-card-header">
+                        <span><i data-lucide="layout-template" style="margin-right: 10px; width: 18px;"></i> Gestão do
+                            Cabeçalho</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <form id="header-form">
+                            <!-- Toggle Transparency -->
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                    <input type="checkbox" id="header-transparent" style="width: auto !important;">
+                                    <span><strong>Transparente no Topo?</strong> (Fica opaco ao descer)</span>
+                                </label>
+                                <small style="color: #666; margin-left: 24px;">Se ativo, o cabeçalho não tem cor de
+                                    fundo até fazeres scroll.</small>
+                            </div>
+
+                            <!-- Opaque Settings -->
+                            <h4 style="margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Estilo
+                                (Quando Opaco / Scroll)</h4>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                <div class="form-group">
+                                    <label>Cor de Fundo</label>
+                                    <div style="display: flex; gap: 5px;">
+                                        <input type="color" id="header-bg-color"
+                                            style="width: 50px; height: 35px; padding: 0; border: none;">
+                                        <input type="text" id="header-bg-color-hex" maxlength="7"
+                                            style="width: 80px; text-transform: uppercase;">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Cor do Texto</label>
+                                    <div style="display: flex; gap: 5px;">
+                                        <input type="color" id="header-text-color"
+                                            style="width: 50px; height: 35px; padding: 0; border: none;">
+                                        <input type="text" id="header-text-color-hex" maxlength="7"
+                                            style="width: 80px; text-transform: uppercase;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div class="form-group">
+                                    <label>Tamanho da Fonte (px)</label>
+                                    <input type="number" id="header-font-size" value="16" min="10" max="30">
+                                </div>
+                                <div class="form-group">
+                                    <label>Padding Vertical (px)</label>
+                                    <input type="number" id="header-padding" value="20" min="5" max="50">
+                                </div>
+                            </div>
+
+                            <div class="form-actions" style="margin-top: 20px;">
+                                <button type="submit" id="header-save-btn" class="btn btn-primary full-width">Guardar
+                                    Cabeçalho</button>
+                            </div>
+                        </form>
+                    </div>
+                </details>
+
                 <!-- 6. TESTIMONIALS ACCORDION -->
                 <details class="admin-card draggable-card" id="card-testimonials" draggable="true">
                     <summary class="admin-card-header">
@@ -1208,6 +1270,10 @@
                         if (!finalName) finalName = user.email.split('@')[0];
 
                         localStorage.setItem('userName', finalName);
+
+                        // Update UI Immediately
+                        const nameDisplay = document.getElementById('admin-name-display');
+                        if (nameDisplay) nameDisplay.textContent = `Olá, ${finalName}`;
                         updateUserDisplay(finalName);
                     }
                 });

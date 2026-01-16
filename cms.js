@@ -1325,6 +1325,87 @@ function setupHexListeners() {
             });
         }
     });
+});
+}
+
+// --- Header Management ---
+
+async function loadHeaderSettings() {
+    try {
+        const doc = await window.db.collection('site_content').doc('main').get();
+        if (doc.exists) {
+            const data = doc.data().header || {};
+            // Default Values matches CSS
+            const defaults = {
+                transparent: false,
+                bg_color: '#e1d7ce',
+                text_color: '#6e664c',
+                font_size: 16,
+                padding: 20
+            };
+
+            const header = { ...defaults, ...data };
+
+            if (document.getElementById('header-transparent')) document.getElementById('header-transparent').checked = header.transparent;
+            if (document.getElementById('header-bg-color')) document.getElementById('header-bg-color').value = header.bg_color;
+            if (document.getElementById('header-text-color')) document.getElementById('header-text-color').value = header.text_color;
+            if (document.getElementById('header-font-size')) document.getElementById('header-font-size').value = header.font_size;
+            if (document.getElementById('header-padding')) document.getElementById('header-padding').value = header.padding;
+
+            // Hex Sync
+            if (document.getElementById('header-bg-color-hex')) document.getElementById('header-bg-color-hex').value = header.bg_color;
+            if (document.getElementById('header-text-color-hex')) document.getElementById('header-text-color-hex').value = header.text_color;
+
+            // Apply immediately (Preview)
+            applyHeaderSettings(header);
+        }
+    } catch (e) {
+        console.error("Error loading header settings:", e);
+    }
+}
+
+async function handleHeaderSubmit(e) {
+    if (e) e.preventDefault();
+    const btn = document.getElementById('header-save-btn');
+    if (!btn) return;
+
+    const originalText = btn.textContent;
+    btn.textContent = "A guardar...";
+
+    try {
+        const headerSettings = {
+            transparent: document.getElementById('header-transparent').checked,
+            bg_color: document.getElementById('header-bg-color').value,
+            text_color: document.getElementById('header-text-color').value,
+            font_size: document.getElementById('header-font-size').value,
+            padding: document.getElementById('header-padding').value
+        };
+
+        await window.db.collection('site_content').doc('main').set({
+            header: headerSettings
+        }, { merge: true });
+
+        // Apply
+        applyHeaderSettings(headerSettings);
+
+        alert("Cabeçalho atualizado!");
+
+    } catch (error) {
+        console.error("Error saving header:", error);
+        alert("Erro ao guardar cabeçalho.");
+    } finally {
+        btn.textContent = originalText;
+    }
+}
+
+function applyHeaderSettings(settings) {
+    const root = document.documentElement;
+    root.style.setProperty('--header-transparent', settings.transparent ? '1' : '0');
+    root.style.setProperty('--nav-bg', settings.bg_color); // Sync with theme var
+    root.style.setProperty('--nav-text', settings.text_color); // New var? Or reuse
+    // We update global vars, but script.js handles the scroll logic
+    // Let's store in localStorage for script.js to read on init
+    localStorage.setItem('site_header', JSON.stringify(settings));
 }
 
 function applyTheme(colors) {
@@ -1424,6 +1505,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const homeAboutForm = document.getElementById('home-about-form');
     if (homeAboutForm) homeAboutForm.addEventListener('submit', handleHomeAboutSubmit);
 
+    // Header Listeners
+    const headerForm = document.getElementById('header-form');
+    if (headerForm) headerForm.addEventListener('submit', handleHeaderSubmit);
+
     // Theme Listeners
     const themeForm = document.getElementById('theme-form');
     if (themeForm) themeForm.addEventListener('submit', handleThemeSubmit);
@@ -1433,6 +1518,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadSiteContent();
     loadThemeSettings(); // Load Theme Settings
+    loadHeaderSettings(); // Load Header Settings
     setupHexListeners(); // Initialize Hex Sync
 });
 // --- Member Management Logic ---

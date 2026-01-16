@@ -2,22 +2,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Header Scroll Effect
     // Header Scroll Effect
+    // Header Scroll & Style Effect (Dynamic)
     const navbar = document.querySelector('.navbar');
     if (navbar) {
-        const updateNavbar = () => {
-            if (window.scrollY > 50) {
-                // Scrolled state
-                navbar.style.background = 'var(--nav-bg)';
-                navbar.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
-            } else {
-                // Initial state - Transparent
-                navbar.style.background = 'transparent';
-                navbar.style.boxShadow = 'none';
-            }
+        const applyHeaderStyles = () => {
+            const savedHeader = localStorage.getItem('site_header');
+            const settings = savedHeader ? JSON.parse(savedHeader) : {
+                transparent: false,
+                bg_color: '#e1d7ce', // Default Beige
+                text_color: '#6e664c', // Default Greenish
+                font_size: 16,
+                padding: 20
+            };
+
+            // Apply Static Props
+            document.documentElement.style.setProperty('--nav-bg', settings.bg_color);
+            document.documentElement.style.setProperty('--nav-text', settings.text_color);
+
+            // Apply Font & Padding
+            navbar.style.fontSize = settings.font_size + 'px';
+            navbar.style.padding = settings.padding + 'px 0';
+
+            // Scroll Logic
+            const updateScroll = () => {
+                if (settings.transparent && window.scrollY < 50) {
+                    // Transparent State
+                    navbar.style.background = 'transparent';
+                    navbar.style.boxShadow = 'none';
+                    navbar.style.color = settings.text_color; // Keep text color? Or white? User wanted control.
+                } else {
+                    // Opaque State
+                    navbar.style.background = settings.bg_color;
+                    navbar.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+                    navbar.style.color = settings.text_color;
+                }
+            };
+
+            window.removeEventListener('scroll', window.headerScrollHandler); // Clean old
+            window.headerScrollHandler = updateScroll; // Save ref
+            window.addEventListener('scroll', updateScroll);
+            updateScroll(); // Run immediately
         };
 
-        window.addEventListener('scroll', updateNavbar);
-        updateNavbar(); // Run on load
+        applyHeaderStyles();
+
+        // Listen for live updates from CMS (same window)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'site_header') applyHeaderStyles();
+        });
     }
 
     // Mobile Menu Toggle

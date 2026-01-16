@@ -12,6 +12,14 @@
             if (colors.secondary_blue) root.style.setProperty('--color-secondary-blue', colors.secondary_blue);
             if (colors.footer_bg) root.style.setProperty('--color-footer-bg', colors.footer_bg);
         }
+
+        const header = localStorage.getItem('site_header');
+        if (header) {
+            const h = JSON.parse(header);
+            const root = document.documentElement;
+            if (h.bg_color) root.style.setProperty('--nav-bg', h.bg_color);
+            if (h.text_color) root.style.setProperty('--nav-text', h.text_color);
+        }
     } catch (e) {
         console.error("Error loading theme:", e);
     }
