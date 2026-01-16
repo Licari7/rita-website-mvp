@@ -198,6 +198,31 @@ ul {
 
 /* --- Navigation Refactor (Global Sidebar) --- */
 
+.brand-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.header-socials {
+    display: flex;
+    gap: 15px;
+}
+
+.header-socials a {
+    color: inherit !important;
+    /* Force inherit from navbar */
+    display: flex;
+    align-items: center;
+}
+
+.header-socials svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+}
+
 .nav-links,
 .nav-actions {
     display: none !important;
