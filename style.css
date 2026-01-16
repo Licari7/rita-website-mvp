@@ -222,8 +222,8 @@ ul {
     width: 100%;
     /* Padding is now dynamic via JS, but set default */
     padding: 20px 0;
-    background: var(--nav-bg, #e1d7ce);
-    color: var(--nav-text, #3b3f3a);
+    background: var(--nav-bg, #6e664c);
+    color: var(--nav-text, #ffffff);
     z-index: 1000;
     transition: 0.3s;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
