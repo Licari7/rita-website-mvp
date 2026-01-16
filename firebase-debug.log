@@ -1,0 +1,27 @@
+[debug] [2026-01-16T11:53:26.198Z] ----------------------------------------------------------------------
+[debug] [2026-01-16T11:53:26.202Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Carlos\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only storage
+[debug] [2026-01-16T11:53:26.203Z] CLI Version:   15.2.1
+[debug] [2026-01-16T11:53:26.203Z] Platform:      win32
+[debug] [2026-01-16T11:53:26.203Z] Node Version:  v24.11.1
+[debug] [2026-01-16T11:53:26.203Z] Time:          Fri Jan 16 2026 11:53:26 GMT+0000 (Hora padrão da Europa Ocidental)
+[debug] [2026-01-16T11:53:26.203Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-01-16T11:53:28.032Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-16T11:53:28.032Z] > authorizing via signed-in user (baratacarlos65@gmail.com)
+[debug] [2026-01-16T11:53:28.032Z] [iam] checking project se-chover-floresce for permissions ["firebase.projects.get","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]
+[debug] [2026-01-16T11:53:28.034Z] Checked if tokens are valid: true, expires at: 1768565887196
+[debug] [2026-01-16T11:53:28.034Z] Checked if tokens are valid: true, expires at: 1768565887196
+[debug] [2026-01-16T11:53:28.035Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/se-chover-floresce:testIamPermissions [none]
+[debug] [2026-01-16T11:53:28.035Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/se-chover-floresce:testIamPermissions x-goog-quota-user=projects/se-chover-floresce
+[debug] [2026-01-16T11:53:28.035Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/se-chover-floresce:testIamPermissions {"permissions":["firebase.projects.get","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]}
+[debug] [2026-01-16T11:53:28.440Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/se-chover-floresce:testIamPermissions 200
+[debug] [2026-01-16T11:53:28.440Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/se-chover-floresce:testIamPermissions {"permissions":["firebase.projects.get","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]}
+[info] 
+[info] === Deploying to 'se-chover-floresce'...
+[info] 
+[info] i  deploying storage 
+[info] i  storage: ensuring required API firebasestorage.googleapis.com is enabled... 
+[debug] [2026-01-16T11:53:28.444Z] Checked if tokens are valid: true, expires at: 1768565887196
+[debug] [2026-01-16T11:53:28.445Z] Checked if tokens are valid: true, expires at: 1768565887196
+[debug] [2026-01-16T11:53:28.445Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/se-chover-floresce/services/firebasestorage.googleapis.com [none]
+[debug] [2026-01-16T11:53:28.445Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/se-chover-floresce/services/firebasestorage.googleapis.com x-goog-quota-user=projects/se-chover-floresce

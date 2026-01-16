@@ -9,13 +9,18 @@ const ADMIN_EMAILS = [
 
 // Helper: Convert File to Base64 (No Compression)
 // Helper: Convert File to Base64 (No Compression)
-const fileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = (error) => reject(error);
-    });
+// Helper: Upload File to Firebase Storage
+const uploadImageToStorage = async (file, path) => {
+    if (!file) return null;
+    try {
+        const storageRef = window.storage.ref();
+        const fileRef = storageRef.child(path);
+        const snapshot = await fileRef.put(file);
+        return await fileRef.getDownloadURL();
+    } catch (error) {
+        console.error("Storage Upload Error:", error);
+        throw error;
+    }
 };
 
 window.initCMS = function () {
@@ -197,7 +202,10 @@ async function handleEventSubmit(e) {
 
         let imageUrl = null;
         if (fileInput.files.length > 0) {
-            imageUrl = await fileToBase64(fileInput.files[0]);
+            const file = fileInput.files[0];
+            const path = `events/${Date.now()}_${file.name}`;
+            btn.innerText = "A enviar imagem...";
+            imageUrl = await uploadImageToStorage(file, path);
         }
 
         const eventData = {
@@ -542,8 +550,10 @@ async function handleServiceSubmit(e) {
         if (imageFile) {
             console.log("Processing image...", imageFile.name);
             try {
-                // Use Base64 Compression
-                headerImage = await fileToBase64(imageFile);
+                // Upload to Storage
+                btn.innerText = "A enviar imagem...";
+                const path = `services/${Date.now()}_${imageFile.name}`;
+                headerImage = await uploadImageToStorage(imageFile, path);
             } catch (err) {
                 console.error("Image Processing Error:", err);
                 alert("Erro ao processar imagem: " + err.message);
@@ -804,8 +814,9 @@ async function handleMeditationSubmit(e) {
         let imageUrl = document.getElementById('med-image-url').value;
         const imageFile = document.getElementById('med-image').files[0];
         if (imageFile) {
-            btn.innerText = "A processar imagem...";
-            imageUrl = await fileToBase64(imageFile);
+            btn.innerText = "A enviar imagem...";
+            const path = `meditations/${Date.now()}_${imageFile.name}`;
+            imageUrl = await uploadImageToStorage(imageFile, path);
         }
 
         const desc = (window.tinymce && tinymce.get('med-desc')) ? tinymce.get('med-desc').getContent() : document.getElementById('med-desc').value;
@@ -1042,10 +1053,11 @@ async function handleHomeSubmit(e) {
 
         // Upload Image if selected
         if (imageFile) {
-            btn.textContent = "A processar imagem...";
+            btn.textContent = "A enviar imagem...";
             try {
-                // Use Base64 Compression to bypass Storage/CORS issues
-                imageUrl = await fileToBase64(imageFile);
+                // Upload to Storage
+                const path = `home/${Date.now()}_${imageFile.name}`;
+                imageUrl = await uploadImageToStorage(imageFile, path);
             } catch (err) {
                 console.error("Image Processing Error:", err);
                 alert("Erro ao processar imagem: " + err.message);
@@ -1091,8 +1103,9 @@ async function handleAboutSubmit(e) {
 
         // Upload Image
         if (imageFile) {
-            btn.textContent = "A processar imagem...";
-            imageUrl = await fileToBase64(imageFile);
+            btn.textContent = "A enviar imagem...";
+            const path = `about/${Date.now()}_${imageFile.name}`;
+            imageUrl = await uploadImageToStorage(imageFile, path);
         }
 
         const data = {
@@ -1131,8 +1144,9 @@ async function handleHomeAboutSubmit(e) {
 
         // Upload Image
         if (imageFile) {
-            btn.textContent = "A processar imagem...";
-            imageUrl = await fileToBase64(imageFile);
+            btn.textContent = "A enviar imagem...";
+            const path = `home_about/${Date.now()}_${imageFile.name}`;
+            imageUrl = await uploadImageToStorage(imageFile, path);
         }
 
         const data = {
