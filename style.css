@@ -175,11 +175,10 @@ ul {
     top: 0;
     left: 0;
     width: 100%;
+    /* Padding is now dynamic via JS, but set default */
     padding: 20px 0;
     background: var(--nav-bg, #e1d7ce);
-    /* Beige Background for Navbar */
-    color: var(--color-bg);
-    /* Green Text for Navbar Links */
+    color: var(--nav-text, #3b3f3a);
     z-index: 1000;
     transition: 0.3s;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -193,8 +192,8 @@ ul {
 
 .logo {
     font-size: 2rem;
-    color: var(--color-bg);
-    /* Green Logo */
+    color: inherit;
+    /* Inherit from navbar */
 }
 
 /* --- Navigation Refactor (Global Sidebar) --- */
@@ -212,8 +211,8 @@ ul {
     background: none;
     border: none;
     cursor: pointer;
-    color: var(--color-primary);
-    /* Ensure visibility */
+    color: inherit;
+    /* Inherit from navbar */
 }
 
 .menu-toggle svg {
