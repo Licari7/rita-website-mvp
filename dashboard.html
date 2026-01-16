@@ -257,6 +257,9 @@
     <main class="container section-padding">
         <header class="section-header text-center" style="margin-bottom: 40px;">
             <h1 class="section-title">Área de Membros</h1>
+            <p id="admin-name-display"
+                style="font-size: 1.5rem; color: var(--color-primary); margin-bottom: 10px; font-family: var(--font-serif);">
+                Olá, Visitante</p>
             <p>Acede aqui aos teus recursos e meditações.</p>
             <button id="admin-toggle-btn" class="cta-button"
                 style="display: none; margin: 20px auto 0; background-color: #333; color: white;">
@@ -1302,8 +1305,11 @@
         function updateUserDisplay(name) {
             const nameDisplay = document.getElementById('user-name-display');
             const mobileNameDisplay = document.getElementById('mobile-user-name');
+            const welcomeDisplay = document.getElementById('admin-name-display');
+
             if (nameDisplay) nameDisplay.textContent = name;
             if (mobileNameDisplay) mobileNameDisplay.textContent = name;
+            if (welcomeDisplay) welcomeDisplay.textContent = `Olá, ${name}`;
         }
 
         // Logout
