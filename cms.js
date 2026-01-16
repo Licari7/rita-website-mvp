@@ -1463,23 +1463,36 @@ async function resetThemeSettings() {
     try {
         // 1. Save Defaults to Cloud
         await window.db.collection('site_content').doc('main').set({
-            theme: DEFAULT_THEME
+            theme: DEFAULT_THEME,
+            header: { // Also reset header to avoid overrides
+                transparent: false,
+                bg_color: DEFAULT_THEME.header_bg,
+                text_color: DEFAULT_THEME.bg_color === '#6e664c' ? '#6e664c' : '#333333', // Estimate logic or just safe default
+                font_size: 16,
+                padding: 20
+            }
         }, { merge: true });
 
         // 2. Clear Local Storage
         localStorage.removeItem('site_theme');
-        // Or set to defaults: localStorage.setItem('site_theme', JSON.stringify(DEFAULT_THEME));
+        localStorage.removeItem('site_header');
 
-        // 3. Reset UI inputs
-        document.getElementById('theme-bg').value = DEFAULT_THEME.bg_color;
-        document.getElementById('theme-text').value = DEFAULT_THEME.text_color;
-        document.getElementById('theme-primary').value = DEFAULT_THEME.primary_color;
-        document.getElementById('theme-header').value = DEFAULT_THEME.header_bg;
-        document.getElementById('theme-secondary-1').value = DEFAULT_THEME.secondary_beige;
-        document.getElementById('theme-secondary-2').value = DEFAULT_THEME.secondary_blue;
-        document.getElementById('theme-footer').value = DEFAULT_THEME.footer_bg;
+        // 3. Reset UI inputs (Theme)
+        if (document.getElementById('theme-bg')) document.getElementById('theme-bg').value = DEFAULT_THEME.bg_color;
+        if (document.getElementById('theme-text')) document.getElementById('theme-text').value = DEFAULT_THEME.text_color;
+        if (document.getElementById('theme-primary')) document.getElementById('theme-primary').value = DEFAULT_THEME.primary_color;
+        if (document.getElementById('theme-header')) document.getElementById('theme-header').value = DEFAULT_THEME.header_bg;
+        if (document.getElementById('theme-secondary-1')) document.getElementById('theme-secondary-1').value = DEFAULT_THEME.secondary_beige;
+        if (document.getElementById('theme-secondary-2')) document.getElementById('theme-secondary-2').value = DEFAULT_THEME.secondary_blue;
+        if (document.getElementById('theme-footer')) document.getElementById('theme-footer').value = DEFAULT_THEME.footer_bg;
 
         updateHexInputs(); // Update the text inputs too
+
+        // Reset UI inputs (Header - if present on page)
+        if (document.getElementById('header-transparent')) document.getElementById('header-transparent').checked = false;
+        if (document.getElementById('header-bg-color')) document.getElementById('header-bg-color').value = DEFAULT_THEME.header_bg;
+        if (document.getElementById('header-font-size')) document.getElementById('header-font-size').value = 16;
+        if (document.getElementById('header-padding')) document.getElementById('header-padding').value = 20;
 
         // 4. Apply Defaults
         applyTheme(DEFAULT_THEME);
