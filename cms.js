@@ -1325,7 +1325,6 @@ function setupHexListeners() {
             });
         }
     });
-});
 }
 
 // --- Header Management ---
