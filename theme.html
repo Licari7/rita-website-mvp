@@ -315,14 +315,14 @@
                         if (isAudioEmbed) {
                             playerHtml = `
                             <div class="med-player-container">
-                                <iframe src="${embedUrl}" style="width:100%; height:152px; border:none; border-radius:12px;" allow="encrypted-media;" loading="lazy"></iframe>
+                                <iframe src="${embedUrl}" style="width:100%; height:152px; border:none; border-radius:12px;" sandbox="allow-forms allow-scripts allow-same-origin allow-presentation" allow="encrypted-media;" loading="lazy"></iframe>
                             </div>`;
                         } else {
                             // Video (YouTube/Vimeo) - Keep 16:9
                             playerHtml = `
                             <div class="med-player-container">
                                 <div class="video-wrapper">
-                                    <iframe src="${embedUrl}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                                    <iframe src="${embedUrl}" frameborder="0" sandbox="allow-forms allow-scripts allow-same-origin allow-presentation" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
                                 </div>
                             </div>`;
                         }
