@@ -239,8 +239,7 @@ ul {
     display: flex;
     flex-direction: column;
     padding: 80px 40px 40px;
-    /* Adjusted padding */
-    gap: 15px;
+    gap: 25px;
     /* Reduced gap */
     transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: -5px 0 30px rgba(0, 0, 0, 0.15);

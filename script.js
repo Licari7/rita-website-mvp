@@ -10,8 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 navbar.style.background = 'var(--nav-bg)';
                 navbar.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
             } else {
-                // Initial state
-                navbar.style.background = 'var(--nav-bg)';
+                // Initial state - Transparent
+                navbar.style.background = 'transparent';
                 navbar.style.boxShadow = 'none';
             }
         };
