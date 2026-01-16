@@ -50,6 +50,18 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('storage', (e) => {
             if (e.key === 'site_header') applyHeaderStyles();
         });
+
+        // Global Welcome Message (Added Logic)
+        const welcomeMsg = document.getElementById('header-welcome-msg');
+        if (welcomeMsg) {
+            const userName = localStorage.getItem('userName');
+            const isMember = localStorage.getItem('isMember'); // Optional check
+            if (userName && userName !== 'Visitante') {
+                welcomeMsg.textContent = `Olá, ${userName}`;
+            } else {
+                welcomeMsg.style.display = 'none'; // Hide if not logged in
+            }
+        }
     }
 
     // Mobile Menu Toggle
