@@ -1233,7 +1233,7 @@ const DEFAULT_THEME = {
     bg_color: '#6e664c',
     text_color: '#e1d7ce',
     primary_color: '#b16a4c',
-    header_bg: '#e1d7ce',
+    header_bg: '#6e664c', // Changed to Dark to match BG (user request)
     secondary_beige: '#e1d7ce',
     secondary_blue: '#7b8b99',
     footer_bg: '#b16a4c'
@@ -1337,8 +1337,8 @@ async function loadHeaderSettings() {
             // Default Values matches CSS
             const defaults = {
                 transparent: false,
-                bg_color: '#e1d7ce',
-                text_color: '#6e664c',
+                bg_color: '#6e664c', // Dark default
+                text_color: '#ffffff', // White default
                 font_size: 16,
                 padding: 20
             };
@@ -1467,7 +1467,7 @@ async function resetThemeSettings() {
             header: { // Also reset header to avoid overrides
                 transparent: false,
                 bg_color: DEFAULT_THEME.header_bg,
-                text_color: DEFAULT_THEME.bg_color === '#6e664c' ? '#6e664c' : '#333333', // Estimate logic or just safe default
+                text_color: '#ffffff', // White by default
                 font_size: 16,
                 padding: 20
             }
