@@ -128,11 +128,13 @@
                         isSignupMode = !isSignupMode;
 
                         if (isSignupMode) {
+                            nameGroup.classList.remove('hidden'); // Remove !important class
                             nameGroup.style.display = 'block';
                             authTitle.textContent = 'Criar Conta';
                             loginBtn.textContent = 'Registar';
                             authFooter.innerHTML = 'Já tens conta? <a href="#" id="toggleLoginBtn">Entrar</a>';
                         } else {
+                            nameGroup.classList.add('hidden'); // Add !important class
                             nameGroup.style.display = 'none';
                             authTitle.textContent = 'Área Reservada';
                             loginBtn.textContent = 'Entrar';
