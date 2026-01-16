@@ -217,6 +217,10 @@
                 <a href="#" id="logout-btn" class="btn btn-outline btn-sm">Sair</a>
             </div>
 
+            <!-- Welcome Message (New Location) -->
+            <span id="header-welcome-msg"
+                style="margin-right: 15px; font-weight: 500; font-family: var(--font-serif); color: inherit; font-size: 1.1rem; vertical-align: middle;"></span>
+
             <button class="menu-toggle" aria-label="Menu">
                 <i data-lucide="menu"></i>
             </button>
@@ -257,9 +261,7 @@
     <main class="container section-padding">
         <header class="section-header text-center" style="margin-bottom: 40px;">
             <h1 class="section-title">Área de Membros</h1>
-            <p id="admin-name-display"
-                style="font-size: 1.5rem; color: var(--color-primary); margin-bottom: 10px; font-family: var(--font-serif);">
-                Olá, Visitante</p>
+            <!-- Removed welcome message from here -->
             <p>Acede aqui aos teus recursos e meditações.</p>
             <button id="admin-toggle-btn" class="cta-button"
                 style="display: none; margin: 20px auto 0; background-color: #333; color: white;">
@@ -1275,7 +1277,7 @@
                         localStorage.setItem('userName', finalName);
 
                         // Update UI Immediately
-                        const nameDisplay = document.getElementById('admin-name-display');
+                        const nameDisplay = document.getElementById('header-welcome-msg');
                         if (nameDisplay) nameDisplay.textContent = `Olá, ${finalName}`;
                         updateUserDisplay(finalName);
                     }
@@ -1305,7 +1307,7 @@
         function updateUserDisplay(name) {
             const nameDisplay = document.getElementById('user-name-display');
             const mobileNameDisplay = document.getElementById('mobile-user-name');
-            const welcomeDisplay = document.getElementById('admin-name-display');
+            const welcomeDisplay = document.getElementById('header-welcome-msg');
 
             if (nameDisplay) nameDisplay.textContent = name;
             if (mobileNameDisplay) mobileNameDisplay.textContent = name;
