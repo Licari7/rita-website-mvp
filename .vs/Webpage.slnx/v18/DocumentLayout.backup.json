@@ -50,11 +50,12 @@
               "Title": "dashboard.html",
               "DocumentMoniker": "C:\\Users\\Carlos\\Antigravity\\Webpage\\dashboard.html",
               "RelativeDocumentMoniker": "dashboard.html",
-              "ToolTip": "C:\\Users\\Carlos\\Antigravity\\Webpage\\dashboard.html",
-              "RelativeToolTip": "dashboard.html",
+              "ToolTip": "C:\\Users\\Carlos\\Antigravity\\Webpage\\dashboard.html*",
+              "RelativeToolTip": "dashboard.html*",
               "ViewState": "AgIAADkEAAAAAAAAAAAowEoEAABWAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2026-01-24T18:10:11.944Z"
+              "WhenOpened": "2026-01-24T18:10:11.944Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -66,7 +67,8 @@
               "RelativeToolTip": "cms.js",
               "ViewState": "AgIAAJACAAAAAAAAAAAMwKMCAABAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-01-21T15:39:47.819Z"
+              "WhenOpened": "2026-01-21T15:39:47.819Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -76,7 +78,7 @@
               "RelativeDocumentMoniker": "style.css",
               "ToolTip": "C:\\Users\\Carlos\\Antigravity\\Webpage\\style.css",
               "RelativeToolTip": "style.css",
-              "ViewState": "AgIAAA4LAAAAAAAAAAAhwDYLAAA5AAAAAAAAAA==",
+              "ViewState": "AgIAALoEAAAAAAAAAAAAAMcEAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
               "WhenOpened": "2026-01-21T15:18:27.048Z",
               "EditorCaption": ""
@@ -91,7 +93,8 @@
               "RelativeToolTip": "login.html",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAjAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2025-12-28T10:36:36.765Z"
+              "WhenOpened": "2025-12-28T10:36:36.765Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -127,7 +130,8 @@
               "RelativeToolTip": "index.html",
               "ViewState": "AgIAAF0AAAAAAAAAAAAAAEsAAAAGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2025-12-28T10:35:31.427Z"
+              "WhenOpened": "2025-12-28T10:35:31.427Z",
+              "EditorCaption": ""
             }
           ]
         }

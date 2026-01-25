@@ -104,16 +104,6 @@ body {
     min-height: 100vh;
 }
 
-/* Dashboard Page Theme Overrides */
-.dashboard-page {
-    --color-bg: #f7f2e0;
-    --color-text-main: #80864f;
-    --color-text-muted: #6e664c;
-    /* Ensure background updates */
-    background-color: var(--color-bg);
-    color: var(--color-text-main);
-}
-
 main {
     flex: 1;
 }
@@ -176,19 +166,9 @@ ul {
 }
 
 .footer {
-    background-color: #80864f;
-    /* Green background to support white text */
-    color: #ffffff !important;
-    /* Force White text */
-    text-align: center;
-}
-
-.footer a,
-.footer p,
-.footer span,
-.footer div {
-    color: #ffffff !important;
-    /* Ensure all children are white */
+    background-color: var(--color-footer-bg);
+    color: var(--color-bg);
+    /* Use Green text on Light Beige footer for contrast */
 }
 
 .btn-outline {
@@ -223,18 +203,7 @@ ul {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.contact-link {
-    text-decoration: none;
-    color: inherit;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: opacity 0.3s;
-}
 
-.contact-link:hover {
-    opacity: 0.7;
-}
 
 .full-width {
     width: 100%;
@@ -246,28 +215,13 @@ ul {
     top: 0;
     left: 0;
     width: 100%;
-    /* Padding is now dynamic via JS, but set default to match JS (20px) to prevent jump */
-    /* Padding matches JS default */
-    padding: var(--nav-padding, 20px) 0;
-    font-size: var(--nav-font-size, 16px);
-    /* Default to Transparent to prevent Green Flash on load */
-    background: transparent;
-    color: var(--nav-text, #f7f2e0);
+    /* Padding is now dynamic via JS, but set default */
+    padding: 10px 0;
+    background: var(--nav-bg, #6e664c);
+    color: var(--nav-text, #ffffff);
     z-index: 1000;
     transition: 0.3s;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.header-welcome-msg {
-    display: none;
-    /* Default hidden */
-    position: absolute;
-    right: 70px;
-    /* Position to left of menu toggle */
-    top: 50%;
-    transform: translateY(-50%);
-    font-weight: 500;
-    color: var(--color-primary-dark);
 }
 
 
@@ -276,8 +230,7 @@ ul {
     justify-content: space-between;
     align-items: center;
     min-height: 60px;
-    position: relative;
-    /* Anchor absolute children */
+    /* Allow growth */
 }
 
 /* Brand Container - Forced Row Layout */
@@ -986,12 +939,12 @@ ul {
 .form-group select,
 .form-group textarea {
     width: 100%;
-    padding: 8px;
-    border: 0px solid #ddd;
-    border-radius: 4px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
     font-family: inherit;
     outline: none;
-    background-color: none;
+    background-color: var(--color-bg);
 }
 
 .form-group input:focus,
@@ -1154,41 +1107,6 @@ ul {
         font-size: 0.8rem;
     }
 
-    .services-section {
-        position: relative;
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-    }
-
-    .services-carousel-wrapper {
-        position: relative;
-        /* Ensure it sits on top of bg */
-        z-index: 2;
-    }
-
-    /* Optional overlay if image is too bright */
-    .services-section.has-bg::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.4);
-        /* Darken slightly */
-        z-index: 1;
-    }
-
-    .services-section.has-bg .section-title,
-    .services-section.has-bg .section-tag {
-        position: relative;
-        z-index: 2;
-        color: #fff;
-        /* Ensure text is visible on bg */
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    }
-
     /* Responsive */
     @media (max-width: 768px) {
 
@@ -1261,7 +1179,7 @@ ul {
 }
 
 .auth-form {
-    margin: 5px 0px 20px;
+    margin: 30px 0;
 }
 
 .auth-footer {
@@ -1585,94 +1503,36 @@ ul {
     }
 }
 
-/* Carousel for Dashboard - Manual Control */
+/* Carousel for Dashboard - RESTORED MARQUEE */
 .carousel-wrapper {
     position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     max-width: 100%;
     margin: 0 auto;
     overflow: hidden;
-    /* Keep wrapper hidden, container auto */
 }
 
 .carousel-container {
     display: flex;
-    overflow-x: auto;
-    scroll-behavior: smooth;
     gap: 30px;
+    width: max-content;
+    /* Must be wide enough */
+    animation: scroll 40s linear infinite;
     padding: 20px 5px;
-    width: 100%;
-    cursor: grab;
-    /* Hide scrollbar */
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    /* Ensure no animation interference */
-    animation: none;
 }
 
 .carousel-container:hover {
-    animation: none;
+    animation-play-state: paused;
 }
 
-.carousel-container.active {
-    cursor: grabbing;
-    scroll-behavior: auto;
-}
-
-/* Nav Buttons */
-.nav-btn {
-    background: var(--color-primary);
-    color: #fff;
-    border: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: 0.3s;
-    flex-shrink: 0;
-    z-index: 10;
-}
-
-.nav-btn:hover {
-    background: var(--color-primary-dark);
-    transform: scale(1.1);
-}
-
-.prev-btn {
-    margin-right: 15px;
-}
-
-.next-btn {
-    margin-left: 15px;
-}
-
-/* Mobile: Adjust buttons */
-@media (max-width: 768px) {
-    .nav-btn {
-        width: 35px;
-        height: 35px;
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
+@keyframes scroll {
+    to {
+        transform: translateX(-50%);
     }
+}
 
-    .prev-btn {
-        left: -10px;
-    }
-
-    .next-btn {
-        right: -10px;
-    }
-
-    .carousel-container {
-        padding: 20px 40px;
-        /* Space for buttons */
-    }
+/* Hide manual buttons if using marquee */
+.carousel-nav {
+    display: none !important;
 }
 
 .carousel-container::-webkit-scrollbar {
@@ -2133,9 +1993,11 @@ body.auth-page {
 
 .auth-card .btn-primary {
     background-color: #b16a4c;
-    /* Terracotta Text */
-    font-size: 13px;
-    margin-top: 5px;
+    /* Terracotta Button */
+    color: #fff;
+    margin-top: 20px;
+    border: none;
+    width: 100%;
 }
 
 .auth-card .btn-primary:hover {
@@ -2181,16 +2043,10 @@ body.auth-page {
 
 /* Footer & Developer Credit */
 .developer-credit {
-    font-size: 10px !important;
+    font-size: 0.7rem;
     opacity: 0.6;
     margin-top: 10px;
     letter-spacing: 1px;
-}
-
-.logo-text,
-.footer-links a,
-.copyright {
-    font-size: 12px !important;
 }
 
 /* Fixed syntax error here */
@@ -2683,7 +2539,15 @@ body.auth-page {
     padding: 20px;
 }
 
-/* Overlay Removed: styles moved to JS multiple backgrounds */
+/* Overlay for Readability */
+.premium-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    /* Darken image */
+    background: radial-gradient(circle, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.6) 100%);
+    z-index: 1;
+}
 
 .premium-card-content {
     position: relative;
@@ -2796,34 +2660,7 @@ body.auth-page {
     }
 }
 
-
 /* End of File */
-
-
-/* Floating WhatsApp Button */
-.float-whatsapp {
-    position: fixed;
-    width: 60px;
-    height: 60px;
-    bottom: 30px;
-    right: 30px;
-    background-color: transparent;
-    border-radius: 50%;
-    box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
-    z-index: 1000;
-    display: block;
-    transition: all 0.3s ease;
-}
-
-.float-whatsapp:hover {
-    transform: scale(1.1);
-}
-
-.float-whatsapp img {
-    width: 60px;
-    height: 60px;
-    display: block;
-}
 
 /* Admin Utils */
 .admin-logo-preview-img {
@@ -2834,231 +2671,3 @@ body.auth-page {
 }
 
 /* End of Styles */
-
-/* About Page Split Layout */
-.about-split-section {
-    display: flex;
-    align-items: flex-start;
-    /* Ensure top alignment */
-    gap: 40px;
-    margin-bottom: 60px;
-}
-
-.about-split-section .about-image-container,
-.about-split-section .about-text-content {
-    flex: 1;
-}
-
-/* Lower specific images to align with paragraph text */
-#about-intro .about-image-container {
-    margin-top: 100px;
-}
-
-#about-art .about-image-container {
-    margin-top: 150px;
-}
-
-@media (max-width: 768px) {
-    .about-split-section {
-        flex-direction: column;
-    }
-
-    .about-split-section .about-image-container {
-        order: -1;
-        /* Image always on top on mobile */
-    }
-
-    .about-split-section#about-art .about-image-container {
-        order: 1;
-        /* Except Art section? User didn't specify, but let's keep standard stacking */
-    }
-}
-
-
-/* --- Service Card Refinements (Session Fixes v3 - Fixed Height) --- */
-.premium-card {
-    display: flex;
-    flex-direction: column;
-    height: 600px !important;
-    /* Fixed Height as requested (600px) */
-}
-
-.premium-card-top {
-    flex: 1;
-    /* 50% height */
-    min-height: 0;
-    /* Flex fix */
-}
-
-.premium-card-bottom {
-    flex: 1;
-    /* 50% height */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 15px 20px !important;
-    overflow: hidden;
-    /* Prevent spill */
-}
-
-.premium-desc {
-    font-size: 0.92rem;
-    line-height: 1.35;
-    margin-bottom: 12px !important;
-    flex-grow: 1;
-    overflow: hidden;
-    /* Cut off text if too long */
-}
-
-.premium-actions {
-    display: flex !important;
-    flex-direction: row !important;
-    /* Force row */
-    flex-wrap: nowrap !important;
-    /* preventing wrap */
-    gap: 10px;
-    margin-top: auto;
-    width: 100%;
-}
-
-.btn-premium-outline {
-    flex: 1;
-    /* Equal focus */
-    text-align: center;
-    padding: 8px 4px !important;
-    /* Slightly reduced horizontal padding */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Button Hover Refinement */
-.btn-premium-outline:hover {
-    background: rgba(255, 255, 255, 0.15);
-    color: white !important;
-    border-color: white !important;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-}
-
-/* --- Admin Panel Redesign (Horizontal Services) --- */
-.admin-service-list-horizontal {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    padding: 10px;
-}
-
-.admin-service-list-horizontal .admin-event-item {
-    flex-direction: column !important;
-    align-items: center !important;
-    text-align: center;
-    width: 140px;
-    height: auto;
-    padding: 10px !important;
-    background: #f9f9f9;
-    border: 1px solid #eee;
-    border-radius: 10px;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.admin-service-list-horizontal .admin-event-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-}
-
-.admin-service-list-horizontal .event-info {
-    margin-bottom: 10px;
-}
-
-.admin-service-list-horizontal .event-info strong {
-    font-size: 0.9rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-/* Custom Input Style for Services */
-.input-sand {
-    background-color: #E1D7CE !important;
-    border: 1px solid #c9bdae !important;
-    color: #333 !important;
-}
-
-.input-sand::placeholder {
-    color: #7a7065;
-}
-
-.input-sand:focus {
-    border-color: #8c7e6e !important;
-    background-color: #e8ded5 !important;
-}
-
-/* --- Fix Premium Card Overlay --- */
-.premium-card {
-    position: relative;
-    overflow: hidden;
-}
-
-.premium-card-top {
-    position: relative;
-}
-
-.premium-card-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    pointer-events: none;
-}
-
-.premium-card-content {
-    position: relative;
-    z-index: 2;
-}
-
-/* Helper for Small Color Inputs */
-.input-color-sm {
-    height: 30px;
-    cursor: pointer;
-    padding: 0px !important;
-    width: 100%;
-    border: none;
-    background-color: #E1D7CE;
-    /* input-sand default */
-}
-
-/* Fix Lints: Clean up dashboard inline styles */
-.admin-textarea-large {
-    height: 170px;
-    resize: none;
-}
-
-.input-file-full {
-    width: 100%;
-    padding: 8px;
-    box-sizing: border-box;
-}
-
-.icon-14 {
-    width: 14px;
-}
-
-.h-100 {
-    height: 100%;
-}
-
-.input-range-full {
-    width: 100%;
-    height: 5px;
-    cursor: pointer;
-}
-
-.fs-9 {
-    font-size: 9px;
-}

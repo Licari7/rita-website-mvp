@@ -4,29 +4,11 @@
 const ADMIN_EMAILS = [
     "floresceterapias@gmail.com",
     "barata.rita@outlook.com",
-    "baratacarlos65@gmail.com",
     "carlos.barata@example.com"
 ];
 
-// Helper: Verify Status (Global for Dashboard.html)
-window.verifyUserStatus = async (email) => {
-    if (!email) return false;
-    const lowerEmail = email.toLowerCase();
-    const isAdmin = ADMIN_EMAILS.some(e => e && e.toLowerCase() === lowerEmail);
-    console.log("verifyUserStatus check:", email, "Is Admin?", isAdmin);
-
-    if (isAdmin) {
-        const toggleBtn = document.getElementById('admin-toggle-btn');
-        if (toggleBtn) {
-            toggleBtn.style.display = 'inline-flex';
-            toggleBtn.classList.remove('hidden');
-        }
-    }
-    return isAdmin;
-};
-
 // Helper: Convert File to Base64 (No Compression)
-
+// Helper: Convert File to Base64 (No Compression)
 // Helper: Upload File to Firebase Storage
 const uploadImageToStorage = async (file, path) => {
     if (!file) return null;
@@ -139,8 +121,7 @@ window.initCMS = function () {
         seedBtn.addEventListener('click', window.seedDefaultServices);
     }
 
-    // Auto-Init TinyMCE on Accordion Open - DISABLED for Plain HTML mode
-    /*
+    // Auto-Init TinyMCE on Accordion Open
     const details = document.querySelectorAll('details.admin-card');
     details.forEach(detail => {
         detail.addEventListener('toggle', (e) => {
@@ -155,78 +136,6 @@ window.initCMS = function () {
             }
         });
     });
-    */
-
-    // Specific Init for HTML Generator
-    const htmlGenCard = document.getElementById('card-html-generator');
-    if (htmlGenCard) {
-        htmlGenCard.addEventListener('toggle', (e) => {
-            if (htmlGenCard.open) {
-                // Initialize if not already done
-                if (window.tinymce && !tinymce.get('html-generator-editor')) {
-                    initTinyMCE('', 'html-generator-editor');
-                }
-            }
-        });
-    }
-};
-
-// --- HTML Generator Helpers ---
-window.copyGeneratedHTML = () => {
-    let content = '';
-    if (window.tinymce && tinymce.get('html-generator-editor')) {
-        content = tinymce.get('html-generator-editor').getContent();
-    } else {
-        content = document.getElementById('html-generator-editor').value;
-    }
-
-    // Robust Copy Method (Fallback to execCommand)
-    if (!content) {
-        alert("O editor está vazio. Escreva algo primeiro.");
-        return;
-    }
-
-    try {
-        // Try Clipboard API first
-        navigator.clipboard.writeText(content).then(() => {
-            alert("✅ Código HTML copiado! (" + content.length + " caracteres)\n\nAgora cole na caixa de texto do serviço ou biografia.");
-        }).catch(err => {
-            throw err; // Fallback
-        });
-    } catch (e) {
-        // Fallback: Create temporary textarea
-        const textArea = document.createElement("textarea");
-        textArea.value = content;
-
-        // Ensure it's not visible but part of DOM
-        textArea.style.position = "fixed";
-        textArea.style.left = "-9999px";
-        textArea.style.top = "0";
-        document.body.appendChild(textArea);
-
-        textArea.focus();
-        textArea.select();
-
-        try {
-            const successful = document.execCommand('copy');
-            if (successful) {
-                alert("✅ Código HTML copiado! (Modo de Compatibilidade)");
-            } else {
-                prompt("Não foi possível copiar automaticamente. Por favor copie este código:", content);
-            }
-        } catch (err) {
-            prompt("Não foi possível copiar. Por favor copie este codigo:", content);
-        }
-
-        document.body.removeChild(textArea);
-    }
-};
-
-window.clearHtmlGenerator = () => {
-    if (window.tinymce && tinymce.get('html-generator-editor')) {
-        tinymce.get('html-generator-editor').setContent('');
-    }
-    document.getElementById('html-generator-editor').value = '';
 };
 
 // Global Tab Switching Logic to Fix TinyMCE hidden init issues
@@ -613,11 +522,7 @@ function initTinyMCE(initialContent = '', targetId = 'my-tinymce-editor', force 
     }
 }
 
-// Helper: Upload Image (Missing Function Fix)
-
-
-
-window.handleServiceSubmit = async function (e) {
+async function handleServiceSubmit(e) {
     e.preventDefault();
     const btn = document.getElementById('svc-submit-btn');
     btn.innerText = "A guardar...";
@@ -625,23 +530,18 @@ window.handleServiceSubmit = async function (e) {
 
     try {
         const id = document.getElementById('svc-id').value; // Check for ID
-
         const title = document.getElementById('svc-title').value;
-
-        if (!title.trim()) {
-            alert("Por favor, insira um Nome do Serviço.");
-            btn.innerText = "Publicar Serviço";
-            btn.disabled = false;
-            return;
-        }
         const description = (window.tinymce && tinymce.get('svc-desc')) ? tinymce.get('svc-desc').getContent() : document.getElementById('svc-desc').value;
+        const link = document.getElementById('svc-link').value;
 
-
-        // Get content from Textarea
-        const longDescription = document.getElementById('svc-full-desc').value;
+        // Get content from TinyMCE
+        let longDescription = '';
+        if (window.tinymce && tinymce.get('my-tinymce-editor')) {
+            longDescription = tinymce.get('my-tinymce-editor').getContent();
+        }
 
         const benefitsRaw = document.getElementById('svc-benefits').value;
-        // const styleClass = document.getElementById('svc-theme').value; // Removed
+        const styleClass = document.getElementById('svc-theme').value;
 
         // Image Handling (URL or File)
         let headerImage = document.getElementById('svc-image').value;
@@ -661,26 +561,16 @@ window.handleServiceSubmit = async function (e) {
             }
         }
 
-        // Parse benefits (Allow Inline HTML, strip Blocks like P/DIV)
-        const cleanBenefitsRaw = benefitsRaw.replace(/<\/?(p|div|br|h[1-6])[^>]*>/gi, ''); // Strip blocks
-        const benefits = cleanBenefitsRaw.split(',').map(b => b.trim()).filter(b => b.length > 0);
+        // Parse benefits
+        const benefits = benefitsRaw.split(',').map(b => b.trim()).filter(b => b.length > 0);
 
         const serviceData = {
-            title: title.replace(/<\/?(p|div|br|h[1-6])[^>]*>/gi, '').trim(),
+            title,
             description,
             long_description: longDescription,
-
+            link,
             benefits,
-            customColors: {
-                // New Structure (Ensuring Numbers)
-                topBg: document.getElementById('svc-top-bg-color').value,
-                // Ensure float and default if NaN
-                topOpacity: parseFloat(document.getElementById('svc-top-opacity').value) || 0.5,
-                bottomBg: document.getElementById('svc-bottom-bg-color').value,
-                bottomOpacity: parseFloat(document.getElementById('svc-bottom-opacity').value) || 1,
-                btnText: document.getElementById('svc-btn-text-color').value
-            },
-            // styleClass,
+            styleClass,
             headerImage,
             active: true
         };
@@ -688,20 +578,8 @@ window.handleServiceSubmit = async function (e) {
         if (!id) {
             serviceData.created_at = new Date();
             serviceData.order = 99; // Default for new
-
-
-
-            // We need the ID for the doc. Let's add it with a specific ID if we can, or just let auto-id happen.
-            // If we want ?id=slug to work with "service.html", that page queries by DOC ID.
-            // so we should probably try to use the slug as the doc ID.
-
-            const slug = serviceData.title.toLowerCase().replace(/[^a-z0-9]/g, '-');
-
-            // Check if exists? Firestore set with merge:false fails if exists? No, it overwrites.
-            // Let's use set() to force the slug as ID, so service.html?id=slug works!
-            await window.db.collection("services").doc(slug).set(serviceData);
-
-            alert(`Serviço adicionado! Link gerado: service-detail.html?id=${slug}`);
+            await window.db.collection("services").add(serviceData);
+            alert("Serviço adicionado! ✨");
         } else {
             // Update existing
             await window.db.collection("services").doc(id).update(serviceData);
@@ -720,51 +598,8 @@ window.handleServiceSubmit = async function (e) {
     }
 }
 
-// Make available globally for debugging or inline calls
-window.handleServiceSubmit = handleServiceSubmit;
-
-// New Config Handler
-window.handleServiceConfigSubmit = async () => {
-    const btn = document.getElementById('service-config-btn');
-    const originalText = btn.textContent;
-    btn.textContent = "A guardar...";
-    btn.disabled = true;
-
-    try {
-        let imageUrl = document.getElementById('service-bg-url').value;
-        const imageFile = document.getElementById('service-bg-file').files[0];
-
-        if (imageFile) {
-            btn.textContent = "A enviar imagem...";
-            const path = `site_content/services_bg_${Date.now()}`;
-            imageUrl = await uploadImageToStorage(imageFile, path);
-        }
-
-        if (!imageUrl) {
-            alert("Por favor selecione uma imagem ou URL.");
-            return;
-        }
-
-        // Save to site_content/main -> service_section
-        await window.db.collection('site_content').doc('main').set({
-            service_section: {
-                background_image: imageUrl
-            }
-        }, { merge: true });
-
-        alert("Imagem de fundo atualizada!");
-
-    } catch (error) {
-        console.error("Error saving service config:", error);
-        alert("Erro: " + error.message);
-    } finally {
-        btn.textContent = originalText;
-        btn.disabled = false;
-    }
-};
-
 async function loadServices() {
-    // initTinyMCE(); // Removed
+    initTinyMCE(); // Ensure editor is ready
 
     const listContainer = document.getElementById('admin-services-list');
     if (!listContainer) return;
@@ -774,29 +609,28 @@ async function loadServices() {
         const querySnapshot = await window.db.collection("services").orderBy("order", "asc").get();
 
         if (querySnapshot.empty) {
-            listContainer.innerHTML = '<p class="text-muted">Sem serviços ativos.</p>';
+            listContainer.innerHTML = '<p>Sem serviços.</p>';
             return;
         }
 
-        // Generate items directly (no UL wrapper) for better flex control
-        let html = '';
+        let html = '<ul class="admin-event-list">';
         querySnapshot.forEach((doc) => {
             const data = doc.data();
             // Note: passing data attributes or fetching again in edit
             html += `
-                <div class="admin-event-item">
+                <li class="admin-event-item">
                     <div class="event-info">
-                        <span class="font-sm">${data.title}</span>
+                        <strong>${data.title}</strong>
                     </div>
-                    <div class="flex-center gap-5 mt-5">
-                        <button class="btn-outline font-xs" style="padding: 2px 8px;" onclick="window.editService('${doc.id}')">Editar</button>
-                        <button class="btn-delete font-xs" style="padding: 2px 8px;" onclick="window.deleteService('${doc.id}')">Apagar</button>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-outline" style="padding: 2px 8px; font-size: 0.8rem;" onclick="window.editService('${doc.id}')">Editar</button>
+                        <button class="btn-delete" onclick="window.deleteService('${doc.id}')">Apagar</button>
                     </div>
-                </div>
+                </li>
             `;
         });
+        html += '</ul>';
         listContainer.innerHTML = html;
-        if (window.lucide) window.lucide.createIcons();
 
     } catch (error) {
         console.error("Error loading services:", error);
@@ -814,185 +648,51 @@ window.editService = async (id) => {
         const data = doc.data();
 
         // Populate Form
-        console.log("Editing Service Data:", data);
+        document.getElementById('svc-id').value = id;
+        document.getElementById('svc-title').value = data.title;
+        document.getElementById('svc-title').value = data.title;
+        document.getElementById('svc-desc').value = data.description;
+        if (window.tinymce && tinymce.get('svc-desc')) tinymce.get('svc-desc').setContent(data.description || '');
+        document.getElementById('svc-link').value = data.link;
+        document.getElementById('svc-link').value = data.link;
 
-        // Populate Form
-        document.getElementById('svc-id').value = id; // FIX: Set hidden ID
-        const titleInput = document.getElementById('svc-title');
+        // Populate TinyMCE (Nuclear Re-init)
+        // We pass the content directly to init to ensure it loads in the correct state
+        // Populate TinyMCE (Nuclear Re-init)
+        // We pass the content directly to init to ensure it loads in the correct state
+        initTinyMCE(data.long_description || '', 'my-tinymce-editor');
 
-        // Sanitize & Decode Title on Load
-        let cleanTitle = data.title || '';
-        cleanTitle = decodeHtmlEntities(cleanTitle);
-        cleanTitle = cleanTitle.replace(/<\/?(p|div|br|h[1-6])[^>]*>/gi, '').trim(); // Strip blocks only
-        if (titleInput) titleInput.value = cleanTitle;
-
-        const imgInput = document.getElementById('svc-image');
-        if (imgInput) imgInput.value = data.headerImage || '';
-
-        // Decode Description as well if needed
-        const descInput = document.getElementById('svc-desc');
-        if (descInput) {
-            let cleanDesc = data.description || '';
-            cleanDesc = decodeHtmlEntities(cleanDesc);
-            // Allow inline tags for description too
-            cleanDesc = cleanDesc.replace(/<\/?(p|div|h[1-6])[^>]*>/gi, '').trim();
-            descInput.value = cleanDesc;
-        }
-
-        // FIX: If TinyMCE somehow attached to Short Description, remove it!
-        if (window.tinymce && tinymce.get('svc-desc')) {
-            console.log("Removing unwanted TinyMCE from svc-desc");
-            tinymce.get('svc-desc').remove();
-        }
-
-        // Re-set value after potential removal (redundant but safe)
-        if (descInput) {
-            let cleanDesc = data.description || ''; // Re-initialize cleanDesc
-            cleanDesc = decodeHtmlEntities(cleanDesc);
-            cleanDesc = cleanDesc.replace(/<\/?(p|div|h[1-6])[^>]*>/gi, '').trim();
-            descInput.value = cleanDesc;
-        }
-
-
-        // Debug
-        // alert("DEBUG DATA:\nID: " + id + "\nTitle: " + data.title + "\nDesc: " + data.description + "\nImg: " + data.headerImage);
-
-
-
-        // Populate Full Description
-        document.getElementById('svc-full-desc').value = data.long_description || '';
-
-        // Sanitize Benefits on Load
-        let cleanBenefits = [];
-        if (data.benefits && Array.isArray(data.benefits)) {
-            cleanBenefits = data.benefits.map(b => {
-                let cb = decodeHtmlEntities(b); // Decode
-                cb = cb.replace(/<\/?(p|div|br|h[1-6])[^>]*>/gi, '').trim(); // Strip blocks only
-                return cb;
-            });
-        }
-        document.getElementById('svc-benefits').value = cleanBenefits.join(', ');
-
-        // Populate Colors
-        if (data.customColors) {
-            // New Scheme Mapping
-            const cc = data.customColors;
-
-            // Top Section
-            if (document.getElementById('svc-top-bg-color')) {
-                // Fallback to old 'headerOpacity' or default black if new field missing
-                document.getElementById('svc-top-bg-color').value = cc.topBg || '#000000';
-            }
-            if (document.getElementById('svc-top-opacity')) {
-                // Fallback to old 'headerOpacity'
-                const val = (cc.topOpacity !== undefined) ? cc.topOpacity : (cc.headerOpacity !== undefined ? cc.headerOpacity : 0.5);
-                document.getElementById('svc-top-opacity').value = val;
-                document.getElementById('opacity-val-top').innerText = Math.round(val * 100) + '%';
-            }
-
-            // Bottom Section
-            if (document.getElementById('svc-bottom-bg-color')) {
-                // Fallback to old 'bg'
-                document.getElementById('svc-bottom-bg-color').value = cc.bottomBg || cc.bg || '#4F553D';
-            }
-            if (document.getElementById('svc-bottom-opacity')) {
-                // Fallback to old 'bgOpacity'
-                const val = (cc.bottomOpacity !== undefined) ? cc.bottomOpacity : (cc.bgOpacity !== undefined ? cc.bgOpacity : 1);
-                document.getElementById('svc-bottom-opacity').value = val;
-                document.getElementById('opacity-val-bottom').innerText = Math.round(val * 100) + '%';
-            }
-
-            // Buttons
-            if (document.getElementById('svc-btn-text-color')) {
-                // Fallback to old 'text'
-                document.getElementById('svc-btn-text-color').value = cc.btnText || cc.text || '#ffffff';
-            }
-
-        } else {
-            // Defaults if no data
-            resetColorInputs();
-        }
-
-        // document.getElementById('svc-theme').value = data.styleClass || '';
-        if (imgInput) imgInput.value = data.headerImage || '';
+        document.getElementById('svc-benefits').value = data.benefits ? data.benefits.join(', ') : '';
+        document.getElementById('svc-theme').value = data.styleClass || '';
+        document.getElementById('svc-image').value = data.headerImage || '';
         document.getElementById('svc-image-file').value = '';
 
         // UI Changes
         document.getElementById('svc-submit-btn').innerText = "Atualizar Serviço";
         document.getElementById('svc-cancel-btn').style.display = 'inline-block';
-        document.getElementById('svc-cancel-btn').classList.remove('hidden');
 
         // Scroll
         document.getElementById('service-form').scrollIntoView({ behavior: 'smooth' });
-
-        console.log("Edit Mode Enabled for: ", id);
 
     } catch (error) {
         console.error("Error getting service:", error);
     }
 };
 
-window.resetServiceForm = async () => {
+window.resetServiceForm = () => {
     document.getElementById('service-form').reset();
-
-    // Explicitly Clear Fields to be safe
     document.getElementById('svc-id').value = '';
-    document.getElementById('svc-title').value = '';
-    document.getElementById('svc-benefits').value = '';
-    document.getElementById('svc-desc').value = '';
+
+    // Reset editor
+    // Reset editor
+    initTinyMCE('', 'my-tinymce-editor');
+
+    document.getElementById('svc-theme').value = '';
     document.getElementById('svc-image').value = '';
     document.getElementById('svc-image-file').value = '';
-    document.getElementById('svc-full-desc').value = '';
 
-    document.getElementById('svc-colors-config').classList.add('hidden'); // Hide color config
-    // Reset colors to default
-    resetColorInputs();
-
-    // Helper
-    function resetColorInputs() {
-        if (document.getElementById('svc-top-bg-color')) document.getElementById('svc-top-bg-color').value = '#000000';
-        if (document.getElementById('svc-top-opacity')) {
-            document.getElementById('svc-top-opacity').value = 0.5;
-            document.getElementById('opacity-val-top').innerText = '50%';
-        }
-
-        if (document.getElementById('svc-bottom-bg-color')) document.getElementById('svc-bottom-bg-color').value = '#4F553D';
-        if (document.getElementById('svc-bottom-opacity')) {
-            document.getElementById('svc-bottom-opacity').value = 1;
-            document.getElementById('opacity-val-bottom').innerText = '100%';
-        }
-
-        if (document.getElementById('svc-btn-text-color')) document.getElementById('svc-btn-text-color').value = '#ffffff';
-    }
-
-    // Load Template Content - DISABLED as per user request to keep fields empty
-    document.getElementById('svc-full-desc').value = '';
-    /*
-    try {
-        const response = await fetch('service-template.html');
-        if (response.ok) {
-            const text = await response.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(text, 'text/html');
-            const mainContent = doc.querySelector('.service-detail-content');
-
-            if (mainContent) {
-                document.getElementById('svc-full-desc').value = mainContent.innerHTML;
-            }
-        }
-    } catch (e) {
-        console.error("Could not load template:", e);
-    }
-    */
-
-    // document.getElementById('svc-theme').value = '';
-    document.getElementById('svc-image').value = '';
-    document.getElementById('svc-image-file').value = '';
     document.getElementById('svc-submit-btn').innerText = "Publicar Serviço";
     document.getElementById('svc-cancel-btn').style.display = 'none';
-
-    // Scroll
-    document.getElementById('service-form').scrollIntoView({ behavior: 'smooth' });
 };
 
 window.deleteService = async (id) => {
@@ -1006,26 +706,26 @@ window.deleteService = async (id) => {
     }
 };
 
-// Seeding Function (Updated with Static Links)
+// Seeding Function (Updated with Stable IDs)
 window.seedDefaultServices = async () => {
     if (!confirm("Isto vai REINICIAR os serviços para os originais (usando IDs fixos). Continuar?")) return;
 
-    // Content extracted from static files (consolidated into dynamic system)
+    // Content extracted from static files (simplified for seed)
     const defaults = [
         {
-            id: "aura",
+            id: "aura", // Custom ID
             title: "Leitura de Aura",
             description: "Acede à tua energia, liberta bloqueios e ganha clareza sobre o teu caminho espiritual.",
             long_description: `<p>A Leitura de Aura é uma ferramenta poderosa de autoconhecimento. Ao aceder ao teu campo energético, é possível identificar padrões, bloqueios e potenciais que estão presentes na tua vida neste momento.</p>
             <p><strong>Como funciona?</strong><br>A sessão começa com uma meditação de enraizamento. De seguida, é feita a leitura das cores e imagens da tua aura (campo energético), passando pelos 7 chakras principais.</p>
             <p>Esta terapia permite trazer ao consciente o que está no inconsciente, promovendo a cura e o equilíbrio.</p>`,
-            link: "service-detail.html?id=aura",
+            link: "service.html?id=aura", // Will be updated by dynamic logic later, but for now we just seed content
             benefits: ["Presenciais", "Online (Zoom)", "À Distância"],
             styleClass: "",
             order: 1
         },
         {
-            id: "innerdance",
+            id: "innerdance", // Custom ID
             title: "Innerdance",
             description: "Uma jornada sonora vibracional que ativa o teu processo de autocura e expansão da consciência.",
             long_description: `<p>Innerdance não é uma dança física, mas sim uma dança da consciência. Através de ondas cerebrais e sons binaurais, és levado a um estado de transe consciente (semelhante ao sonho lúcido).</p>
@@ -1034,25 +734,24 @@ window.seedDefaultServices = async () => {
             - Ativação da energia Kundalini.<br>
             - Visões e insights profundos.</p>
             <p>É uma experiência visceral onde o corpo pode mover-se espontaneamente para libertar energia estagnada.</p>`,
-            link: "service-detail.html?id=innerdance",
+            link: "service.html?id=innerdance",
             benefits: ["Desbloqueio Emocional", "Activação Energética", "Estado Alterado de Consciência"],
             styleClass: "innerdance",
             order: 2
         },
         {
-            id: "constelacoes",
+            id: "constelacoes", // Custom ID
             title: "Constelações Familiares e Sistêmicas",
             description: "Harmoniza o teu sistema familiar e liberta padrões herdados para viveres com mais leveza.",
             long_description: `<p>As Constelações Familiares olham para o indivíduo como parte de um sistema maior (a família). Muitas vezes, carregamos lealdades invisíveis, destinos ou traumas dos nossos antepassados.</p>
             <p>Nesta sessão, utilizamos bonecos ou marcadores (online ou presencial) para representar os membros da família e observar a dinâmica oculta.</p>
             <p>Ao reconhecer e honrar o que foi, podemos encontrar o nosso lugar de força e seguir em frente com amor.</p>`,
-            link: "service-detail.html?id=constelacoes",
+            link: "service.html?id=constelacoes",
             benefits: ["Presenciais", "Online"],
             styleClass: "constellations",
             order: 3
         },
         {
-            id: "expansao",
             title: "Ciclos de Expansão",
             description: "Programas de longa duração para quem procura um compromisso profundo com o seu crescimento.",
             long_description: `<p>Os Ciclos de Expansão são jornadas de acompanhamento contínuo. Ao contrário de uma sessão pontual, aqui mergulhamos fundo num tema durante várias semanas ou meses.</p>
@@ -1062,7 +761,7 @@ window.seedDefaultServices = async () => {
             - Apoio via WhatsApp/Telegram.<br>
             - Acesso a uma comunidade de suporte.</p>
             <p>Ideal para quem está numa fase de transição de vida e precisa de suporte estruturado.</p>`,
-            link: "service-detail.html?id=expansao",
+            link: "service.html?id=expansao",
             benefits: ["Mentoria Contínua", "Grupo de Apoio", "Acesso a Recursos"],
             styleClass: "expansion",
             order: 4
@@ -1070,27 +769,15 @@ window.seedDefaultServices = async () => {
     ];
 
     try {
-        // 1. Delete ALL existing services to prevent duplicates
-        const snapshot = await window.db.collection("services").get();
-        const deletePromises = [];
-        snapshot.forEach(doc => {
-            deletePromises.push(window.db.collection("services").doc(doc.id).delete());
-        });
-        await Promise.all(deletePromises);
-
-        // 2. Add Defaults
         for (const svc of defaults) {
-            const data = { ...svc, active: true, created_at: new Date() };
-            if (svc.id) {
-                const docId = svc.id;
-                delete data.id;
-                await window.db.collection("services").doc(docId).set(data);
-            } else {
-                await window.db.collection("services").add(data);
-            }
+            await window.db.collection("services").add({
+                ...svc,
+                active: true,
+                created_at: new Date()
+            });
         }
 
-        alert("Serviços reiniciados com sucesso! Duplicados removidos.");
+        alert("Serviços importados com sucesso! Podes agora editá-los.");
         loadServices();
     } catch (e) {
         console.error(e);
@@ -1314,20 +1001,12 @@ async function loadSiteContent() {
             // Populate About Form
             if (data.about) {
                 if (document.getElementById('about-title')) document.getElementById('about-title').value = data.about.title || '';
-
-                // Text Intro (Fallback to old 'text' if 'text_intro' missing)
-                if (document.getElementById('about-text-intro')) {
-                    document.getElementById('about-text-intro').value = data.about.text_intro || data.about.text || '';
+                if (document.getElementById('about-text')) {
+                    document.getElementById('about-text').value = data.about.text || '';
+                    // Init TinyMCE
+                    initTinyMCE(data.about.text || '', 'about-text');
                 }
-
-                // Text Art
-                if (document.getElementById('about-text-art')) {
-                    document.getElementById('about-text-art').value = data.about.text_art || '';
-                }
-
-                // Images
                 if (document.getElementById('about-image-url')) document.getElementById('about-image-url').value = data.about.image_url || '';
-                if (document.getElementById('about-image-art-url')) document.getElementById('about-image-art-url').value = data.about.image_art_url || '';
             }
 
             // Populate Home Summary Form
@@ -1386,8 +1065,6 @@ async function handleHomeSubmit(e) {
             }
         }
 
-
-
         const data = {
             home: {
                 title: document.getElementById('home-title').value,
@@ -1399,14 +1076,12 @@ async function handleHomeSubmit(e) {
             }
         };
 
-
-
         await window.db.collection('site_content').doc('main').set(data, { merge: true });
         alert("Conteúdo da Página Inicial atualizado!");
 
     } catch (error) {
         console.error("Error saving home content:", error);
-        alert("Erro ao guardar: " + error.message);
+        alert("Erro ao guardar.");
     } finally {
         btn.textContent = originalText;
         btn.disabled = false;
@@ -1423,38 +1098,26 @@ async function handleAboutSubmit(e) {
     btn.disabled = true;
 
     try {
-        // Image 1 (Intro)
         let imageUrl = document.getElementById('about-image-url').value;
         const imageFile = document.getElementById('about-image-file').files[0];
 
+        // Upload Image
         if (imageFile) {
-            btn.textContent = "A enviar imagem 1...";
+            btn.textContent = "A enviar imagem...";
             const path = `about/${Date.now()}_${imageFile.name}`;
             imageUrl = await uploadImageToStorage(imageFile, path);
-        }
-
-        // Image 2 (Art)
-        let imageArtUrl = document.getElementById('about-image-art-url').value;
-        const imageArtFile = document.getElementById('about-image-art-file').files[0];
-
-        if (imageArtFile) {
-            btn.textContent = "A enviar imagem 2...";
-            const path = `about/art_${Date.now()}_${imageArtFile.name}`;
-            imageArtUrl = await uploadImageToStorage(imageArtFile, path);
         }
 
         const data = {
             about: {
                 title: document.getElementById('about-title').value,
-                text_intro: (window.tinymce && tinymce.get('about-text-intro')) ? tinymce.get('about-text-intro').getContent() : document.getElementById('about-text-intro').value,
-                text_art: (window.tinymce && tinymce.get('about-text-art')) ? tinymce.get('about-text-art').getContent() : document.getElementById('about-text-art').value,
-                image_url: imageUrl,
-                image_art_url: imageArtUrl
+                text: (window.tinymce && tinymce.get('about-text')) ? tinymce.get('about-text').getContent() : document.getElementById('about-text').value,
+                image_url: imageUrl
             }
         };
 
         await window.db.collection('site_content').doc('main').set(data, { merge: true });
-        alert("Página 'Sobre Mim' atualizada e salva!");
+        alert("Página 'Sobre Mim' atualizada!");
 
     } catch (error) {
         console.error("Error saving about content:", error);
@@ -2048,11 +1711,3 @@ window.deleteMember = async function (email) {
         alert("Erro ao apagar: " + error.message);
     }
 };
-
-// Helper to decode HTML entities (e.g. &atilde; -> ã)
-function decodeHtmlEntities(str) {
-    if (!str) return '';
-    const txt = document.createElement("textarea");
-    txt.innerHTML = str;
-    return txt.value;
-}

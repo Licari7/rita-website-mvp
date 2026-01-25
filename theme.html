@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tema | Floresce Terapias</title>
     <script src="theme-loader.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=4.3.1">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap"
@@ -111,12 +111,18 @@
     <nav class="navbar">
         <div class="container nav-content">
             <div class="brand-container">
-                <a href="dashboard.html" class="logo">Floresce Terapias</a>
-                <div class="header-socials">
-                    <a href="https://www.instagram.com/floresceterapias?igsh=MW90eXlmOG93em55ZA%3D%3D&utm_source=qr"
-                        target="_blank" aria-label="Instagram"><i data-lucide="instagram"></i></a>
-                    <a href="https://chat.whatsapp.com/BpCgpanA5Wx1VEGrmo4Wwt" target="_blank" aria-label="WhatsApp"><i
-                            data-lucide="phone"></i></a>
+                <a href="dashboard.html" class="logo-link" aria-label="Dashboard">
+                    <img id="header-logo-display" src="" alt="Logo" class="header-logo hidden">
+                </a>
+                <div class="brand-info">
+                    <a href="dashboard.html" class="logo">Floresce Terapias</a>
+                    <div class="header-socials">
+                        <a href="https://www.instagram.com/floresceterapias?igsh=MW90eXlmOG93em55ZA%3D%3D&utm_source=qr"
+                            target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i
+                                data-lucide="instagram"></i></a>
+                        <a href="https://wa.me/351913515406" target="_blank" rel="noopener noreferrer"
+                            aria-label="WhatsApp"><i data-lucide="message-circle"></i></a>
+                    </div>
                 </div>
             </div>
 
@@ -126,8 +132,7 @@
                 <li><a href="dashboard.html">Voltar à Área de Membros</a></li>
             </ul>
 
-            <span id="header-welcome-msg"
-                style="margin-right: 15px; font-weight: 500; font-family: var(--font-serif); color: inherit; font-size: 1.1rem; vertical-align: middle;"></span>
+            <span id="header-welcome-msg" class="header-welcome-msg"></span>
 
             <button class="menu-toggle" aria-label="Abrir menu">
                 <i data-lucide="menu"></i>
@@ -135,27 +140,9 @@
         </div>
     </nav>
 
-    <!-- Mobile Menu -->
-    <div class="mobile-menu">
-        <button class="close-menu" aria-label="Fechar Menu">
-            <i data-lucide="x"></i>
-        </button>
-        <span class="mobile-logo">Floresce</span>
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu"></div>
 
-        <ul class="mobile-links-list">
-            <li><a href="index.html">Início</a></li>
-            <li><a href="index.html#about">Sobre</a></li>
-            <li><a href="index.html#services">Serviços</a></li>
-            <li><a href="index.html#events">Eventos</a></li>
-            <li><a href="booking.html">Agenda</a></li>
-            <li><a href="dashboard.html" style="color: var(--color-primary); font-weight: 600;">Área de Membros</a></li>
-        </ul>
-
-        <div class="mobile-socials">
-            <a href="https://instagram.com/floresceterapias" target="_blank"><i data-lucide="instagram"></i></a>
-            <a href="https://wa.me/351912345678" target="_blank"><i data-lucide="message-circle"></i></a>
-        </div>
-    </div>
 
     <header class="theme-header">
         <h1 class="section-title" id="theme-title">A carregar...</h1>
@@ -163,8 +150,8 @@
     </header>
 
     <main class="container">
-        <div class="meditation-list" id="dynamic-meditations">
-            <p style="text-align: center;">A carregar recursos...</p>
+        <div class="meditation-list text-center" id="dynamic-meditations">
+            <p>A carregar recursos...</p>
         </div>
     </main>
 
@@ -382,13 +369,14 @@
             document.body.innerHTML += `<p style="color:red; background:white; padding:20px;">CRITICAL ERROR: ${err.message}</p>`;
         }
     </script>
-    </script>
+
     <script src="script.js"></script>
-    <footer class="footer" style="margin-top: 60px;">
+    <script src="sidebar.js"></script>
+    <footer class="footer footer-margin-top">
         <div class="container text-center">
-            <p class="copyright">&copy; 2026 Floresce Terapias. Todos os direitos reservados.</p>
-            <p style="font-size: 0.7rem; opacity: 0.6; margin-top: 10px; letter-spacing: 1px;">CREATED IN PORTUGAL WITH
-                ❤️ BY CALB</p>
+            <p class="logo-text" id="footer-title"></p>
+            <p class="copyright" id="footer-copyright"></p>
+            <p class="footer-credits" id="footer-credit"></p>
         </div>
     </footer>
 </body>

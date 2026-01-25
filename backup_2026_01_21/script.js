@@ -1,16 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Header Scroll Effect
-    // Header Scroll Effect
     // Header Scroll & Style Effect (Dynamic)
     const navbar = document.querySelector('.navbar');
     if (navbar) {
         const applyHeaderStyles = () => {
             const savedHeader = localStorage.getItem('site_header');
             const settings = savedHeader ? JSON.parse(savedHeader) : {
-                transparent: false,
-                bg_color: '#e1d7ce', // Default Beige
-                text_color: '#6e664c', // Default Greenish
+                transparent: true, // Default to Transparent for new visitors
+                bg_color: '#80864f', // Default Green
+                text_color: '#f7f2e0', // Default Beige
                 font_size: 16,
                 padding: 20
             };
@@ -23,13 +21,30 @@ document.addEventListener('DOMContentLoaded', () => {
             navbar.style.fontSize = settings.font_size + 'px';
             navbar.style.padding = settings.padding + 'px 0';
 
+            // Logo Handling
+            const logoImg = document.getElementById('header-logo-display');
+            console.log("Logo Element Found:", !!logoImg);
+            if (logoImg) {
+                if (settings.logo_url) {
+                    logoImg.src = settings.logo_url;
+                    logoImg.classList.remove('hidden');
+                    logoImg.style.display = '';
+                } else {
+                    logoImg.classList.add('hidden');
+                }
+            }
+
             // Scroll Logic
             const updateScroll = () => {
-                if (settings.transparent && window.scrollY < 50) {
+                // Cross-browser scroll detection
+                const scrollPos = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+
+                if (settings.transparent && scrollPos < 50) {
                     // Transparent State
                     navbar.style.background = 'transparent';
                     navbar.style.boxShadow = 'none';
-                    navbar.style.color = settings.text_color; // Keep text color? Or white? User wanted control.
+                    navbar.style.color = settings.text_color;
+                    if (logoImg) logoImg.style.filter = 'none'; // Or brightness(0) invert(1) if needed for white logo
                 } else {
                     // Opaque State
                     navbar.style.background = settings.bg_color;
@@ -44,7 +59,21 @@ document.addEventListener('DOMContentLoaded', () => {
             updateScroll(); // Run immediately
         };
 
+        // 1. Load from LocalStorage (Fast Preview)
         applyHeaderStyles();
+
+        // 2. Load from Firestore (Global Source of Truth)
+        if (window.db) {
+            window.db.collection('site_content').doc('main').onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.header) {
+                        localStorage.setItem('site_header', JSON.stringify(data.header));
+                        applyHeaderStyles();
+                    }
+                }
+            });
+        }
 
         // Listen for live updates from CMS (same window)
         window.addEventListener('storage', (e) => {
@@ -52,16 +81,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Global Welcome Message (Added Logic)
-        const welcomeMsg = document.getElementById('header-welcome-msg');
-        if (welcomeMsg) {
-            const userName = localStorage.getItem('userName');
-            const isMember = localStorage.getItem('isMember'); // Optional check
-            if (userName && userName !== 'Visitante') {
-                welcomeMsg.textContent = `Olá, ${userName}`;
-            } else {
-                welcomeMsg.style.display = 'none'; // Hide if not logged in
+        // Global Welcome Message (Dynamic Update)
+        window.updateWelcomeUI = () => {
+            const welcomeMsg = document.getElementById('header-welcome-msg');
+            if (welcomeMsg) {
+                const userName = localStorage.getItem('userName');
+                if (userName && userName !== 'Visitante') {
+                    welcomeMsg.style.display = 'inline-block'; // Ensure visibility
+                    welcomeMsg.textContent = `Olá, ${userName}`;
+                } else {
+                    welcomeMsg.style.display = 'none'; // Hide if not logged in
+                }
             }
-        }
+        };
+
+        // Initial Call
+        window.updateWelcomeUI();
+
+        // Global Mobile Auth UI (Logout Button)
+        // Handled by sidebar.js now
+        window.updateMobileAuthUI = () => {
+            // Deprecated in favor of sidebar.js
+        };
+
+        // Run on load and storage change
+        // updateMobileAuthUI(); // Handled by sidebar.js
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'userName' || e.key === 'isMember') {
+                if (window.updateWelcomeUI) window.updateWelcomeUI();
+            }
+        });
     }
 
     // Mobile Menu Toggle
@@ -153,10 +202,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="aura-circle popup-aura"></div>
                     </div>
                     <div class="popup-content text-center">
-                        <h2>Oferta Especial ✨</h2>
-                        <p>Experimenta a nossa <strong>Área de Membros</strong> gratuitamente durante 7 dias.</p>
-                        <p class="popup-tiny">Acesso ilimitado a todas as meditações.</p>
-                        <a href="login.html?trial=true" class="btn btn-primary full-width">Começar Gratuito</a>
+                        <h2>Junta-te à Nossa Comunidade 🌿</h2>
+                        <p>Junta-te à Comunidade do WhatsApp e fica a par de todas as novidades e eventos.</p>
+                        <a href="https://chat.whatsapp.com/BpCgpanA5Wx1VEGrmo4Wwt" target="_blank" class="btn btn-primary full-width">Entrar na Comunidade</a>
                     </div>
                 </div>
             </div>
@@ -164,14 +212,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.body.insertAdjacentHTML('beforeend', popupHTML);
 
+        // Logic to close popup
+        const closeLogic = () => {
+            const overlay = document.querySelector('.popup-overlay');
+            if (overlay) overlay.remove();
+            // Cookie Management: Don't show again
+            localStorage.setItem('seenPopup', 'true');
+        };
+
         const closeBtn = document.querySelector('.close-popup');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                const overlay = document.querySelector('.popup-overlay');
-                if (overlay) overlay.remove();
-                localStorage.setItem('seenPopup', 'true');
-            });
-        }
+        const ctaBtn = document.querySelector('.popup-content .btn-primary');
+
+        if (closeBtn) closeBtn.addEventListener('click', closeLogic);
+        if (ctaBtn) ctaBtn.addEventListener('click', closeLogic);
     }
 
 
@@ -218,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const now = new Date().toISOString().split('T')[0]; // Simple YYYY-MM-DD for comparison
             // Use window.db (Compat)
             const snapshot = await window.db.collection('events')
-                .where('date', '>=', now) // Only future events
+                // .where('date', '>=', now) // Removed to allow manual control
                 .orderBy('date', 'asc')
                 .limit(4) // Show max 4 next events
                 .get();
@@ -273,8 +326,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadPublicEvents();
 
-    // --- Dynamic Services Loader ---
+    // --- Dynamic Services Loader (Premium Carousel) ---
     async function loadPublicServices() {
+        // Updated target ID from index.html change
         const container = document.getElementById('dynamic-services-container');
         if (!container) return;
 
@@ -283,13 +337,27 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Load Background Image for Section
+        try {
+            const doc = await window.db.collection('site_content').doc('main').get();
+            if (doc.exists && doc.data().service_section && doc.data().service_section.background_image) {
+                const section = document.querySelector('.services-section');
+                if (section) {
+                    section.classList.add('has-bg'); // Helper class if needed
+                    section.style.backgroundImage = `url('${doc.data().service_section.background_image}')`;
+                }
+            }
+        } catch (e) {
+            console.error("BG Load Error", e);
+        }
+
         try {
             const snapshot = await window.db.collection('services')
-                .orderBy('order', 'asc')
+                // .orderBy('order', 'asc') // Commented out to debug 'empty' issue
                 .get();
 
             if (snapshot.empty) {
-                container.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Serviços indisponíveis de momento.</p>';
+                container.innerHTML = '<p style="text-align: center; width:100%; color: white;">Serviços indisponíveis de momento.</p>';
                 return;
             }
 
@@ -297,72 +365,156 @@ document.addEventListener('DOMContentLoaded', () => {
             snapshot.forEach(doc => {
                 const data = doc.data();
 
-                // Style Logic
-                let visualStyle = '';
-                let auraHtml = '<div class="aura-circle"></div>'; // Default
+                // Fallback Image
+                const bgImage = data.headerImage ? `url('${data.headerImage}')` : 'none';
 
-                if (data.headerImage) {
-                    // Custom Image (URL or Base64) -> Override background
-                    // using 'top center' to prevent cropping the head/top of the image
-                    visualStyle = `background-image: url('${data.headerImage}'); background-size: cover; background-position: top center;`;
-                    auraHtml = ''; // No aura circle if image is active
+                // benefits to Meta string or icons
+                let metaHtml = '';
+                if (data.benefits && Array.isArray(data.benefits)) {
+                    // Take first 3 benefits as meta tags for line 1
+                    metaHtml = data.benefits.slice(0, 3).map(b => `<span><i data-lucide="check" style="width:10px;"></i> ${b}</span>`).join('');
                 }
-
-                // Benefits List
-                let benefitsHtml = '';
-                if (data.benefits && Array.isArray(data.benefits) && data.benefits.length > 0) {
-                    benefitsHtml = '<ul>';
-                    benefitsHtml += data.benefits.map(b => {
-                        let iconName = 'check';
-                        const lower = b.toLowerCase();
-                        if (lower.includes('presencial')) iconName = 'map-pin';
-                        else if (lower.includes('online')) iconName = 'video';
-                        else if (lower.includes('distância')) iconName = 'wifi';
-                        else if (lower.includes('apoio')) iconName = 'users';
-                        else if (lower.includes('recursos')) iconName = 'book-open';
-                        else if (lower.includes('mentoria')) iconName = 'infinity';
-                        else if (lower.includes('desbloqueio')) iconName = 'waves';
-                        else if (lower.includes('activação') || lower.includes('ativação')) iconName = 'sparkles';
-                        else if (lower.includes('estado alterado')) iconName = 'moon';
-                        return `<li><i data-lucide="${iconName}"></i> ${b}</li>`;
-                    }).join('');
-                    benefitsHtml += '</ul>';
-                }
-
-                console.log(`Rendering Service: ${data.title} (${doc.id})`);
-                const serviceLink = (data.link && data.link.startsWith('http')) ? data.link : `service.html#${doc.id}`;
-                console.log("Generated Link:", serviceLink);
 
                 html += `
-                <div class="services-card">
-                    <div class="service-visual ${data.styleClass || ''}" style="${visualStyle}">
-                        ${auraHtml}
-                    </div>
-                    <div class="service-content">
-                        <h3>${data.title}</h3>
-                        <p>${data.description}</p>
-                        <div class="service-benefits">
-                            ${data.benefits && data.benefits.length > 0 ? '<h4>Benefícios/Modalidades</h4>' : ''}
-                            ${benefitsHtml}
+                <div class="premium-card">
+                    <div class="premium-card-top">
+                        <div class="premium-card-overlay"></div>
+                        <div class="premium-card-content">
+                            <h3 class="premium-title">${data.title}</h3>
+                            <p class="premium-subtitle">${data.subtitle || ''}</p> <!-- Subtitle field if exists, else empty -->
+                            <div class="premium-meta">
+                                ${metaHtml}
+                            </div>
                         </div>
-                        <a href="${serviceLink}" class="btn btn-primary full-width text-center" ${serviceLink.startsWith('http') ? 'target="_blank"' : ''}>SABER MAIS</a>
+                    </div>
+                    <div class="premium-card-bottom">
+                        <p class="premium-desc">${data.description || 'Sem descrição.'}</p>
+                        <div class="premium-actions">
+                            <a href="#" class="btn-premium-outline">Agendar</a>
+                            <a href="#" class="btn-premium-outline">Saber Mais</a>
+                        </div>
                     </div>
                 </div>
                 `;
             });
 
-            container.innerHTML = html;
+            // INFITE LOOP: Duplicate content 3 times (Buffer Left, Main, Buffer Right)
+            // This ensures we can scroll endlessly in both directions
+            container.innerHTML = html + html + html;
+
             if (window.lucide) lucide.createIcons();
+
+            // Setup Infinite Scroll Logic
+            const totalWidth = container.scrollWidth;
+            const setWidth = totalWidth / 3;
+
+            // Start in the Middle Set
+            container.scrollLeft = setWidth;
+
+            // Scroll Handler for "Teleportation"
+            // Using requestAnimationFrame to prevent scroll locking? No, simple logic first.
+            const handleInfiniteScroll = () => {
+                if (container.scrollLeft >= setWidth * 2) {
+                    // Normalize: Prevent jumping too far back if user scrolled FAST
+                    // New Pos = Current - SetWidth
+                    container.scrollLeft -= setWidth;
+                } else if (container.scrollLeft <= 0) {
+                    // New Pos = Current + SetWidth
+                    container.scrollLeft += setWidth;
+                }
+            };
+            container.addEventListener('scroll', handleInfiniteScroll);
+
+            // Init Drag Scroll Logic
+            initDragScroll(container);
+
+            // AUTO ROTATION (5s)
+            // Clear existing if any
+            if (window.serviceAutoScroll) clearInterval(window.serviceAutoScroll);
+
+            window.serviceAutoScroll = setInterval(() => {
+                // Determine width of one item + gap
+                const firstCard = container.querySelector('.premium-card');
+                if (firstCard) {
+                    const style = window.getComputedStyle(firstCard);
+                    const cardWidth = firstCard.offsetWidth;
+                    // Assuming gap is 30px from CSS
+                    const gap = 30; // Hardcoded fallback or measure
+                    const stride = cardWidth + gap;
+
+                    container.scrollBy({ left: stride, behavior: 'smooth' });
+                }
+            }, 5000);
+
+            // Pause on Interaction
+            const pause = () => clearInterval(window.serviceAutoScroll);
+            const resume = () => {
+                clearInterval(window.serviceAutoScroll);
+                window.serviceAutoScroll = setInterval(() => {
+                    // Re-declare logic to avoid closure stale issues
+                    const firstCard = container.querySelector('.premium-card');
+                    if (firstCard) {
+                        const stride = firstCard.offsetWidth + 30;
+                        container.scrollBy({ left: stride, behavior: 'smooth' });
+                    }
+                }, 5000);
+            };
+
+            container.addEventListener('mousedown', pause);
+            container.addEventListener('touchstart', pause);
+            container.addEventListener('mouseup', resume);
+            container.addEventListener('touchend', resume);
+            container.addEventListener('mouseleave', resume); // If mouse leaves, resume
 
         } catch (error) {
             console.error("Error loading services:", error);
-            container.innerHTML = '<p>Erro ao carregar serviços.</p>';
+            container.innerHTML = '<p style="color:white;">Erro ao carregar serviços.</p>';
         }
     }
 
+    // Drag to Scroll Logic (Updated)
+    function initDragScroll(slider) {
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        slider.addEventListener('mousedown', (e) => {
+            isDown = true;
+            slider.classList.add('active');
+            startX = e.pageX - slider.offsetLeft;
+            scrollLeft = slider.scrollLeft;
+        });
+
+        slider.addEventListener('mouseleave', () => {
+            isDown = false;
+            slider.classList.remove('active');
+        });
+
+        slider.addEventListener('mouseup', () => {
+            isDown = false;
+            slider.classList.remove('active');
+        });
+
+        slider.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - slider.offsetLeft;
+            const walk = (x - startX) * 2; // Scroll-fast factor
+            slider.scrollLeft = scrollLeft - walk;
+        });
+    }
+
+    // Arrow Navigation Global Function
+    window.moveCarousel = (direction) => {
+        const container = document.getElementById('dynamic-services-container');
+        if (container) {
+            const scrollAmount = 350 + 30; // Card width + gap
+            container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+        }
+    };
+
     loadPublicServices();
 
-    // --- Dynamic Testimonials Loader ---
     // --- Dynamic Testimonials Loader (Infinite Loop) ---
     async function loadPublicTestimonials() {
         const container = document.getElementById('dynamic-testimonials-container');
@@ -493,14 +645,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Footer Content
+                // Footer Content
                 if (data.footer) {
                     const footerTitle = document.getElementById('footer-title');
                     const footerCopyright = document.getElementById('footer-copyright');
                     const footerCredit = document.getElementById('footer-credit');
 
-                    if (footerTitle && data.footer.title) footerTitle.innerHTML = data.footer.title;
-                    if (footerCopyright && data.footer.copyright) footerCopyright.innerHTML = data.footer.copyright;
-                    if (footerCredit && data.footer.dev_credit) footerCredit.innerHTML = data.footer.dev_credit;
+                    if (footerTitle && data.footer.title !== undefined) footerTitle.innerHTML = data.footer.title;
+                    if (footerCopyright && data.footer.copyright !== undefined) footerCopyright.innerHTML = data.footer.copyright;
+                    if (footerCredit && data.footer.dev_credit !== undefined) footerCredit.innerHTML = data.footer.dev_credit;
                 }
 
                 // Contact Content
@@ -511,11 +664,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const contactPhone = document.getElementById('contact-phone');
                     const contactInstagram = document.getElementById('contact-instagram');
 
-                    if (contactTitle && data.contact.title) contactTitle.innerHTML = data.contact.title;
-                    if (contactSubtitle && data.contact.subtitle) contactSubtitle.innerHTML = data.contact.subtitle;
-                    if (contactEmail && data.contact.email) contactEmail.innerHTML = data.contact.email;
-                    if (contactPhone && data.contact.phone) contactPhone.innerHTML = data.contact.phone;
-                    if (contactInstagram && data.contact.instagram) contactInstagram.innerHTML = data.contact.instagram;
+                    if (contactTitle && data.contact.title !== undefined) contactTitle.innerHTML = data.contact.title;
+                    if (contactSubtitle && data.contact.subtitle !== undefined) contactSubtitle.innerHTML = data.contact.subtitle;
+                    if (contactEmail && data.contact.email !== undefined) contactEmail.innerHTML = data.contact.email;
+                    if (contactPhone && data.contact.phone !== undefined) contactPhone.innerHTML = data.contact.phone;
+                    if (contactInstagram && data.contact.instagram !== undefined) contactInstagram.innerHTML = data.contact.instagram;
                 }
             }
         } catch (error) {
@@ -542,68 +695,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     setupDashboardLoop();
 
-    // --- GLOBAL: Subscription Logic ---
-    window.startSubscription = async function (redirectUrl) {
-        const btn = document.getElementById('subscribeBtn');
-        const loading = document.getElementById('subLoading'); // Optional loader el
+    // --- GLOBAL: Subscription Logic Removed (Free Access) ---
+    // Previous subscription logic has been totally removed as per request.
 
-        if (btn) {
-            btn.disabled = true;
-            btn.style.opacity = "0.7";
-            if (btn.textContent) {
-                btn.setAttribute('data-original-text', btn.textContent);
-                btn.textContent = "A iniciar Stripe...";
-            }
-        }
-        if (loading) loading.style.display = 'block';
-
-        try {
-            if (!window.firebase) throw new Error("Firebase não inicializado.");
-
-            // 1. Get Session ID from Cloud Function
-            const createSession = window.firebase.functions().httpsCallable('createCheckoutSession');
-
-            // Production Price ID (Replace if changed)
-            const PRICE_ID = 'price_1SpXX63pFxyWJ0vQGfDPRFxi';
-
-            // Ensure absolute URL for Stripe
-            const finalSuccessUrl = new URL(redirectUrl || window.location.href, window.location.origin).href;
-            const finalCancelUrl = window.location.href;
-
-            const result = await createSession({
-                priceId: PRICE_ID,
-                successUrl: finalSuccessUrl,
-                cancelUrl: finalCancelUrl
-            });
-
-            const sessionId = result.data.sessionId;
-
-            // 2. Redirect to Stripe Checkout
-            // Ensure Stripe.js is loaded in the page using this
-            const stripeKey = 'pk_test_51SpXAa3pFxyWJ0vQ6JTPbY9GRIR9rpjylMe79XCUlDpfouFC2EZ22od62flAKRp4aAOzXaDzb3uwTIhibl02h1uC00pE9oRNJE';
-            const stripe = Stripe(stripeKey);
-
-            const { error } = await stripe.redirectToCheckout({ sessionId });
-
-            if (error) {
-                alert(error.message);
-                if (btn) resetBtn(btn, loading);
-            }
-
-        } catch (error) {
-            console.error("Checkout failed:", error);
-            alert("Erro ao iniciar pagamento: " + error.message);
-            if (btn) resetBtn(btn, loading);
-        }
-    };
-
-    function resetBtn(btn, loading) {
-        btn.disabled = false;
-        btn.style.opacity = "1";
-        const orig = btn.getAttribute('data-original-text');
-        if (orig) btn.textContent = orig;
-        if (loading) loading.style.display = 'none';
-    }
 
     // --- GLOBAL: User Name Display ---
     // Runs on every page to update header if logged in

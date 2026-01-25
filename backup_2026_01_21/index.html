@@ -88,8 +88,8 @@
                         <a href="https://www.instagram.com/floresceterapias?igsh=MW90eXlmOG93em55ZA%3D%3D&utm_source=qr"
                             target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i
                                 data-lucide="instagram"></i></a>
-                        <a href="https://wa.me/351913515406" target="_blank" rel="noopener noreferrer"
-                            aria-label="WhatsApp"><i data-lucide="message-circle"></i></a>
+                        <a href="https://chat.whatsapp.com/BpCgpanA5Wx1VEGrmo4Wwt" target="_blank"
+                            rel="noopener noreferrer" aria-label="WhatsApp"><i data-lucide="phone"></i></a>
                     </div>
                 </div>
             </div>
@@ -195,16 +195,12 @@
                 <h2 class="section-title">Testemunhos</h2>
             </div>
             <div class="carousel-wrapper">
-                <button class="nav-btn prev-btn" aria-label="Anterior" onclick="moveTestimonials(-1)"><i
-                        data-lucide="chevron-left"></i></button>
 
                 <div class="carousel-container" id="dynamic-testimonials-container">
                     <!-- Loading State -->
                     <p class="text-center width-full min-w-full">A carregar testemunhos...</p>
                 </div>
 
-                <button class="nav-btn next-btn" aria-label="Seguinte" onclick="moveTestimonials(1)"><i
-                        data-lucide="chevron-right"></i></button>
             </div>
         </div>
     </section>
@@ -217,23 +213,12 @@
                     <h2 class="section-title" id="contact-title">Vamos conversar?</h2>
                     <p id="contact-subtitle">Tens dúvidas ou queres agendar? Envia uma mensagem.</p>
                     <ul class="info-list">
-                        <li id="contact-email-container">
-                            <a href="mailto:floresceterapias@gmail.com" class="contact-link">
-                                <i data-lucide="mail"></i> <span id="contact-email">floresceterapias@gmail.com</span>
-                            </a>
-                        </li>
-                        <li id="contact-phone-container">
-                            <a href="https://wa.me/351913515406" target="_blank" rel="noopener noreferrer"
-                                class="contact-link">
-                                <i data-lucide="message-circle"></i> <span id="contact-phone">+351 913 515 406</span>
-                            </a>
-                        </li>
-                        <li id="contact-instagram-container">
-                            <a href="https://instagram.com/floresceterapias" target="_blank" rel="noopener noreferrer"
-                                class="contact-link">
-                                <i data-lucide="instagram"></i> <span id="contact-instagram">@floresceterapias</span>
-                            </a>
-                        </li>
+                        <li id="contact-email-container"><i data-lucide="mail"></i> <span
+                                id="contact-email">floresceterapias@gmail.com</span></li>
+                        <li id="contact-phone-container"><i data-lucide="phone"></i> <span id="contact-phone">+351 913
+                                515 406</span></li>
+                        <li id="contact-instagram-container"><i data-lucide="instagram"></i> <span
+                                id="contact-instagram">@floresceterapias</span></li>
                     </ul>
                 </div>
                 <div class="contact-form-wrapper">
@@ -242,14 +227,6 @@
                         <div class="form-group">
                             <label for="name">Nome</label>
                             <input type="text" id="name" name="name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="phone">Telefone</label>
-                            <input type="tel" id="phone" name="phone">
                         </div>
                         <div class="form-group">
                             <label for="type">Assunto</label>
@@ -283,7 +260,7 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <p class="logo-text" id="footer-title"></p>
+                <p class="logo-text" id="footer-title">Floresce Terapias</p>
                 <div class="footer-links">
                     <a href="privacidade.html">Privacidade</a>
                     <a href="termos.html">Termos</a>
@@ -295,14 +272,8 @@
         </div>
     </footer>
 
-    <!-- Floating WhatsApp Button -->
-    <a href="https://wa.me/351913515406" class="float-whatsapp" target="_blank" rel="noopener noreferrer"
-        aria-label="Contactar por WhatsApp">
-        <img src="assets/icons/whatsapp.svg" alt="WhatsApp" />
-    </a>
-
-    <script src="main.js?v=4.9.9"></script>
-    <script src="sidebar.js?v=4.6.0"></script>
+    <script src="script.js"></script>
+    <script src="sidebar.js"></script>
     <script>
         lucide.createIcons();
     </script>

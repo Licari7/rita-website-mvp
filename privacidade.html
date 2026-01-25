@@ -59,7 +59,7 @@
     </script>
 
     <!-- Styles -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=4.3.1">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -81,12 +81,18 @@
     <nav class="navbar">
         <div class="container nav-content">
             <div class="brand-container">
-                <div class="logo">Floresce Terapias</div>
-                <div class="header-socials">
-                    <a href="https://www.instagram.com/floresceterapias?igsh=MW90eXlmOG93em55ZA%3D%3D&utm_source=qr"
-                        target="_blank" aria-label="Instagram"><i data-lucide="instagram"></i></a>
-                    <a href="https://chat.whatsapp.com/BpCgpanA5Wx1VEGrmo4Wwt" target="_blank" aria-label="WhatsApp"><i
-                            data-lucide="phone"></i></a>
+                <a href="index.html" class="logo-link" aria-label="Início">
+                    <img id="header-logo-display" src="" alt="Logo" class="header-logo hidden">
+                </a>
+                <div class="brand-info">
+                    <a href="index.html" class="logo">Floresce Terapias</a>
+                    <div class="header-socials">
+                        <a href="https://www.instagram.com/floresceterapias?igsh=MW90eXlmOG93em55ZA%3D%3D&utm_source=qr"
+                            target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i
+                                data-lucide="instagram"></i></a>
+                        <a href="https://wa.me/351913515406" target="_blank" rel="noopener noreferrer"
+                            aria-label="WhatsApp"><i data-lucide="message-circle"></i></a>
+                    </div>
                 </div>
             </div>
 
@@ -102,8 +108,7 @@
                 <a href="booking.html" class="cta-button">Agendar</a>
             </div>
 
-            <span id="header-welcome-msg"
-                style="margin-right: 15px; font-weight: 500; font-family: var(--font-serif); color: inherit; font-size: 1.1rem; vertical-align: middle;"></span>
+            <span id="header-welcome-msg" class="header-welcome-msg"></span>
 
             <button class="menu-toggle" aria-label="Menu">
                 <i data-lucide="menu"></i>
@@ -112,33 +117,14 @@
     </nav>
 
     <!-- Mobile Menu Overlay -->
-    <div class="mobile-menu">
-        <button class="close-menu" aria-label="Fechar Menu">
-            <i data-lucide="x"></i>
-        </button>
-        <span class="mobile-logo">Floresce</span>
-
-        <ul class="mobile-links-list">
-            <li><a href="index.html">Início</a></li>
-            <li><a href="index.html#about">Sobre</a></li>
-            <li><a href="index.html#services">Serviços</a></li>
-            <li><a href="index.html#events">Eventos</a></li>
-            <li><a href="booking.html">Agenda</a></li>
-            <li><a href="dashboard.html" style="color: var(--color-primary); font-weight: 600;">Área de Membros</a></li>
-        </ul>
-
-        <div class="mobile-socials">
-            <a href="https://instagram.com/floresceterapias" target="_blank"><i data-lucide="instagram"></i></a>
-            <a href="https://wa.me/351912345678" target="_blank"><i data-lucide="message-circle"></i></a>
-        </div>
-    </div>
+    <div class="mobile-menu"></div>
 
     <!-- Privacy Policy Content -->
-    <section class="section" style="padding-top: 120px; min-height: 60vh;">
+    <section class="section legal-section">
         <div class="container">
-            <h1 style="font-family: var(--font-serif); color: var(--color-primary); margin-bottom: 30px;">Política de
+            <h1 class="legal-title">Política de
                 Privacidade</h1>
-            <div style="font-family: var(--font-sans); color: var(--color-text-main); line-height: 1.6;">
+            <div class="legal-content">
                 <p>A sua privacidade é importante para nós.</p>
                 <p>Nesta página descreveremos como recolhemos, usamos e protegemos os seus dados pessoais.</p>
                 <p><em>(Texto legal a ser inserido posteriormente)</em></p>
@@ -150,7 +136,7 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <p class="logo-text" id="footer-title">Floresce Terapias</p>
+                <p class="logo-text" id="footer-title"></p>
                 <div class="footer-links">
                     <a href="privacidade.html">Privacidade</a>
                     <a href="termos.html">Termos</a>
@@ -163,6 +149,7 @@
     </footer>
 
     <script src="script.js"></script>
+    <script src="sidebar.js"></script>
     <script>
         lucide.createIcons();
     </script>

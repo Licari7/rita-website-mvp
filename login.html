@@ -6,38 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | Floresce Terapias</title>
     <script src="theme-loader.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=4.3.1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap"
         rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://js.stripe.com/v3/"></script>
+
 </head>
 
 <body class="auth-page">
 
-    <div class="mobile-menu">
-        <button class="close-menu" aria-label="Fechar Menu">
-            <i data-lucide="x"></i>
-        </button>
-        <span class="mobile-logo">Floresce</span>
-
-        <ul class="mobile-links-list">
-            <li><a href="index.html">Início</a></li>
-            <li><a href="index.html#about">Sobre</a></li>
-            <li><a href="index.html#services">Serviços</a></li>
-            <li><a href="index.html#events">Eventos</a></li>
-            <li><a href="booking.html">Agenda</a></li>
-            <li><a href="dashboard.html" style="color: var(--color-primary); font-weight: 600;">Área de Membros</a></li>
-        </ul>
-
-        <div class="mobile-socials">
-            <a href="https://instagram.com/floresceterapias" target="_blank"><i data-lucide="instagram"></i></a>
-            <a href="https://wa.me/351912345678" target="_blank"><i data-lucide="message-circle"></i></a>
-        </div>
-    </div>
+    <div class="mobile-menu"></div>
 
     <div class="auth-container">
         <a href="index.html" class="back-link">&larr; Voltar ao site</a>
@@ -49,7 +30,7 @@
             </div>
 
             <div id="loginForm" class="auth-form">
-                <div class="form-group hidden" id="nameGroup" style="display: none;">
+                <div class="form-group hidden" id="nameGroup">
                     <label for="signupName">Nome</label>
                     <input type="text" id="signupName" placeholder="Como te podemos chamar?">
                 </div>
@@ -60,10 +41,10 @@
                 <!-- ... existing password ... -->
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <div style="position: relative;">
-                        <input type="password" id="password" required style="padding-right: 40px;">
-                        <button type="button" id="togglePassword"
-                            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #666;">
+                    <div class="password-wrapper">
+                        <input type="password" id="password" required class="password-input">
+                        <button type="button" id="togglePassword" class="password-toggle-btn"
+                            aria-label="Mostrar password">
                             <i data-lucide="eye"></i>
                         </button>
                     </div>
@@ -74,14 +55,13 @@
 
             <p class="auth-footer text-center" id="authFooter">
                 Ainda não és membro? <a href="#" id="toggleSignupBtn">Subscrever agora</a>
-                <br><small
-                    style="font-size: 0.6rem; opacity: 0.5; display:block; margin-top:15px; letter-spacing: 1px;">CREATED
-                    IN PORTUGAL WITH ❤️ BY CALB</small>
+                <br><small class="auth-small-text">CREATED BY CALB</small>
             </p>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="main.js"></script>
+    <script src="sidebar.js"></script>
 
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -236,7 +216,7 @@
                                         uid: user.uid,
                                         name: name,
                                         email: email,
-                                        status: 'pending', // Default status
+                                        status: 'active',
                                         createdAt: new Date(),
                                         lastLogin: new Date()
                                     });
@@ -246,13 +226,13 @@
                                     await user.updateProfile({ displayName: name });
                                 }
 
-                                // 4. IMMEDIATE REDIRECT TO PAYMENT
-                                if (confirm("Conta criada! Vamos ativar a tua subscrição?")) {
-                                    await window.startSubscription('dashboard.html');
-                                } else {
-                                    alert("Podes ativar a subscrição mais tarde fazendo login.");
-                                    window.location.reload();
-                                }
+                                // 4. AUTO-LOGIN SUCCESS
+                                localStorage.setItem('userEmail', user.email);
+                                localStorage.setItem('isMember', 'true');
+                                localStorage.setItem('userName', name);
+
+                                alert("Conta criada com sucesso! Bem-vindo(a) à família Floresce.");
+                                window.location.href = 'dashboard.html';
 
                             } catch (error) {
                                 console.error("Error saving profile:", error);
@@ -265,62 +245,37 @@
                             const user = userCredential.user;
 
                             // 1. Check Status in Firestore
-                            let userNameFromDb = '';
                             if (window.db) {
-                                const docSnap = await window.db.collection("users").doc(user.email).get();
+                                try {
+                                    const docSnap = await window.db.collection("users").doc(user.email).get();
+                                    if (docSnap.exists) {
+                                        const userData = docSnap.data();
 
-                                if (docSnap.exists) {
-                                    const userData = docSnap.data();
-                                    userNameFromDb = userData.name;
-
-                                    if (userData.status === 'pending' || userData.status === 'inactive') {
-                                        // Show Payment Option
-                                        if (confirm("A tua conta está pendente/inativa. Queres ativar a subscrição agora?")) {
-                                            await window.startSubscription('dashboard.html');
+                                        // Blocked Check
+                                        if (userData.status === 'blocked') {
+                                            alert("Esta conta foi suspensa. Contacta a administração.");
+                                            await window.auth.signOut();
+                                            loginBtn.textContent = originalText;
+                                            loginBtn.disabled = false;
                                             return;
                                         }
-                                        // Allow login but they won't force logout here, 
-                                        // dashboard.html handles the lock if they proceed without paying.
-                                        // But maybe we should block here? dashboard.html has the modal.
-                                        // Let's rely on dashboard.html modal.
-                                    }
 
-                                    if (userData.status === 'blocked') {
-                                        alert("Esta conta foi suspensa. Contacta a administração.");
-                                        await window.auth.signOut();
-                                        loginBtn.textContent = originalText;
-                                        loginBtn.disabled = false;
-                                        return;
-                                    }
-
-                                    // If active, update last login
-                                    window.db.collection("users").doc(user.email).update({
-                                        lastLogin: new Date()
-                                    }).catch(e => console.log("Erro a atualizar lastLogin", e));
-                                } else {
-                                    // Legacy/Sync Issue
-                                    try {
-                                        await window.db.collection("users").doc(user.email).set({
-                                            uid: user.uid,
-                                            name: user.displayName || name || 'Membro',
-                                            email: user.email,
-                                            status: 'active', // Assume legacy users are active? Or pending? Safer pending.
-                                            createdAt: new Date(),
+                                        // Update Last Login
+                                        window.db.collection("users").doc(user.email).update({
                                             lastLogin: new Date()
-                                        });
-                                    } catch (e) { }
+                                        }).catch(e => console.log("Erro a atualizar lastLogin", e));
+                                    }
+                                } catch (dbError) {
+                                    console.log("DB Check skipped or failed", dbError);
                                 }
                             }
 
-                            // Success Handling
+                            // Success -> Redirect
+                            // LocalStorage set in dashboard, but good to set here too
                             localStorage.setItem('userEmail', user.email);
                             localStorage.setItem('isMember', 'true');
-                            const finalName = user.displayName || userNameFromDb || 'Membro';
-                            localStorage.setItem('userName', finalName);
-
                             window.location.href = 'dashboard.html';
                         }
-
                     } catch (error) {
                         console.error("Auth Failed:", error);
                         let msg = "Erro desconhecido: " + error.message;
@@ -329,6 +284,8 @@
                             msg = "Email ou Password inválidos.";
                         } else if (error.code === 'auth/weak-password') {
                             msg = "A password deve ter pelo menos 6 caracteres.";
+                        } else if (error.code === 'auth/email-already-in-use') {
+                            msg = "Este email já está em uso.";
                         }
 
                         alert(msg);
@@ -336,7 +293,6 @@
                         loginBtn.disabled = false;
                     }
                 });
-            } else {
                 console.error("Button not found");
             }
 

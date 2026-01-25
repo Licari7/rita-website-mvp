@@ -12,7 +12,7 @@
     <script src="theme-loader.js"></script>
 
     <meta name="description" content="Detalhes da sessão terapêutica.">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=4.3.1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -66,12 +66,18 @@
     <nav class="navbar">
         <div class="container nav-content">
             <div class="brand-container">
-                <a href="index.html" class="logo">Floresce</a>
-                <div class="header-socials">
-                    <a href="https://www.instagram.com/floresceterapias?igsh=MW90eXlmOG93em55ZA%3D%3D&utm_source=qr"
-                        target="_blank" aria-label="Instagram"><i data-lucide="instagram"></i></a>
-                    <a href="https://chat.whatsapp.com/BpCgpanA5Wx1VEGrmo4Wwt" target="_blank" aria-label="WhatsApp"><i
-                            data-lucide="phone"></i></a>
+                <a href="index.html" class="logo-link" aria-label="Início">
+                    <img id="header-logo-display" src="" alt="Logo" class="header-logo hidden">
+                </a>
+                <div class="brand-info">
+                    <a href="index.html" class="logo">Floresce Terapias</a>
+                    <div class="header-socials">
+                        <a href="https://www.instagram.com/floresceterapias?igsh=MW90eXlmOG93em55ZA%3D%3D&utm_source=qr"
+                            target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i
+                                data-lucide="instagram"></i></a>
+                        <a href="https://wa.me/351913515406" target="_blank" rel="noopener noreferrer"
+                            aria-label="WhatsApp"><i data-lucide="message-circle"></i></a>
+                    </div>
                 </div>
             </div>
 
@@ -81,8 +87,7 @@
                 <li><a href="booking.html" class="btn btn-primary">Agendar</a></li>
             </ul>
 
-            <span id="header-welcome-msg"
-                style="margin-right: 15px; font-weight: 500; font-family: var(--font-serif); color: inherit; font-size: 1.1rem; vertical-align: middle;"></span>
+            <span id="header-welcome-msg" class="header-welcome-msg"></span>
 
             <!-- Mobile Toggle -->
             <button class="menu-toggle" aria-label="Abrir Menu">
@@ -92,26 +97,7 @@
     </nav>
 
     <!-- Mobile Menu Overlay -->
-    <div class="mobile-menu">
-        <button class="close-menu" aria-label="Fechar Menu">
-            <i data-lucide="x"></i>
-        </button>
-        <span class="mobile-logo">Floresce</span>
-
-        <ul class="mobile-links-list">
-            <li><a href="index.html">Início</a></li>
-            <li><a href="index.html#about">Sobre</a></li>
-            <li><a href="index.html#services">Serviços</a></li>
-            <li><a href="index.html#events">Eventos</a></li>
-            <li><a href="booking.html">Agenda</a></li>
-            <li><a href="dashboard.html" style="color: var(--color-primary); font-weight: 600;">Área de Membros</a></li>
-        </ul>
-
-        <div class="mobile-socials">
-            <a href="https://instagram.com/floresceterapias" target="_blank"><i data-lucide="instagram"></i></a>
-            <a href="https://wa.me/351912345678" target="_blank"><i data-lucide="message-circle"></i></a>
-        </div>
-    </div>
+    <div class="mobile-menu"></div>
 
     <!-- Header -->
     <header class="service-detail-header">
@@ -123,7 +109,8 @@
     <main class="service-detail-content">
         <div id="svc-content">
             <!-- Dynamic Content Here -->
-            <p style="text-align: center;">A carregar detalhes do serviço...</p>
+            <!-- Dynamic Content Here -->
+            <p class="text-center" id="loading-msg">A carregar detalhes do serviço...</p>
         </div>
 
         <!-- Optional: Testimonials Placeholder (Future: Dynamic) -->
@@ -136,17 +123,17 @@
 
         <!-- CTA Buttons -->
         <div class="cta-actions">
-            <a href="booking.html" class="btn btn-primary">Agendar Agora</a>
-            <a href="index.html#contact" class="btn btn-outline">Tenho Dúvidas</a>
+            <a href="https://wa.me/351913515406" class="btn btn-primary" target="_blank"
+                rel="noopener noreferrer">Agendar via WhatsApp</a>
         </div>
     </main>
 
     <!-- Footer -->
     <footer class="footer">
         <div class="container text-center">
-            <p class="logo-text">Floresce Terapias</p>
-            <p class="copyright">&copy; 2026. Todos os direitos reservados.</p>
-            <p style="font-size: 0.7rem; opacity: 0.6; margin-top: 10px; letter-spacing: 1px;">CREATED IN PORTUGAL WITH
+            <p class="logo-text" id="footer-title"></p>
+            <p class="copyright" id="footer-copyright">&copy; 2026. Todos os direitos reservados.</p>
+            <p class="footer-credits" id="footer-credit">CREATED IN PORTUGAL WITH
                 ❤️ BY CALB</p>
         </div>
     </footer>
@@ -158,7 +145,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <script src="init-firebase.js"></script>
 
-    <script src="script.js"></script>
+    <script src="main.js?v=4.9.9"></script>
+    <script src="sidebar.js"></script>
     <script>
         lucide.createIcons();
 
@@ -176,10 +164,20 @@
                     <div style="text-align: center; padding: 40px;">
                         <h2 style="color: var(--color-primary);">Serviço não encontrado</h2>
                         <p>O serviço que procura não está disponível ou o link está incorreto.</p>
+                        <div style="background:#eee; padding:10px; margin:10px; font-family:monospace; word-break:break-all;">
+                           URL Atual: ${window.location.href}<br>
+                           Search: ${window.location.search}<br>
+                           Hash: ${window.location.hash}
+                        </div>
+                        <p style="font-size:0.8rem; color:#666;">Erro: ID não detetado.</p>
                         <a href="index.html" class="btn btn-primary" style="margin-top:20px;">Voltar ao Início</a>
                     </div>`;
                 return;
             }
+
+            // Show Debug ID
+            const loadMsg = document.getElementById('loading-msg');
+            if (loadMsg) loadMsg.textContent = `A procurar por: "${serviceId}"...`;
 
             // Wait for DB
             const checkDb = () => {
@@ -211,9 +209,12 @@
                 let docSnap = await window.db.collection('services').doc(id).get();
 
                 if (!docSnap.exists) {
-                    // Fallback: Maybe the user manually typed ?id=aura and we want to search/filter?
-                    // For now, assume ID is DocID.
-                    document.getElementById('svc-content').innerHTML = `<p style="text-align: center; color: red;">Serviço não encontrado (ID: ${id}). <br> <a href="index.html">Voltar ao Início</a></p>`;
+                    document.getElementById('svc-content').innerHTML = `
+                        <div style="text-align: center; color: var(--color-text-main);">
+                            <h2 style="color: #d9534f;">Serviço não encontrado</h2>
+                            <p>O serviço que procura não está disponível ou o link está incorreto.</p>
+                            <a href="index.html" class="btn btn-primary" style="margin-top:20px;">Voltar ao Início</a>
+                        </div>`;
                     return;
                 }
 

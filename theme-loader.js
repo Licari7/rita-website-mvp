@@ -19,6 +19,8 @@
             const root = document.documentElement;
             if (h.bg_color) root.style.setProperty('--nav-bg', h.bg_color);
             if (h.text_color) root.style.setProperty('--nav-text', h.text_color);
+            if (h.font_size) root.style.setProperty('--nav-font-size', h.font_size + 'px');
+            if (h.padding) root.style.setProperty('--nav-padding', h.padding + 'px');
         }
     } catch (e) {
         console.error("Error loading theme:", e);

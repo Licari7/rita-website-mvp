@@ -9,9 +9,10 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@300;400;500&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=4.3.5">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://js.stripe.com/v3/"></script>
+
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
     <style>
         /* Hide API Key Warning - Minimal & Safe */
@@ -54,6 +55,9 @@
             list-style: none;
             color: var(--color-primary);
             background: #fff;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
             user-select: none;
         }
 
@@ -114,7 +118,7 @@
         .admin-card-body textarea,
         .admin-card-body button {
             font-size: 12px !important;
-            padding: 8px;
+            padding: 1px;
             /* Slightly reduced padding for inputs */
             color: #000 !important;
             /* Force Black */
@@ -143,68 +147,26 @@
     </style>
 </head>
 
-<body>
+<body class="dashboard-page">
 
-    <!-- Subscription Modal (Hidden by default) -->
-    <div id="subscriptionModal"
-        class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4"
-        style="z-index: 9999;">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center animate-fade-in relative overflow-hidden"
-            style="position: relative;">
-            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-500 to-pink-500"
-                style="position: absolute; top:0; left:0; width:100%; height:8px; background: linear-gradient(90deg, #9333ea, #db2777);">
-            </div>
 
-            <div class="mb-6 inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 text-purple-600"
-                style="background: #f3e8ff; color: #9333ea; width: 64px; height: 64px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 24px;">
-                <i data-lucide="crown" class="w-8 h-8" style="width: 32px; height: 32px;"></i>
-            </div>
-
-            <h2 class="text-2xl font-bold text-gray-800 mb-2"
-                style="font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 8px;">Torna-te Membro</h2>
-            <p class="text-gray-600 mb-6" style="color: #4b5563; margin-bottom: 24px;">Acesso mensal a todas as
-                meditações, eventos e conteúdos da comunidade Floresce.</p>
-
-            <div class="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-100"
-                style="background: #f9fafb; border-radius: 12px; padding: 16px; margin-bottom: 24px; border: 1px solid #f3f4f6;">
-                <div class="text-sm text-gray-500 uppercase tracking-wide font-semibold"
-                    style="font-size: 0.875rem; color: #6b7280; letter-spacing: 0.025em; font-weight: 600;">Mensalidade
-                </div>
-                <div class="flex items-baseline justify-center gap-1 mt-1"
-                    style="display: flex; justify-content: center; align-items: baseline; gap: 4px; margin-top: 4px;">
-                    <span class="text-3xl font-bold text-gray-900"
-                        style="font-size: 1.875rem; font-weight: 700; color: #111827;">20,00€</span>
-                    <span class="text-gray-500" style="color: #6b7280;">/mês</span>
-                </div>
-            </div>
-
-            <button onclick="startSubscription()" id="subscribeBtn"
-                class="w-full py-3 px-6 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2"
-                style="width: 100%; padding: 12px 24px; background: linear-gradient(90deg, #9333ea, #db2777); color: white; border-radius: 12px; font-weight: 500; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <span>Subscrever Agora</span>
-                <i data-lucide="arrow-right" class="w-4 h-4" style="width: 16px; height: 16px;"></i>
-            </button>
-            <p id="subLoading" class="hidden text-sm text-gray-500 mt-3 animate-pulse"
-                style="display: none; font-size: 0.875rem; color: #6b7280; margin-top: 12px;">A preparar pagamento
-                seguro...</p>
-
-            <button onclick="logoutFromModal()" class="mt-4 text-xs text-gray-400 hover:text-gray-600 underline"
-                style="margin-top: 16px; font-size: 0.75rem; color: #9ca3af; background: none; border: none; cursor: pointer; text-decoration: underline;">
-                Sair e tentar com outra conta
-            </button>
-        </div>
-    </div>
 
     <!-- Navigation -->
     <nav class="navbar">
         <div class="container nav-content">
             <div class="brand-container">
-                <a href="index.html" class="logo">Floresce Terapias</a>
-                <div class="header-socials">
-                    <a href="https://www.instagram.com/floresceterapias?igsh=MW90eXlmOG93em55ZA%3D%3D&utm_source=qr"
-                        target="_blank" aria-label="Instagram"><i data-lucide="instagram"></i></a>
-                    <a href="https://chat.whatsapp.com/BpCgpanA5Wx1VEGrmo4Wwt" target="_blank" aria-label="WhatsApp"><i
-                            data-lucide="phone"></i></a>
+                <a href="index.html" class="logo-link" aria-label="site público">
+                    <img id="header-logo-display" src="" alt="Logo" class="header-logo hidden">
+                </a>
+                <div class="brand-info">
+                    <a href="index.html" class="logo">Floresce Terapias</a>
+                    <div class="header-socials">
+                        <a href="https://www.instagram.com/floresceterapias?igsh=MW90eXlmOG93em55ZA%3D%3D&utm_source=qr"
+                            target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i
+                                data-lucide="instagram"></i></a>
+                        <a href="https://wa.me/351913515406" target="_blank" rel="noopener noreferrer"
+                            aria-label="WhatsApp"><i data-lucide="message-circle"></i></a>
+                    </div>
                 </div>
             </div>
 
@@ -213,19 +175,19 @@
                 <li><a href="index.html#about">Sobre</a></li>
                 <li><a href="index.html#services">Serviços</a></li>
                 <li><a href="index.html#events">Eventos</a></li>
-                <li><a href="booking.html">Agenda</a></li>
+                <li><a href="booking.html">Agendar</a></li>
                 <li><a href="dashboard.html" class="active">Área de Membros</a></li>
             </ul>
 
             <div class="nav-actions">
-                <span id="user-name-display" class="desktop-only"
-                    style="margin-right: 15px; font-weight: 500;">Visitante</span>
+                <span id="user-name-display" class="desktop-only user-name-display">Visitante</span>
                 <a href="#" id="logout-btn" class="btn btn-outline btn-sm">Sair</a>
             </div>
 
             <!-- Welcome Message (New Location) -->
-            <span id="header-welcome-msg"
-                style="margin-right: 15px; font-weight: 500; font-family: var(--font-serif); color: inherit; font-size: 1.1rem; vertical-align: middle;"></span>
+            <!-- Welcome Message (New Location) -->
+            <!-- Welcome Message -->
+            <span id="header-welcome-msg" class="header-welcome-msg"></span>
 
             <button class="menu-toggle" aria-label="Menu">
                 <i data-lucide="menu"></i>
@@ -235,49 +197,23 @@
 
     <!-- Mobile Menu Overlay -->
     <div class="mobile-menu">
-        <button class="close-menu" aria-label="Fechar Menu">
-            <i data-lucide="x"></i>
-        </button>
-        <span class="mobile-logo">Floresce</span>
-
-        <ul class="mobile-links-list">
-            <li><a href="index.html">Início</a></li>
-            <li><a href="index.html#about">Sobre</a></li>
-            <li><a href="index.html#services">Serviços</a></li>
-            <li><a href="index.html#events">Eventos</a></li>
-            <li><a href="booking.html">Agenda</a></li>
-            <li><a href="dashboard.html"
-                    style="display: block; padding: 10px 0; color: var(--color-primary); font-weight: 600;">Área de
-                    Membros</a></li>
-        </ul>
-
-        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-
-        <a href="#" id="mobile-logout-btn" style="color: #e57373; display: flex; align-items: center; gap: 8px;">
-            <i data-lucide="log-out" style="width: 18px;"></i> Sair da Conta
-        </a>
-
-        <div class="mobile-socials">
-            <a href="https://instagram.com/floresceterapias" target="_blank"><i data-lucide="instagram"></i></a>
-            <a href="https://wa.me/351912345678" target="_blank"><i data-lucide="message-circle"></i></a>
-        </div>
+        <!-- Content injected by sidebar.js -->
     </div>
 
     <!-- Main Content -->
     <main class="container section-padding">
-        <header class="section-header text-center" style="margin-bottom: 40px;">
-            <h1 class="section-title">Área de Membros</h1>
+        <header class="section-header text-center mb-40">
+            <h1 class="section-title">As Minhas Meditações</h1>
             <!-- Removed welcome message from here -->
-            <p>Acede aqui aos teus recursos e meditações.</p>
-            <button id="admin-toggle-btn" class="cta-button"
-                style="display: none; margin: 20px auto 0; background-color: #333; color: white;">
+            <!-- <p>Acede aqui aos teus recursos e meditações.</p> -->
+            <button id="admin-toggle-btn" class="cta-button admin-toggle-btn">
                 <i data-lucide="settings"></i> Gerir Site
             </button>
         </header>
 
         <!-- ADMIN PANEL (Hidden by Default) -->
-        <section id="admin-panel" style="display: none; max-width: 900px; margin: 0 auto 60px;">
-            <h2 style="color: var(--color-primary); margin-bottom: 30px; text-align: center;">
+        <section id="admin-panel" class="admin-panel-container">
+            <h2 class="admin-panel-title">
                 Painel de Administração
             </h2>
 
@@ -285,14 +221,14 @@
                 <!-- 1. EVENTS ACCORDION -->
                 <details class="admin-card draggable-card" id="card-events" draggable="true">
                     <summary class="admin-card-header">
-                        <span><i data-lucide="calendar" style="margin-right: 10px; width: 18px;"></i> Gestão de
+                        <span><i data-lucide="calendar" class="admin-icon"></i> Gestão de
                             Eventos</span>
                     </summary>
                     <div class="admin-card-body">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+                        <div class="admin-grid-layout">
                             <!-- Add Event Form -->
                             <div>
-                                <h3 style="font-family: var(--font-serif); margin-bottom: 15px;">Adicionar Novo Evento
+                                <h3 class="admin-section-title">Adicionar Novo Evento
                                 </h3>
                                 <form id="event-form" class="auth-form">
                                     <input type="hidden" id="evt-id">
@@ -300,12 +236,12 @@
                                         <label>Título do Evento</label>
                                         <input type="text" id="evt-title" required placeholder="Ex: Workshop de Aura">
                                     </div>
-                                    <div class="form-group-row" style="display: flex; gap: 10px;">
-                                        <div class="form-group" style="flex: 1;">
+                                    <div class="form-group-row">
+                                        <div class="form-group form-group-half">
                                             <label>Data</label>
                                             <input type="date" id="evt-date" required>
                                         </div>
-                                        <div class="form-group" style="flex: 1;">
+                                        <div class="form-group form-group-half">
                                             <label>Hora</label>
                                             <input type="time" id="evt-time" required>
                                         </div>
@@ -318,7 +254,7 @@
                                     <div class="form-group">
                                         <label>Descrição Curta</label>
                                         <textarea id="evt-desc" rows="3" placeholder="Descrição breve para o site"
-                                            style="width: 100%; border: 1px solid #ddd; padding: 8px; border-radius: 8px;"></textarea>
+                                            class="admin-textarea"></textarea>
                                     </div>
                                     <div class="form-group">
                                         <label>Imagem (Capa)</label>
@@ -333,12 +269,11 @@
                             </div>
 
                             <!-- Existing Events List -->
-                            <div style="border-left: 1px solid #eee; padding-left: 40px;">
-                                <div
-                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                                    <h3 style="font-family: var(--font-serif); margin: 0;">Eventos Ativos</h3>
+                            <div class="admin-list-container">
+                                <div class="admin-header-flex">
+                                    <h3 class="font-serif margin-0">Eventos Ativos</h3>
                                     <button type="button" onclick="window.resetEventForm()"
-                                        class="btn btn-outline btn-sm" style="font-size: 0.8rem;">+ Novo</button>
+                                        class="btn btn-outline btn-sm font-sm">+ Novo</button>
                                 </div>
                                 <div id="admin-events-list">
                                     <!-- Populated by JS -->
@@ -351,7 +286,7 @@
                 <!-- 2. HOME HERO ACCORDION -->
                 <details class="admin-card draggable-card" id="card-home-hero" draggable="true">
                     <summary class="admin-card-header">
-                        <span><i data-lucide="home" style="margin-right: 10px; width: 18px;"></i> Página Inicial
+                        <span><i data-lucide="home" class="admin-icon"></i> Página Inicial
                             (Hero)</span>
                     </summary>
                     <div class="admin-card-body">
@@ -369,17 +304,14 @@
                             </div>
 
                             <!-- Readability Controls -->
-                            <div class="form-group-row"
-                                style="display: flex; gap: 20px; align-items: center; margin-bottom: 15px; background: whitesmoke; padding: 10px; border-radius: 8px;">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <label for="home-text-color" style="margin:0;">Cor do Texto:</label>
-                                    <input type="color" id="home-text-color" value="#E1D7CE"
-                                        style="width: 50px; height: 30px; border: none; cursor: pointer;">
+                            <div class="form-group-row flex-gap-20-center bg-whitesmoke-rounded mb-15">
+                                <div class="flex-align-center-gap-10">
+                                    <label for="home-text-color" class="margin-0">Cor do Texto:</label>
+                                    <input type="color" id="home-text-color" value="#f7f2e0" class="color-input">
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <input type="checkbox" id="home-text-highlight"
-                                        style="width: 18px; height: 18px; margin:0;">
-                                    <label for="home-text-highlight" style="margin:0; cursor: pointer;">Fundo de
+                                <div class="flex-align-center-gap-10">
+                                    <input type="checkbox" id="home-text-highlight" class="w-18-h-18 margin-0">
+                                    <label for="home-text-highlight" class="margin-0 cursor-pointer">Fundo de
                                         Destaque?</label>
                                 </div>
                             </div>
@@ -387,9 +319,9 @@
                             <div class="form-group">
                                 <label>Imagem de Fundo (Opcional)</label>
                                 <input type="text" id="home-image-url" placeholder="URL da imagem (ou upload abaixo)"
-                                    style="margin-bottom:5px; background:whitesmoke; border:1px solid #ddd; width:100%; padding:10px; border-radius:8px; display:none;">
+                                    class="admin-file-url-input">
                                 <input type="file" id="home-image-file" accept="image/*">
-                                <small style="color: #666;">Substitui a cor verde por uma foto.</small>
+                                <small class="admin-help-text">Substitui a cor verde por uma foto.</small>
                             </div>
                             <button type="submit" id="home-save-btn" class="cta-button primary full-width">Guardar
                                 Início</button>
@@ -400,7 +332,7 @@
                 <!-- 3. HOME SUMMARY ACCORDION (New) -->
                 <details class="admin-card draggable-card" id="card-home-summary" draggable="true">
                     <summary class="admin-card-header">
-                        <span><i data-lucide="align-left" style="margin-right: 10px; width: 18px;"></i> Página Inicial
+                        <span><i data-lucide="align-left" class="admin-icon"></i> Página Inicial
                             (Resumo Sobre)</span>
                     </summary>
                     <div class="admin-card-body">
@@ -413,11 +345,11 @@
                                 <label>Texto do Resumo</label>
                                 <textarea id="home-about-text-input" rows="4"
                                     placeholder="Breve texto introdutório que aparece na página inicial..."
-                                    style="width: 100%; border: 1px solid #ddd; padding: 8px; border-radius: 8px;"></textarea>
+                                    class="admin-textarea"></textarea>
                             </div>
                             <div class="form-group">
                                 <label>Imagem Lateral (Pequena)</label>
-                                <input type="text" id="home-about-image-url" style="display:none;">
+                                <input type="text" id="home-about-image-url" class="admin-file-url-input">
                                 <input type="file" id="home-about-image-file" accept="image/*">
                             </div>
                             <button type="submit" id="home-about-save-btn" class="cta-button primary full-width">Guardar
@@ -429,19 +361,18 @@
                 <!-- 3. MEMBER MANAGEMENT ACCORDION (NEW) -->
                 <details class="admin-card draggable-card" id="card-members" draggable="true">
                     <summary class="admin-card-header">
-                        <span><i data-lucide="users" style="margin-right: 10px; width: 18px;"></i> Gestão de
+                        <span><i data-lucide="users" class="admin-icon"></i> Gestão de
                             Membros</span>
                     </summary>
                     <div class="admin-card-body">
                         <div class="admin-panel-content" id="panel-members">
-                            <div
-                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                                <h3 style="font-family: var(--font-serif); margin: 0;">Lista de Membros</h3>
+                            <div class="admin-header-flex">
+                                <h3 class="font-serif margin-0">Lista de Membros</h3>
                                 <button class="btn btn-outline btn-sm" onclick="window.loadMembers()">Atualizar
                                     Lista</button>
                             </div>
 
-                            <div id="admin-members-list" style="max-height: 500px; overflow-y: auto;">
+                            <div id="admin-members-list" class="scrollable-list-500">
                                 <p>A carregar membros...</p>
                             </div>
                         </div>
@@ -451,7 +382,7 @@
                 <!-- 4. ABOUT PAGE FULL ACCORDION -->
                 <details class="admin-card draggable-card" id="card-about-full" draggable="true">
                     <summary class="admin-card-header">
-                        <span><i data-lucide="user" style="margin-right: 10px; width: 18px;"></i> Página "Sobre Mim"
+                        <span><i data-lucide="user" class="admin-icon"></i> Página "Sobre Mim"
                             (Completa)</span>
                     </summary>
                     <div class="admin-card-body">
@@ -461,514 +392,660 @@
                                 <input type="text" id="about-title" placeholder="Uma jornada de luz">
                             </div>
                             <div class="form-group">
-                                <label>Foto de Perfil (Topo)</label>
-                                <input type="text" id="about-image-url" style="display:none;">
+                                <label>Foto de Perfil (Intro)</label>
+                                <input type="text" id="about-image-url" class="admin-file-url-input">
                                 <input type="file" id="about-image-file" accept="image/*">
                             </div>
                             <div class="form-group">
-                                <label>Biografia Completa</label>
-                                <textarea id="about-text" rows="10" placeholder="A tua história completa..."
-                                    style="width: 100%; border: 1px solid #ddd; padding: 8px; border-radius: 8px;"></textarea>
-                                <small style="color: #666;">Aceita HTML básico.</small>
+                                <label>Texto Autoconhecimento</label>
+                                <textarea id="about-text-intro" rows="6" placeholder="Texto da primeira secção..."
+                                    class="admin-textarea"></textarea>
                             </div>
-                            <button type="submit" id="about-save-btn" class="cta-button primary full-width">Guardar
-                                Página Sobre</button>
-                        </form>
+
+                            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+
+                            <div class="form-group">
+                                <label>Foto Secção Arte (Opcional)</label>
+                                <input type="text" id="about-image-art-url" class="admin-file-url-input">
+                                <input type="file" id="about-image-art-file" accept="image/*">
+                            </div>
+                            <div class="form-group">
+                                <label>Texto Arte</label>
+                                <textarea id="about-text-art" rows="6" placeholder="Texto da secção Arte..."
+                                    class="admin-textarea"></textarea>
+                            </div>
+                            <small class="admin-help-text">Aceita HTML básico.</small>
                     </div>
-                </details>
+                    <button type="submit" id="about-save-btn" class="cta-button primary full-width">Guardar
+                        Página Sobre</button>
+                    </form>
+            </div>
+            </details>
 
-                <!-- 5. SERVICES ACCORDION -->
-                <details class="admin-card draggable-card" id="card-services" draggable="true">
-                    <summary class="admin-card-header">
-                        <span><i data-lucide="sparkles" style="margin-right: 10px; width: 18px;"></i> Gestão de
-                            Serviços</span>
-                    </summary>
-                    <div class="admin-card-body">
-                        <div class="admin-panel-content" id="panel-services">
-                            <form id="service-form" class="auth-form" style="max-width: 100%;">
-                                <input type="hidden" id="svc-id">
+            <!-- 5. SERVICES ACCORDION -->
+            <details class="admin-card draggable-card" id="card-services" draggable="true">
+                <summary class="admin-card-header">
+                    <span><i data-lucide="sparkles" class="admin-icon"></i> Gestão de
+                        Serviços</span>
+                </summary>
+                <div class="admin-card-body">
+                    <div class="admin-panel-content" id="panel-services">
+                        <form id="service-form" class="auth-form full-width-max">
+                            <input type="hidden" id="svc-id">
 
-                                <!-- TOP SECTION: List & Metadata -->
-                                <div
-                                    style="display: grid; grid-template-columns: 350px 1fr; gap: 30px; align-items: start;">
+                            <!-- RE-DESIGNED LAYOUT: SINGLE COLUMN, CENTERED -->
 
-                                    <!-- LEFT: List -->
-                                    <div
-                                        style="background: #f9f9f9; padding: 15px; border-radius: 12px; border: 1px solid #eee;">
-                                        <div
-                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                            <h3 style="font-family: var(--font-serif); margin: 0;">Serviços Ativos</h3>
-                                            <button type="button" onclick="window.resetServiceForm()"
-                                                class="btn btn-outline btn-sm" style="font-size: 0.8rem;">+
-                                                Novo</button>
-                                        </div>
-                                        <div id="admin-services-list" style="max-height: 400px; overflow-y: auto;">
-                                            <!-- Populated by JS -->
-                                        </div>
+                            <!-- 1. HEADER & NEW BTN -->
+                            <div class="flex-column-center mb-20 width-100">
+                                <button type="button" onclick="window.resetServiceForm()"
+                                    class="cta-button outline small">+ Novo Serviço</button>
+                            </div>
+
+                            <!-- General Section Config (Background) -->
+                            <div class="width-100 flex-center mb-20">
+                                <details class="admin-card-inner width-100 max-w-400">
+                                    <summary class="font-xs cursor-pointer text-center text-muted">Configurar Imagem
+                                        de Fundo (Geral)</summary>
+                                    <div class="p-10 border-light mt-5 bg-gray-light border-radius-8">
+                                        <form id="service-config-form"
+                                            onsubmit="event.preventDefault(); window.handleServiceConfigSubmit();">
+                                            <div class="form-group mb-5">
+                                                <input type="text" id="service-bg-url" placeholder="URL da Imagem..."
+                                                    class="admin-input-select font-xs">
+                                            </div>
+                                            <div class="form-group mb-5">
+                                                <input type="file" id="service-bg-file" accept="image/*"
+                                                    class="font-xs">
+                                            </div>
+                                            <button type="button" id="service-config-btn"
+                                                onclick="window.handleServiceConfigSubmit(event)"
+                                                class="btn btn-sm btn-primary full-width">Guardar Fundo</button>
+                                        </form>
+                                    </div>
+                                </details>
+                            </div>
+
+                            <!-- 2. ACTIVE SERVICES LIST (HORIZONTAL) -->
+                            <div class="width-100 mb-30 text-center">
+                                <h4 class="font-serif mb-10 text-muted margin-0">Serviços Ativos</h4>
+                                <!-- Container for Horizontal List -->
+                                <div id="admin-services-list" class="admin-service-list-horizontal">
+                                    <!-- JS populates here -->
+                                </div>
+                            </div>
+
+                            <!-- 3. EDITOR FORM (BELOW LIST) -->
+                            <div class="admin-panel-content width-100 border-top-light pt-20">
+                                <h3 class="font-serif mb-15 text-center">Dados do Serviço</h3>
+
+                                <!-- ROW 1: Title & Benefits -->
+                                <div class="grid-2-col-gap-20 mb-15">
+                                    <div class="form-group">
+                                        <label>Nome do Serviço</label>
+                                        <input type="text" id="svc-title" required placeholder="Ex: Leitura de Aura"
+                                            class="input-sand">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Benefícios (Separar por vírgula)</label>
+                                        <input type="text" id="svc-benefits" placeholder="Ex: Presencial, Online"
+                                            class="input-sand">
+                                    </div>
+                                </div>
+
+                                <!-- ROW 2: Short Desc (Left) vs Configs (Right) -->
+                                <div class="grid-2-col-gap-20 mb-15">
+
+                                    <!-- LEFT: Short Description -->
+                                    <div class="form-group h-100">
+                                        <label>Descrição Curta (Cartão)</label>
+                                        <textarea id="svc-desc" required placeholder="Resumo breve..."
+                                            class="admin-textarea input-sand full-height admin-textarea-large"></textarea>
                                     </div>
 
-                                    <!-- RIGHT: Basic Inputs -->
-                                    <div>
-                                        <h3
-                                            style="font-family: var(--font-serif); margin-bottom: 15px; display:flex; justify-content:space-between; align-items:center;">
-                                            Dados do Serviço
-                                            <button type="button"
-                                                onclick="if(window.initTinyMCE) window.initTinyMCE('', true); else if(initTinyMCE) initTinyMCE('', true);"
-                                                class="btn btn-sm btn-outline"
-                                                style="font-size: 0.7rem; padding: 2px 8px;">
-                                                Reset Editor
-                                            </button>
-                                        </h3>
+                                    <!-- RIGHT: Images & Colors Stack -->
+                                    <div class="flex-column gap-15">
 
-                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                                            <div class="form-group" style="grid-column: 1 / -1;">
-                                                <label>Nome do Serviço</label>
-                                                <input type="text" id="svc-title" required
-                                                    placeholder="Ex: Leitura de Aura">
-                                            </div>
-
-                                            <div class="form-group" style="grid-column: 1 / -1;">
-                                                <label>Descrição Curta (Cartão)</label>
-                                                <textarea id="svc-desc" rows="3" required
-                                                    placeholder="Resumo breve para o cartão..."
-                                                    style="width: 100%; border: 1px solid #ddd; padding: 8px; border-radius: 8px;"></textarea>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label>Tema</label>
-                                                <select id="svc-theme"
-                                                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
-                                                    <option value="">Padrão</option>
-                                                    <option value="innerdance">Innerdance</option>
-                                                    <option value="constellations">Constelações</option>
-                                                    <option value="expansion">Expansão</option>
-                                                </select>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label>Link (Opcional)</label>
-                                                <input type="text" id="svc-link" placeholder="https://...">
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label>Benefícios (Separar por vírgula)</label>
-                                                <input type="text" id="svc-benefits"
-                                                    placeholder="Ex: Presencial, Online">
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label>Imagem de Cabeçalho (URL)</label>
-                                                <input type="text" id="svc-image" placeholder="https://..."
-                                                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
-                                            </div>
+                                        <!-- Image URL -->
+                                        <div class="form-group mb-0">
+                                            <label>Imagem de Cabeçalho (URL)</label>
+                                            <input type="text" id="svc-image" placeholder="https://..."
+                                                class="admin-input-select input-sand">
                                         </div>
 
-                                        <div class="form-group" style="margin-top: 10px;">
+                                        <!-- Image Upload -->
+                                        <div class="form-group mb-0">
                                             <label>Ou Upload Imagem</label>
-                                            <input type="file" id="svc-image-file" accept="image/*">
+                                            <input type="file" id="svc-image-file" accept="image/*"
+                                                class="input-sand input-file-full">
+                                        </div>
+
+                                        <!-- Colors & Transparency -->
+                                        <div class="form-group mb-0 border-light p-10 border-radius-8 bg-white">
+                                            <div class="flex-between-center mb-10">
+                                                <label class="margin-0 font-sm">Personalização</label>
+                                                <button type="button" class="btn-text-primary font-xs"
+                                                    onclick="document.getElementById('svc-colors-config').classList.toggle('hidden')">
+                                                    <i data-lucide="palette" class="icon-14"></i> Configurar
+                                                    Cores
+                                                </button>
+                                            </div>
+
+                                            <div id="svc-colors-config" class="hidden">
+                                                <input type="hidden" id="svc-id">
+                                                <div class="grid-2-col-gap-10">
+
+                                                    <!-- TOP SECTION -->
+                                                    <div
+                                                        class="form-group mb-10 col-span-full border-bottom-light pb-10">
+                                                        <label class="font-xs bold mb-5 block">Parte Superior
+                                                            (Imagem)</label>
+                                                        <div class="grid-2-col-gap-10">
+                                                            <!-- Overlay Color -->
+                                                            <div class="flex-column gap-5">
+                                                                <label class="font-xs text-muted">Cor
+                                                                    Overlay</label>
+                                                                <input type="color" id="svc-top-bg-color"
+                                                                    value="#000000" class="input-color-sm">
+                                                            </div>
+                                                            <!-- Overlay Opacity -->
+                                                            <div class="flex-column gap-5">
+                                                                <div class="flex-between-center">
+                                                                    <label for="svc-top-opacity"
+                                                                        class="font-xs text-muted margin-0">Opacidade</label>
+                                                                    <span id="opacity-val-top" class="fs-9">0%</span>
+                                                                </div>
+                                                                <input type="range" id="svc-top-opacity" min="0" max="1"
+                                                                    step="0.1" value="0.5" class="input-range-full"
+                                                                    oninput="document.getElementById('opacity-val-top').innerText = Math.round(this.value * 100) + '%'">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- BOTTOM SECTION -->
+                                                    <div
+                                                        class="form-group mb-10 col-span-full border-bottom-light pb-10">
+                                                        <label class="font-xs bold mb-5 block">Parte Inferior
+                                                            (Texto)</label>
+                                                        <div class="grid-2-col-gap-10">
+                                                            <!-- Bottom BG Color -->
+                                                            <div class="flex-column gap-5">
+                                                                <label class="font-xs text-muted">Cor Fundo</label>
+                                                                <input type="color" id="svc-bottom-bg-color"
+                                                                    value="#4F553D" class="input-color-sm">
+                                                            </div>
+                                                            <!-- Bottom BG Opacity -->
+                                                            <div class="flex-column gap-5">
+                                                                <div class="flex-between-center">
+                                                                    <label for="svc-bottom-opacity"
+                                                                        class="font-xs text-muted margin-0">Opacidade
+                                                                        Fundo</label>
+                                                                    <span id="opacity-val-bottom"
+                                                                        class="fs-9">100%</span>
+                                                                </div>
+                                                                <input type="range" id="svc-bottom-opacity" min="0"
+                                                                    max="1" step="0.1" value="1"
+                                                                    class="input-range-full"
+                                                                    oninput="document.getElementById('opacity-val-bottom').innerText = Math.round(this.value * 100) + '%'">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- BUTTONS -->
+                                                    <div class="form-group mb-0 col-span-full">
+                                                        <label class="font-xs bold mb-5 block">Botões</label>
+                                                        <div class="flex-column gap-5">
+                                                            <label class="font-xs text-muted">Cor do
+                                                                Texto/Borda</label>
+                                                            <input type="color" id="svc-btn-text-color" value="#ffffff"
+                                                                class="input-color-sm">
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- BOTTOM SECTION: Editor (Full Width) -->
-                                <div style="margin-top: 30px;">
-                                    <h3 style="font-family: var(--font-serif); margin-bottom: 10px;">Descrição Completa
-                                        (Página
-                                        Detalhada)</h3>
+                                <!-- BOTTOM SECTION: Full Body -->
+                                <div class="mt-20">
+                                    <h3 class="font-serif mb-10">Descrição Completa (Página Detalhada)</h3>
                                     <div class="form-group">
-                                        <textarea id="my-tinymce-editor"></textarea>
+                                        <textarea id="svc-full-desc" class="admin-textarea input-sand property-editor"
+                                            rows="10" placeholder="Use HTML se desejar..."></textarea>
                                     </div>
                                 </div>
 
                                 <!-- ACTIONS -->
-                                <div
-                                    style="margin-top: 20px; display: flex; gap: 15px; align-items: center; background: white; padding: 15px; position: sticky; bottom: 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); border-radius: 8px;">
-                                    <button type="submit" id="svc-submit-btn" class="cta-button primary"
-                                        style="min-width: 200px;">Publicar Serviço</button>
-                                    <button type="button" id="svc-cancel-btn" class="btn btn-outline"
-                                        style="display: none;" onclick="window.resetServiceForm()">Cancelar
-                                        Edição</button>
-                                    <div style="flex-grow: 1;"></div>
-                                    <button type="button" id="seed-services-btn"
-                                        class="btn btn-outline btn-sm">Recuperar
-                                        Originais</button>
+                                <div class="admin-action-bar">
+                                    <button type="button" id="svc-submit-btn"
+                                        onclick="window.handleServiceSubmit(event)"
+                                        class="cta-button primary min-w-200">Publicar Serviço</button>
+                                    <button type="button" id="svc-cancel-btn" class="btn btn-outline hidden"
+                                        onclick="window.resetServiceForm()">Cancelar Edição</button>
+                                    <div class="flex-grow"></div>
+
+                                    <!-- Background Config moved here as utility -->
+                                    <details class="admin-card-inner hidden">
+                                        <summary class="font-xs cursor-pointer">Configurar Fundo da Secção</summary>
+                                        <div class="p-10 border-top-light mt-10">
+                                            <form id="service-config-form"
+                                                onsubmit="event.preventDefault(); window.handleServiceConfigSubmit();">
+                                                <div class="form-group mb-5">
+                                                    <input type="text" id="service-bg-url"
+                                                        placeholder="URL da Imagem..."
+                                                        class="admin-input-select font-xs">
+                                                </div>
+                                                <div class="form-group mb-5">
+                                                    <input type="file" id="service-bg-file" accept="image/*"
+                                                        class="font-xs">
+                                                </div>
+                                                <button type="button" id="service-config-btn"
+                                                    onclick="window.handleServiceConfigSubmit(event)"
+                                                    class="btn btn-sm btn-primary full-width">Guardar Fundo</button>
+                                            </form>
+                                        </div>
+                                    </details>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </details>
+
+            <!-- 5.2 HTML GENERATOR (STYLE ASSISTANT) -->
+            <details class="admin-card draggable-card" id="card-html-generator" draggable="true">
+                <summary class="admin-card-header">
+                    <span><i data-lucide="code" class="admin-icon"></i> Gerador de Estilos (HTML)</span>
+                </summary>
+                <div class="admin-card-body">
+                    <div class="admin-panel-content">
+                        <p class="font-xs mb-10 text-muted">
+                            Utilize este editor para criar textos com design (negrito, itálico, cores).
+                            Quando terminar, clique no botão para copiar o código HTML e cole-o
+                            nos campos de texto simples (ex: Biografia, Serviços).
+                        </p>
+
+                        <div class="form-group">
+                            <textarea id="html-generator-editor" class="admin-textarea" rows="10"></textarea>
+                        </div>
+
+                        <div class="admin-action-bar mt-10">
+                            <button type="button" class="cta-button primary full-width"
+                                onclick="window.copyGeneratedHTML()">
+                                <i data-lucide="copy"></i> Copiar Código HTML
+                            </button>
+                            <button type="button" class="btn btn-outline" onclick="window.clearHtmlGenerator()">
+                                Limpar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </details>
+
+            <!-- 5.5 HEADER MANAGEMENT -->
+            <details class="admin-card draggable-card" id="card-header" draggable="true">
+                <summary class="admin-card-header">
+                    <span><i data-lucide="layout-template" class="admin-icon"></i> Gestão do
+                        Cabeçalho</span>
+                </summary>
+                <div class="admin-card-body">
+                    <form id="header-form">
+                        <!-- Logo Upload -->
+                        <div class="form-group mb-20">
+                            <label>Logótipo (PNG/SVG Transparent)</label>
+                            <input type="file" id="header-logo-upload" accept="image/*">
+                            <small class="admin-help-text">Aparecerá à esquerda do texto "Floresce
+                                Terapias".</small>
+                            <img id="admin-logo-preview" class="hidden admin-logo-preview-img" src="" alt="Preview">
+                        </div>
+
+                        <!-- Toggle Transparency -->
+                        <div class="form-group mb-20">
+                            <label class="flex-align-center-gap-10 cursor-pointer">
+                                <input type="checkbox" id="header-transparent" class="w-auto">
+                                <span><strong>Transparente no Topo?</strong> (Fica opaco ao descer)</span>
+                            </label>
+                            <small class="admin-help-text ml-24">Se ativo, o cabeçalho não tem cor de
+                                fundo até fazeres scroll.</small>
+                        </div>
+
+                        <!-- Opaque Settings -->
+                        <h4 class="admin-section-divider">Estilo
+                            (Quando Opaco / Scroll)</h4>
+
+                        <div class="grid-2-col-gap-15 mb-15">
+                            <div class="form-group">
+                                <label>Cor de Fundo</label>
+                                <div class="flex-gap-5">
+                                    <input type="color" id="header-bg-color" class="color-preview-box">
+                                    <input type="text" id="header-bg-color-hex" maxlength="7" class="color-hex-input">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Cor do Texto</label>
+                                <div class="flex-gap-5">
+                                    <input type="color" id="header-text-color" class="color-preview-box">
+                                    <input type="text" id="header-text-color-hex" maxlength="7" class="color-hex-input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid-2-col-gap-15">
+                            <div class="form-group">
+                                <label>Tamanho da Fonte (px)</label>
+                                <input type="number" id="header-font-size" value="16" min="10" max="30">
+                            </div>
+                            <div class="form-group">
+                                <label>Padding Vertical (px)</label>
+                                <input type="number" id="header-padding" value="20" min="5" max="50">
+                            </div>
+                        </div>
+
+                        <div class="form-actions mt-20">
+                            <button type="submit" id="header-save-btn" class="btn btn-primary full-width">Guardar
+                                Cabeçalho</button>
+                        </div>
+                    </form>
+                </div>
+            </details>
+
+            <!-- 6. TESTIMONIALS ACCORDION -->
+            <details class="admin-card draggable-card" id="card-testimonials" draggable="true">
+                <summary class="admin-card-header">
+                    <span><i data-lucide="message-circle" class="admin-icon"></i> Gestão de
+                        Testemunhos</span>
+                </summary>
+                <div class="admin-card-body">
+                    <div class="admin-grid-2-col-gap-40">
+                        <!-- Add Review Form -->
+                        <div>
+                            <h3 class="font-serif mb-15">Adicionar Novo
+                                Testemunho</h3>
+                            <form id="review-form" class="auth-form">
+                                <div class="form-group">
+                                    <label>Nome do Cliente</label>
+                                    <input type="text" id="rev-name" required placeholder="Ex: Maria Silva">
+                                </div>
+                                <div class="form-group">
+                                    <label>Título/Role (Opcional)</label>
+                                    <input type="text" id="rev-role" placeholder="Ex: Cliente de Leitura de Aura">
+                                </div>
+                                <div class="form-group">
+                                    <label>Mensagem</label>
+                                    <textarea id="rev-text" rows="3" required placeholder="O testemunho..."
+                                        class="admin-textarea"></textarea>
+                                </div>
+                                <button type="submit" class="cta-button primary full-width">Publicar
+                                    Testemunho</button>
+                            </form>
+                        </div>
+
+                        <!-- Existing Reviews List -->
+                        <div class="admin-list-container">
+                            <h3 class="font-serif mb-15">Testemunhos Ativos</h3>
+                            <div id="admin-reviews-list">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </details>
+
+            <!-- 7. MEDITATIONS ACCORDION -->
+            <details class="admin-card draggable-card" id="card-meditations" draggable="true">
+                <summary class="admin-card-header">
+                    <span><i data-lucide="headphones" class="admin-icon"></i> Gestão de
+                        Meditações</span>
+                </summary>
+                <div class="admin-card-body">
+                    <div class="admin-grid-2-col-gap-40">
+                        <!-- Add Meditation Form -->
+                        <div>
+                            <h3 class="font-serif mb-15">Adicionar
+                                Meditação/Recurso</h3>
+                            <form id="meditation-form" class="auth-form">
+                                <input type="hidden" id="med-id">
+                                <div class="form-group">
+                                    <label>Título</label>
+                                    <input type="text" id="med-title" required
+                                        placeholder="Ex: Meditação de Enraizamento">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Tema</label>
+                                    <select id="med-theme" required class="admin-input-select">
+                                        <option value="enraizamento">Enraizamento</option>
+                                        <option value="limpeza">Limpeza Energética</option>
+                                        <option value="protecao">Proteção</option>
+                                        <option value="intuicao">Intuição</option>
+                                        <option value="chakras">Chakras</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Tipo de Conteúdo</label>
+                                    <select id="med-type" required class="admin-input-select">
+                                        <option value="audio">Áudio (Link MP3/SoundCloud)</option>
+                                        <option value="video">Vídeo (YouTube/Vimeo)</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Link do Recurso (URL ou Iframe)</label>
+                                    <input type="text" id="med-url" required
+                                        placeholder="https://youtube.com/... ou <iframe...>">
+                                    <small class="admin-help-text">YouTube, Vimeo ou link direto para ficheiro
+                                        áudio.</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Imagem de Capa (Opcional)</label>
+                                    <input type="file" id="med-image" accept="image/*">
+                                    <input type="hidden" id="med-image-url">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Descrição Opcional</label>
+                                    <textarea id="med-desc" rows="2" placeholder="Breve descrição..."
+                                        class="admin-textarea"></textarea>
+                                </div>
+
+                                <div class="flex-gap-10">
+                                    <button type="submit" id="med-submit-btn"
+                                        class="cta-button primary full-width">Publicar
+                                        Recurso</button>
+                                    <button type="button" id="med-cancel-btn" class="btn btn-outline hidden"
+                                        onclick="window.resetMeditationForm()">Cancelar</button>
                                 </div>
                             </form>
                         </div>
-                    </div>
-                </details>
 
-                <!-- 5.5 HEADER MANAGEMENT -->
-                <details class="admin-card draggable-card" id="card-header" draggable="true">
-                    <summary class="admin-card-header">
-                        <span><i data-lucide="layout-template" style="margin-right: 10px; width: 18px;"></i> Gestão do
-                            Cabeçalho</span>
-                    </summary>
-                    <div class="admin-card-body">
-                        <form id="header-form">
-                            <!-- Toggle Transparency -->
-                            <div class="form-group" style="margin-bottom: 20px;">
-                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                    <input type="checkbox" id="header-transparent" style="width: auto !important;">
-                                    <span><strong>Transparente no Topo?</strong> (Fica opaco ao descer)</span>
-                                </label>
-                                <small style="color: #666; margin-left: 24px;">Se ativo, o cabeçalho não tem cor de
-                                    fundo até fazeres scroll.</small>
-                            </div>
-
-                            <!-- Opaque Settings -->
-                            <h4 style="margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Estilo
-                                (Quando Opaco / Scroll)</h4>
-
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                                <div class="form-group">
-                                    <label>Cor de Fundo</label>
-                                    <div style="display: flex; gap: 5px;">
-                                        <input type="color" id="header-bg-color"
-                                            style="width: 50px; height: 35px; padding: 0; border: none;">
-                                        <input type="text" id="header-bg-color-hex" maxlength="7"
-                                            style="width: 80px; text-transform: uppercase;">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label>Cor do Texto</label>
-                                    <div style="display: flex; gap: 5px;">
-                                        <input type="color" id="header-text-color"
-                                            style="width: 50px; height: 35px; padding: 0; border: none;">
-                                        <input type="text" id="header-text-color-hex" maxlength="7"
-                                            style="width: 80px; text-transform: uppercase;">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                <div class="form-group">
-                                    <label>Tamanho da Fonte (px)</label>
-                                    <input type="number" id="header-font-size" value="16" min="10" max="30">
-                                </div>
-                                <div class="form-group">
-                                    <label>Padding Vertical (px)</label>
-                                    <input type="number" id="header-padding" value="20" min="5" max="50">
-                                </div>
-                            </div>
-
-                            <div class="form-actions" style="margin-top: 20px;">
-                                <button type="submit" id="header-save-btn" class="btn btn-primary full-width">Guardar
-                                    Cabeçalho</button>
-                            </div>
-                        </form>
-                    </div>
-                </details>
-
-                <!-- 6. TESTIMONIALS ACCORDION -->
-                <details class="admin-card draggable-card" id="card-testimonials" draggable="true">
-                    <summary class="admin-card-header">
-                        <span><i data-lucide="message-circle" style="margin-right: 10px; width: 18px;"></i> Gestão de
-                            Testemunhos</span>
-                    </summary>
-                    <div class="admin-card-body">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
-                            <!-- Add Review Form -->
-                            <div>
-                                <h3 style="font-family: var(--font-serif); margin-bottom: 15px;">Adicionar Novo
-                                    Testemunho</h3>
-                                <form id="review-form" class="auth-form">
-                                    <div class="form-group">
-                                        <label>Nome do Cliente</label>
-                                        <input type="text" id="rev-name" required placeholder="Ex: Maria Silva">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Título/Role (Opcional)</label>
-                                        <input type="text" id="rev-role" placeholder="Ex: Cliente de Leitura de Aura">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Mensagem</label>
-                                        <textarea id="rev-text" rows="3" required placeholder="O testemunho..."
-                                            style="width: 100%; border: 1px solid #ddd; padding: 8px; border-radius: 8px;"></textarea>
-                                    </div>
-                                    <button type="submit" class="cta-button primary full-width">Publicar
-                                        Testemunho</button>
-                                </form>
-                            </div>
-
-                            <!-- Existing Reviews List -->
-                            <div style="border-left: 1px solid #eee; padding-left: 40px;">
-                                <h3 style="font-family: var(--font-serif); margin-bottom: 15px;">Testemunhos Ativos</h3>
-                                <div id="admin-reviews-list">
-                                    <!-- Populated by JS -->
-                                </div>
+                        <!-- Existing Meditations List -->
+                        <div class="admin-list-container">
+                            <h3 class="font-serif mb-15">Recursos Ativos</h3>
+                            <div id="admin-meditations-list">
+                                <!-- Populated by JS -->
+                                <p class="text-muted">A carregar lista...</p>
                             </div>
                         </div>
                     </div>
-                </details>
+                </div>
+            </details>
 
-                <!-- 7. MEDITATIONS ACCORDION -->
-                <details class="admin-card draggable-card" id="card-meditations" draggable="true">
-                    <summary class="admin-card-header">
-                        <span><i data-lucide="headphones" style="margin-right: 10px; width: 18px;"></i> Gestão de
-                            Meditações</span>
-                    </summary>
-                    <div class="admin-card-body">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
-                            <!-- Add Meditation Form -->
-                            <div>
-                                <h3 style="font-family: var(--font-serif); margin-bottom: 15px;">Adicionar
-                                    Meditação/Recurso</h3>
-                                <form id="meditation-form" class="auth-form">
-                                    <input type="hidden" id="med-id">
-                                    <div class="form-group">
-                                        <label>Título</label>
-                                        <input type="text" id="med-title" required
-                                            placeholder="Ex: Meditação de Enraizamento">
-                                    </div>
+            <!-- 8. FOOTER MANAGEMENT ACCORDION -->
+            <details class="admin-card draggable-card" id="card-footer" draggable="true">
+                <summary class="admin-card-header">
+                    <span><i data-lucide="layout-template" class="admin-icon"></i> Gestão do
+                        Rodapé</span>
+                </summary>
+                <div class="admin-card-body">
+                    <form id="footer-form" class="auth-form"
+                        onsubmit="event.preventDefault(); window.handleFooterSubmit();">
+                        <div class="form-group">
+                            <label>Título / Logótipo do Rodapé</label>
+                            <input type="text" id="footer-title-input" placeholder="Ex: Floresce Terapias">
+                        </div>
+                        <div class="form-group">
+                            <label>Direitos Reservados (Copyright)</label>
+                            <input type="text" id="footer-copyright-input"
+                                placeholder="Ex: &copy; 2026 Floresce Terapias. Todos os direitos reservados.">
+                        </div>
+                        <div class="form-group">
+                            <label>Créditos / Desenvolvido por</label>
+                            <input type="text" id="footer-dev-input"
+                                placeholder="Ex: CREATED IN PORTUGAL WITH ❤️ BY CALB">
+                        </div>
+                        <button type="submit" class="cta-button primary full-width">Guardar Alterações do
+                            Rodapé</button>
+                    </form>
+                </div>
+            </details>
 
-                                    <div class="form-group">
-                                        <label>Tema</label>
-                                        <select id="med-theme" required
-                                            style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: whitesmoke;">
-                                            <option value="enraizamento">Enraizamento</option>
-                                            <option value="limpeza">Limpeza Energética</option>
-                                            <option value="protecao">Proteção</option>
-                                            <option value="intuicao">Intuição</option>
-                                            <option value="chakras">Chakras</option>
-                                        </select>
-                                    </div>
+            <!-- 9. CONTACT MANAGEMENT ACCORDION -->
+            <details class="admin-card draggable-card" id="card-contact" draggable="true">
+                <summary class="admin-card-header">
+                    <span><i data-lucide="phone" class="admin-icon"></i> Gestão de
+                        Contactos</span>
+                </summary>
+                <div class="admin-card-body">
+                    <form id="contact-form" class="auth-form"
+                        onsubmit="event.preventDefault(); window.handleContactSubmit();">
+                        <div class="form-group">
+                            <label>Título da Secção</label>
+                            <input type="text" id="contact-title-input" placeholder="Ex: Vamos conversar?">
+                        </div>
+                        <div class="form-group">
+                            <label>Subtítulo / Descrição</label>
+                            <textarea id="contact-subtitle-input"
+                                placeholder="Ex: Tens dúvidas ou queres agendar? Envia uma mensagem." rows="2"
+                                class="admin-textarea"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="text" id="contact-email-input" placeholder="Ex: floresceterapias@gmail.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Telefone</label>
+                            <input type="text" id="contact-phone-input" placeholder="Ex: +351 913 515 406">
+                        </div>
+                        <div class="form-group">
+                            <label>Instagram</label>
+                            <input type="text" id="contact-instagram-input" placeholder="Ex: @floresceterapias">
+                        </div>
+                        <button type="submit" class="cta-button primary full-width">Guardar Contactos</button>
+                    </form>
+                </div>
+            </details>
 
-                                    <div class="form-group">
-                                        <label>Tipo de Conteúdo</label>
-                                        <select id="med-type" required
-                                            style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: whitesmoke;">
-                                            <option value="audio">Áudio (Link MP3/SoundCloud)</option>
-                                            <option value="video">Vídeo (YouTube/Vimeo)</option>
-                                        </select>
-                                    </div>
+            <!-- Visual Customization -->
+            <details class="admin-card draggable-card" id="card-theme" draggable="true">
+                <summary class="admin-card-header">
+                    <span><i data-lucide="palette" class="admin-icon"></i> Personalização
+                        Visual</span>
+                </summary>
+                <div class="admin-card-body">
+                    <p class="text-muted mb-20">Altere as cores do site. As alterações são
+                        instantâneas para os visitantes.</p>
 
-                                    <div class="form-group">
-                                        <label>Link do Recurso (URL ou Iframe)</label>
-                                        <input type="text" id="med-url" required
-                                            placeholder="https://youtube.com/... ou <iframe...>">
-                                        <small style="color: #666;">YouTube, Vimeo ou link direto para ficheiro
-                                            áudio.</small>
-                                    </div>
+                    <form id="theme-form" class="auth-form grid-2-col-gap-20">
 
-                                    <div class="form-group">
-                                        <label>Imagem de Capa (Opcional)</label>
-                                        <input type="file" id="med-image" accept="image/*">
-                                        <input type="hidden" id="med-image-url">
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label>Descrição Opcional</label>
-                                        <textarea id="med-desc" rows="2" placeholder="Breve descrição..."
-                                            style="width: 100%; border: 1px solid #ddd; padding: 8px; border-radius: 8px;"></textarea>
-                                    </div>
-
-                                    <div style="display: flex; gap: 10px;">
-                                        <button type="submit" id="med-submit-btn"
-                                            class="cta-button primary full-width">Publicar
-                                            Recurso</button>
-                                        <button type="button" id="med-cancel-btn" class="btn btn-outline"
-                                            style="display: none;"
-                                            onclick="window.resetMeditationForm()">Cancelar</button>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <!-- Existing Meditations List -->
-                            <div style="border-left: 1px solid #eee; padding-left: 40px;">
-                                <h3 style="font-family: var(--font-serif); margin-bottom: 15px;">Recursos Ativos</h3>
-                                <div id="admin-meditations-list">
-                                    <!-- Populated by JS -->
-                                    <p style="color: #666;">A carregar lista...</p>
-                                </div>
+                        <div class="form-group">
+                            <label>Fundo Geral (Background)</label>
+                            <div class="flex-align-center-gap-10">
+                                <input type="color" id="theme-bg" value="#80864f" class="color-preview-box-large">
+                                <input type="text" id="theme-bg-hex" value="#80864f" maxlength="7"
+                                    class="color-text-input">
+                                <span class="admin-help-text-inline">Cor principal de fundo</span>
                             </div>
                         </div>
-                    </div>
-                </details>
 
-                <!-- 8. FOOTER MANAGEMENT ACCORDION -->
-                <details class="admin-card draggable-card" id="card-footer" draggable="true">
-                    <summary class="admin-card-header">
-                        <span><i data-lucide="layout-template" style="margin-right: 10px; width: 18px;"></i> Gestão do
-                            Rodapé</span>
-                    </summary>
-                    <div class="admin-card-body">
-                        <form id="footer-form" class="auth-form"
-                            onsubmit="event.preventDefault(); window.handleFooterSubmit();">
-                            <div class="form-group">
-                                <label>Título / Logótipo do Rodapé</label>
-                                <input type="text" id="footer-title-input" placeholder="Ex: Floresce Terapias">
+                        <div class="form-group">
+                            <label>Texto Principal</label>
+                            <div class="flex-align-center-gap-10">
+                                <input type="color" id="theme-text" value="#f7f2e0" class="color-preview-box-large">
+                                <input type="text" id="theme-text-hex" value="#f7f2e0" maxlength="7"
+                                    class="color-text-input">
+                                <span class="admin-help-text-inline">Títulos e texto corpo</span>
                             </div>
-                            <div class="form-group">
-                                <label>Direitos Reservados (Copyright)</label>
-                                <input type="text" id="footer-copyright-input"
-                                    placeholder="Ex: &copy; 2026 Floresce Terapias. Todos os direitos reservados.">
-                            </div>
-                            <div class="form-group">
-                                <label>Créditos / Desenvolvido por</label>
-                                <input type="text" id="footer-dev-input"
-                                    placeholder="Ex: CREATED IN PORTUGAL WITH ❤️ BY CALB">
-                            </div>
-                            <button type="submit" class="cta-button primary full-width">Guardar Alterações do
-                                Rodapé</button>
-                        </form>
-                    </div>
-                </details>
+                        </div>
 
-                </details>
+                        <div class="form-group">
+                            <label>Cor Primária (Botões/Destaques)</label>
+                            <div class="flex-align-center-gap-10">
+                                <input type="color" id="theme-primary" value="#BF897F" class="color-preview-box-large">
+                                <input type="text" id="theme-primary-hex" value="#BF897F" maxlength="7"
+                                    class="color-text-input">
+                                <span class="admin-help-text-inline">Botões e ícones</span>
+                            </div>
+                        </div>
 
-                <!-- 9. CONTACT MANAGEMENT ACCORDION -->
-                <details class="admin-card draggable-card" id="card-contact" draggable="true">
-                    <summary class="admin-card-header">
-                        <span><i data-lucide="phone" style="margin-right: 10px; width: 18px;"></i> Gestão de
-                            Contactos</span>
-                    </summary>
-                    <div class="admin-card-body">
-                        <form id="contact-form" class="auth-form"
-                            onsubmit="event.preventDefault(); window.handleContactSubmit();">
-                            <div class="form-group">
-                                <label>Título da Secção</label>
-                                <input type="text" id="contact-title-input" placeholder="Ex: Vamos conversar?">
+                        <div class="form-group">
+                            <label>Fundo do Cabeçalho (Navbar)</label>
+                            <div class="flex-align-center-gap-10">
+                                <input type="color" id="theme-header" value="#80864f" class="color-preview-box-large">
+                                <input type="text" id="theme-header-hex" value="#80864f" maxlength="7"
+                                    class="color-text-input">
+                                <span class="admin-help-text-inline">Barra de navegação</span>
                             </div>
-                            <div class="form-group">
-                                <label>Subtítulo / Descrição</label>
-                                <textarea id="contact-subtitle-input"
-                                    placeholder="Ex: Tens dúvidas ou queres agendar? Envia uma mensagem." rows="2"
-                                    style="width: 100%; border: 1px solid #ddd; padding: 8px; border-radius: 8px;"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>Email</label>
-                                <input type="text" id="contact-email-input"
-                                    placeholder="Ex: floresceterapias@hotmail.com">
-                            </div>
-                            <div class="form-group">
-                                <label>Telefone</label>
-                                <input type="text" id="contact-phone-input" placeholder="Ex: +351 913 515 406">
-                            </div>
-                            <div class="form-group">
-                                <label>Instagram</label>
-                                <input type="text" id="contact-instagram-input" placeholder="Ex: @floresceterapias">
-                            </div>
-                            <button type="submit" class="cta-button primary full-width">Guardar Contactos</button>
-                        </form>
-                    </div>
-                </details>
+                        </div>
 
-                <!-- Visual Customization -->
-                <details class="admin-card draggable-card" id="card-theme" draggable="true">
-                    <summary class="admin-card-header">
-                        <span><i data-lucide="palette" style="margin-right: 10px; width: 18px;"></i> Personalização
-                            Visual</span>
-                    </summary>
-                    <div class="admin-card-body">
-                        <p style="margin-bottom:20px; color:#666;">Altere as cores do site. As alterações são
-                            instantâneas para os visitantes.</p>
-
-                        <form id="theme-form" class="auth-form"
-                            style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-
-                            <div class="form-group">
-                                <label>Fundo Geral (Background)</label>
-                                <div style="display: flex; gap: 10px; align-items: center;">
-                                    <input type="color" id="theme-bg" value="#6e664c"
-                                        style="width: 50px; height: 50px; padding: 0; border: none; cursor: pointer;">
-                                    <input type="text" id="theme-bg-hex" value="#6e664c" maxlength="7"
-                                        style="width: 90px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-transform: uppercase;">
-                                    <span style="font-size: 0.9rem; color: #666;">Cor principal de fundo</span>
-                                </div>
+                        <div class="form-group mb-20">
+                            <label class="block-mb-8">Cor Secundária 1 (Bege -
+                                Sobre/Agenda)</label>
+                            <div class="flex-align-center-gap-10">
+                                <input type="color" id="theme-secondary-1" value="#f7f2e0"
+                                    class="color-preview-box-large">
+                                <input type="text" id="theme-secondary-1-hex" value="#f7f2e0" maxlength="7"
+                                    class="color-text-input">
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Texto Principal</label>
-                                <div style="display: flex; gap: 10px; align-items: center;">
-                                    <input type="color" id="theme-text" value="#e1d7ce"
-                                        style="width: 50px; height: 50px; padding: 0; border: none; cursor: pointer;">
-                                    <input type="text" id="theme-text-hex" value="#e1d7ce" maxlength="7"
-                                        style="width: 90px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-transform: uppercase;">
-                                    <span style="font-size: 0.9rem; color: #666;">Títulos e texto corpo</span>
-                                </div>
+                        <div class="form-group mb-20">
+                            <label class="block-mb-8">Cor Secundária 2 (Azul -
+                                Sessões/Testemunhos)</label>
+                            <div class="flex-align-center-gap-10">
+                                <input type="color" id="theme-secondary-2" value="#dac2b2"
+                                    class="color-preview-box-large">
+                                <input type="text" id="theme-secondary-2-hex" value="#dac2b2" maxlength="7"
+                                    class="color-text-input">
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Cor Primária (Botões/Destaques)</label>
-                                <div style="display: flex; gap: 10px; align-items: center;">
-                                    <input type="color" id="theme-primary" value="#b16a4c"
-                                        style="width: 50px; height: 50px; padding: 0; border: none; cursor: pointer;">
-                                    <input type="text" id="theme-primary-hex" value="#b16a4c" maxlength="7"
-                                        style="width: 90px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-transform: uppercase;">
-                                    <span style="font-size: 0.9rem; color: #666;">Botões e ícones</span>
-                                </div>
+                        <div class="form-group mb-20">
+                            <label class="block-mb-8">Fundo do Rodapé</label>
+                            <div class="flex-align-center-gap-10">
+                                <input type="color" id="theme-footer" value="#F7F2E0" class="color-preview-box-large">
+                                <input type="text" id="theme-footer-hex" value="#F7F2E0" maxlength="7"
+                                    class="color-text-input">
                             </div>
-
-                            <div class="form-group">
-                                <label>Fundo do Cabeçalho (Navbar)</label>
-                                <div style="display: flex; gap: 10px; align-items: center;">
-                                    <input type="color" id="theme-header" value="#e1d7ce"
-                                        style="width: 50px; height: 50px; padding: 0; border: none; cursor: pointer;">
-                                    <input type="text" id="theme-header-hex" value="#e1d7ce" maxlength="7"
-                                        style="width: 90px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-transform: uppercase;">
-                                    <span style="font-size: 0.9rem; color: #666;">Barra de navegação</span>
-                                </div>
-                            </div>
-
-                            <div class="form-group" style="margin-bottom: 20px;">
-                                <label style="display:block; margin-bottom: 8px;">Cor Secundária 1 (Bege -
-                                    Sobre/Agenda)</label>
-                                <div style="display: flex; gap: 10px; align-items: center;">
-                                    <input type="color" id="theme-secondary-1" value="#e1d7ce"
-                                        style="width: 50px; height: 50px; padding: 0; border: none; cursor: pointer;">
-                                    <input type="text" id="theme-secondary-1-hex" value="#E1D7CE" maxlength="7"
-                                        style="width: 90px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-transform: uppercase;">
-                                </div>
-                            </div>
-
-                            <div class="form-group" style="margin-bottom: 20px;">
-                                <label style="display:block; margin-bottom: 8px;">Cor Secundária 2 (Azul -
-                                    Sessões/Testemunhos)</label>
-                                <div style="display: flex; gap: 10px; align-items: center;">
-                                    <input type="color" id="theme-secondary-2" value="#7b8b99"
-                                        style="width: 50px; height: 50px; padding: 0; border: none; cursor: pointer;">
-                                    <input type="text" id="theme-secondary-2-hex" value="#7B8B99" maxlength="7"
-                                        style="width: 90px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-transform: uppercase;">
-                                </div>
-                            </div>
-
-                            <div class="form-group" style="margin-bottom: 20px;">
-                                <label style="display:block; margin-bottom: 8px;">Fundo do Rodapé</label>
-                                <div style="display: flex; gap: 10px; align-items: center;">
-                                    <input type="color" id="theme-footer" value="#b16a4c"
-                                        style="width: 50px; height: 50px; padding: 0; border: none; cursor: pointer;">
-                                    <input type="text" id="theme-footer-hex" value="#B16A4C" maxlength="7"
-                                        style="width: 90px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-transform: uppercase;">
-                                </div>
-                            </div>
+                        </div>
 
 
-                            <!-- Theme Preview -->
-                            <div style="grid-column: 1 / -1; margin-top: 20px; display: flex; gap: 15px;">
-                                <button type="submit" id="theme-save-btn" class="cta-button primary">Guardar
-                                    Tema</button>
-                                <button type="button" id="theme-reset-btn" class="btn btn-outline"
-                                    style="border-color: #E57373; color: #E57373;">Restaurar Padrões</button>
-                            </div>
-                        </form>
-                    </div>
-                </details>
+                        <!-- Theme Preview -->
+                        <div class="col-span-full mt-20 flex-gap-15">
+                            <button type="submit" id="theme-save-btn" class="cta-button primary">Guardar
+                                Tema</button>
+                            <button type="button" id="theme-reset-btn"
+                                class="btn btn-outline border-red color-red">Restaurar Padrões</button>
+                        </div>
+                    </form>
+                </div>
+            </details>
             </div>
         </section>
 
         <!-- Carousel Section -->
         <section class="content-section">
-            <h2 class="section-title text-center" style="margin-bottom: 20px; color: var(--color-primary);">As Minhas
-                Meditações</h2>
+            <h2 class="section-title text-center-primary"></h2>
 
-            <div class="carousel-wrapper" style="position: relative;">
+            <div class="carousel-wrapper relative">
                 <button class="carousel-nav prev" aria-label="Anterior"><i data-lucide="chevron-left"></i></button>
 
                 <div class="carousel-container">
                     <!-- Card 1: Grounding -->
                     <a href="theme.html#enraizamento" class="carousel-card">
-                        <div class="carousel-image" style="background: #e8f5e9; position: relative;">
+                        <div class="carousel-image bg-green-light relative">
                             <i data-lucide="anchor" size="32" color="#2e7d32"></i>
                             <!-- Place for image if needed: <img src="..." class="card-bg-img"> -->
                         </div>
@@ -980,7 +1057,7 @@
 
                     <!-- Card 2: Cleaning -->
                     <a href="theme.html#limpeza" class="carousel-card">
-                        <div class="carousel-image" style="background: #e3f2fd; position: relative;">
+                        <div class="carousel-image bg-blue-light relative">
                             <i data-lucide="droplets" size="32" color="#1565c0"></i>
                         </div>
                         <div class="carousel-content">
@@ -991,7 +1068,7 @@
 
                     <!-- Card 3: Protection -->
                     <a href="theme.html#protecao" class="carousel-card">
-                        <div class="carousel-image" style="background: #f3e5f5; position: relative;">
+                        <div class="carousel-image bg-purple-light relative">
                             <i data-lucide="shield" size="32" color="#7b1fa2"></i>
                         </div>
                         <div class="carousel-content">
@@ -1002,7 +1079,7 @@
 
                     <!-- Card 4: Intuition -->
                     <a href="theme.html#intuicao" class="carousel-card">
-                        <div class="carousel-image" style="background: #fff3e0; position: relative;">
+                        <div class="carousel-image bg-orange-light relative">
                             <i data-lucide="eye" size="32" color="#ef6c00"></i>
                         </div>
                         <div class="carousel-content">
@@ -1013,7 +1090,7 @@
 
                     <!-- Card 5: Chakras -->
                     <a href="theme.html#chakras" class="carousel-card">
-                        <div class="carousel-image" style="background: #e1bee7; position: relative;">
+                        <div class="carousel-image bg-deep-purple-light relative">
                             <i data-lucide="aperture" size="32" color="#8e24aa"></i>
                         </div>
                         <div class="carousel-content">
@@ -1028,7 +1105,7 @@
         </section>
     </main>
 
-    <script src="script.js"></script>
+    <script src="main.js"></script>
     <script>
         // Initialize Icons
         lucide.createIcons();
@@ -1172,12 +1249,7 @@
         });
     </script>
 
-    <footer class="footer footer-centered">
-        <div class="container">
-            <p class="copyright">&copy; 2026 Floresce Terapias. Todos os direitos reservados.</p>
-            <p class="developer-credit">CREATED IN PORTUGAL WITH ❤️ BY CALB</p>
-        </div>
-    </footer>
+
 
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -1188,7 +1260,7 @@
     <script src="init-firebase.js?v=2"></script>
 
     <!-- CMS Logic -->
-    <script src="cms.js?v=3"></script>
+    <script src="cms.js?v=4"></script>
     <script>
         // Initialize CMS
         if (window.initCMS) {
@@ -1217,8 +1289,9 @@
                 if (docSnap.exists) {
                     const data = docSnap.data();
 
-                    // If user is pending or blocked, SHOW MODAL
-                    if (data.status === 'pending' || data.status === 'blocked') {
+                    // If user is BLOCKED, SHOW MODAL
+                    // 'pending' is now considered active for free access
+                    if (data.status === 'blocked') {
                         console.log("User status requires action:", data.status);
 
                         // Show Modal
@@ -1265,7 +1338,18 @@
                         window.location.href = 'login.html';
                     } else {
                         // Check Status
-                        await verifyUserStatus(user.email);
+                        try {
+                            if (window.verifyUserStatus) {
+                                await window.verifyUserStatus(user.email);
+                            } else {
+                                console.warn("verifyUserStatus not found in window! Retrying in 1s...");
+                                setTimeout(() => {
+                                    if (window.verifyUserStatus) window.verifyUserStatus(user.email);
+                                }, 1000);
+                            }
+                        } catch (e) {
+                            console.error("verify logic error", e);
+                        }
 
                         localStorage.setItem('userEmail', user.email);
                         localStorage.setItem('isMember', 'true');
@@ -1286,6 +1370,9 @@
                         const nameDisplay = document.getElementById('header-welcome-msg');
                         if (nameDisplay) nameDisplay.textContent = `Olá, ${finalName}`;
                         updateUserDisplay(finalName);
+
+                        // Fix for missing sidebar button (Manual Injection)
+                        ensureMobileLogoutButton();
                     }
                 });
             } else {
@@ -1300,7 +1387,11 @@
                             localStorage.setItem('userEmail', user.email);
                         }
                         // Verify Status Background Check
-                        await verifyUserStatus(user.email);
+                        try {
+                            if (window.verifyUserStatus) {
+                                await window.verifyUserStatus(user.email);
+                            }
+                        } catch (e) { console.error(e); }
                     } else {
                         // Session expired
                         await logoutAndRedirect();
@@ -1317,7 +1408,49 @@
 
             if (nameDisplay) nameDisplay.textContent = name;
             if (mobileNameDisplay) mobileNameDisplay.textContent = name;
-            if (welcomeDisplay) welcomeDisplay.textContent = `Olá, ${name}`;
+            if (welcomeDisplay) {
+                welcomeDisplay.textContent = `Olá, ${name}`;
+                welcomeDisplay.style.display = 'inline-block';
+            }
+
+            ensureMobileLogoutButton();
+        }
+
+        function ensureMobileLogoutButton() {
+            // Fix for missing sidebar button (Manual Injection)
+            if (window.updateMobileAuthUI) {
+                window.updateMobileAuthUI();
+            } else {
+                // Fallback if script.js isn't ready
+                const mobileMenu = document.querySelector('.mobile-menu');
+                const socials = document.querySelector('.mobile-socials');
+                if (mobileMenu && socials && !document.getElementById('mobile-logout-btn')) {
+
+                    const btn = document.createElement('a');
+                    btn.href = '#';
+                    btn.id = 'mobile-logout-btn';
+                    // Ensure high contrast and display block
+                    btn.style.cssText = 'color: #e57373 !important; display: flex !important; align-items: center; gap: 8px; font-weight: 500; padding: 10px 0; margin-top: 10px; cursor: pointer;';
+                    btn.innerHTML = '<i data-lucide="log-out" style="width: 18px;"></i> Sair da Conta';
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        if (confirm('Tem a certeza que deseja sair?')) {
+                            localStorage.clear();
+                            window.location.href = 'index.html';
+                        }
+                    });
+
+                    // Insert BEFORE the socials div wrapper, not inside it or mixed weirdly
+                    // This ensures it sits above the social icons
+                    const divider = document.createElement('div');
+                    divider.style.cssText = 'height: 1px; background: #eee; margin: 15px 0;';
+
+                    socials.parentNode.insertBefore(divider, socials);
+                    socials.parentNode.insertBefore(btn, socials);
+
+                    if (window.lucide) window.lucide.createIcons();
+                }
+            }
         }
 
         // Logout
@@ -1332,6 +1465,24 @@
         }
 
     </script>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p class="logo-text" id="footer-title"></p>
+                <div class="footer-links">
+                    <a href="privacidade.html">Privacidade</a>
+                    <a href="termos.html">Termos</a>
+                </div>
+                <p class="copyright" id="footer-copyright">&copy; 2026 Floresce Terapias. Todos os direitos reservados.
+                </p>
+                <p class="developer-credit" id="footer-credit">CREATED BY CALB</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="sidebar.js"></script>
 </body>
 
 </html>
