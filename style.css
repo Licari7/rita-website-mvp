@@ -264,10 +264,12 @@ ul {
     position: absolute;
     right: 70px;
     /* Position to left of menu toggle */
-    top: 50%;
+    top: 75%;
+    /* Lower position */
     transform: translateY(-50%);
     font-weight: 500;
-    color: var(--color-primary-dark);
+    font-size: 0.9rem;
+    color: inherit;
 }
 
 
@@ -331,7 +333,7 @@ ul {
 }
 
 .brand-info .logo {
-    font-size: 1.3em;
+    font-size: 1.1em;
     /* Use em to scale with navbar font-size setting */
     line-height: 1.1;
     margin-bottom: 2px;
@@ -505,7 +507,7 @@ ul {
 }
 
 .hero-title {
-    font-size: 2.8rem;
+    font-size: 2.3rem;
     line-height: 1.2;
     margin-bottom: 5px;
     /* Reduced from 20px */
@@ -514,7 +516,7 @@ ul {
 }
 
 .hero-subtitle {
-    font-size: 1.2rem;
+    font-size: 1rem;
     color: var(--color-text-muted);
     margin-bottom: 30px;
 }
@@ -1080,6 +1082,10 @@ ul {
         display: block;
         /* Show hamburger */
     }
+
+    .header-welcome-msg {
+        font-size: 0.9rem !important;
+    }
 }
 
 @media (max-width: 600px) {
@@ -1131,6 +1137,19 @@ ul {
         color: #fff;
         padding: 60px 0 30px;
         text-align: center;
+    }
+
+    .dashboard-page .footer {
+        padding: 5px 0 10px !important;
+    }
+
+    .dashboard-page .footer .logo-text,
+    .dashboard-page .footer .footer-links {
+        margin-bottom: 5px !important;
+    }
+
+    .dashboard-page .footer .logo-text {
+        display: none !important;
     }
 
     .footer .logo-text {
@@ -1201,9 +1220,7 @@ ul {
             display: block;
         }
 
-        .hero-title {
-            font-size: 2.8rem;
-        }
+
 
         .about-grid,
         .services-card,
@@ -2303,14 +2320,7 @@ body.auth-page {
 }
 
 /* --- Extracted Inline Styles (Lint Fixes) --- */
-.header-welcome-msg {
-    margin-right: 15px;
-    font-weight: 500;
-    font-family: var(--font-serif);
-    color: inherit;
-    font-size: 1.1rem;
-    vertical-align: middle;
-}
+
 
 .mobile-member-link {
     color: var(--color-primary) !important;
@@ -3061,4 +3071,22 @@ body.auth-page {
 
 .fs-9 {
     font-size: 9px;
+}
+
+/* =========================================
+   Fix Theme Page Footer Contrast
+   ========================================= */
+.dashboard-page .footer {
+    background-color: #80864f !important;
+    /* Force Standard Green */
+    color: #ffffff !important;
+    /* Force White Text */
+}
+
+.dashboard-page .footer p,
+.dashboard-page .footer a,
+.dashboard-page .footer span,
+.dashboard-page .footer div {
+    color: #ffffff !important;
+    /* Ensure children are white */
 }

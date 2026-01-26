@@ -602,14 +602,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             });
 
-            // Duplicate content 2-3 times to ensure smooth loop
-            // The CSS animation translates -50%, so we need at least 2 sets.
-            // If few items, duplicate more.
-            const duplicationFactor = snapshot.size < 5 ? 4 : 2;
+            // Duplicate content 3 times (Standardize for infinite loop logic)
+            // Left Buffer | Main Content | Right Buffer
+            let finalHtml = cardsHtml + cardsHtml + cardsHtml;
 
-            let finalHtml = '';
-            for (let i = 0; i < duplicationFactor; i++) {
-                finalHtml += cardsHtml;
+            // If very few items, duplicate more to ensure scrollability
+            if (snapshot.size < 3) {
+                finalHtml = cardsHtml + cardsHtml + cardsHtml + cardsHtml + cardsHtml; // 5x
             }
 
             container.innerHTML = finalHtml;
@@ -617,39 +616,81 @@ document.addEventListener('DOMContentLoaded', () => {
             // Init Drag Scroll
             initDragScroll(container);
 
-            // --- Auto Scroll Logic ---
-            if (window.testimonialsAutoScroll) clearInterval(window.testimonialsAutoScroll);
+            // --- Infinite Scroll Logic (Teleportation) ---
+            // Wait for render to calculate widths
+            setTimeout(() => {
+                const totalWidth = container.scrollWidth;
+                // If we duplicated 3 times, set is 1/3. If 5 times, it is 1/5.
+                // Dynamic approach: measure first card * count. 
+                // Simpler: Just rely on "scrollWidth / duplicationFactor" if we knew it.
+                // Let's stick to the 3x standard mostly, or assume 3 chunks.
+                // If 5x, logic needs adaptation.
+                // Robust way:
+                const singleSetCount = snapshot.size;
+                const cards = container.querySelectorAll('.review-card');
+                if (cards.length === 0) return;
 
-            const startAutoScroll = () => {
-                window.testimonialsAutoScroll = setInterval(() => {
-                    const firstCard = container.querySelector('.review-card');
-                    if (firstCard) {
-                        const style = window.getComputedStyle(firstCard);
-                        const stride = firstCard.offsetWidth + 30; // card + gap
+                // Calculate width of one single set of original cards
+                // Sum width + gap of first N cards
+                let singleSetWidth = 0;
+                for (let i = 0; i < singleSetCount; i++) {
+                    singleSetWidth += cards[i].offsetWidth + 30; // 30 is gap
+                }
 
-                        // Check if we reached the end (approximate)
-                        if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 10) {
-                            container.scrollLeft = 0; // Snap back
-                        } else {
+                // Start in the Middle (roughly, or just after first set)
+                // Let's safely start at Set 2
+                container.scrollLeft = singleSetWidth;
+
+                const handleInfiniteScroll = () => {
+                    // Force disable smooth behavior for the jump
+                    if (container.scrollLeft >= singleSetWidth * 2) {
+                        container.style.scrollBehavior = 'auto'; // Disable smooth
+                        container.scrollLeft -= singleSetWidth;
+                        container.style.scrollBehavior = ''; // Restore
+                    } else if (container.scrollLeft <= 0) {
+                        container.style.scrollBehavior = 'auto';
+                        container.scrollLeft += singleSetWidth;
+                        container.style.scrollBehavior = '';
+                    }
+                };
+
+                container.removeEventListener('scroll', window.testimonialsScrollHandler); // Clean old
+                window.testimonialsScrollHandler = handleInfiniteScroll;
+                container.addEventListener('scroll', handleInfiniteScroll);
+
+                // --- Auto Scroll Logic ---
+                if (window.testimonialsAutoScroll) clearInterval(window.testimonialsAutoScroll);
+
+                const startAutoScroll = () => {
+                    window.testimonialsAutoScroll = setInterval(() => {
+                        const firstCard = container.querySelector('.review-card');
+                        if (firstCard) {
+                            const stride = firstCard.offsetWidth + 30; // card + gap
+                            // Smooth scroll for the auto-movement
                             container.scrollBy({ left: stride, behavior: 'smooth' });
                         }
-                    }
-                }, 5000);
-            };
+                    }, 5000);
+                };
 
-            startAutoScroll();
-
-            // Pause on Interaction
-            const pauseTestinians = () => clearInterval(window.testimonialsAutoScroll);
-            const resumeTestimonials = () => {
-                clearInterval(window.testimonialsAutoScroll);
                 startAutoScroll();
-            };
 
-            container.addEventListener('mouseenter', pauseTestinians);
-            container.addEventListener('touchstart', pauseTestinians);
-            container.addEventListener('mouseleave', resumeTestimonials);
-            container.addEventListener('touchend', resumeTestimonials);
+                // Pause on Interaction
+                const pauseTestinians = () => clearInterval(window.testimonialsAutoScroll);
+                const resumeTestimonials = () => {
+                    clearInterval(window.testimonialsAutoScroll);
+                    startAutoScroll();
+                };
+
+                // Clear old listeners if possible (hard without named reference, but new ones stack safely if logic is robust)
+                // To be safe against duplicates on re-run, we use 'on' or named functions, but here we use closures.
+                // We rely on 'mouseenter' etc not causing issues if doubled, but let's try to be clean.
+                // We will just add them.
+                container.addEventListener('mouseenter', pauseTestinians);
+                container.addEventListener('touchstart', pauseTestinians);
+                container.addEventListener('mouseleave', resumeTestimonials);
+                container.addEventListener('touchend', resumeTestimonials);
+
+            }, 500); // Small delay for layout
 
         } catch (error) {
             console.error("Error loading testimonials:", error);

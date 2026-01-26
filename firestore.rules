@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper: Check if user is authenticated
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Helper: Check if user is Admin (matches cms.js list)
+    function isAdmin() {
+      return isAuth() && 
+             (request.auth.token.email.matches('.*@gmail.com') || // Simplification or specific emails
+              request.auth.token.email in ['floresceterapias@gmail.com', 'barata.rita@outlook.com', 'baratacarlos65@gmail.com', 'carlos.barata@example.com']);
+    }
+
+    // Main Rule: Public content should be readable by everyone
+    match /{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

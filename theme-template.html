@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tema | Floresce Terapias</title>
-    <link rel="stylesheet" href="style.css?v=4.3.1">
+    <link rel="stylesheet" href="style.css?v=5.1.9">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap"
@@ -55,7 +55,7 @@
     </style>
 </head>
 
-<body>
+<body class="dashboard-page">
     <nav class="navbar">
         <div class="container nav-content">
             <div class="brand-container">
@@ -119,7 +119,14 @@
     <script>
         lucide.createIcons();
     </script>
-    <script src="script.js"></script>
+    <!-- Firebase SDKs for Public Data -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="init-firebase.js"></script>
+
+    <script src="main.js?v=5.1.8"></script>
     <footer class="footer footer-margin-top">
         <div class="container text-center">
             <p class="logo-text" id="footer-title"></p>
