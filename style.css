@@ -1623,10 +1623,19 @@ ul {
     width: 100%;
     cursor: grab;
     /* Hide scrollbar */
-    scrollbar-width: none;
     -ms-overflow-style: none;
     /* Ensure no animation interference */
     animation: none;
+}
+
+@supports (scrollbar-width: none) {
+    .carousel-container {
+        scrollbar-width: none;
+    }
+}
+
+.carousel-container::-webkit-scrollbar {
+    display: none;
 }
 
 .carousel-container:hover {
@@ -3089,4 +3098,13 @@ body.auth-page {
 .dashboard-page .footer div {
     color: #ffffff !important;
     /* Ensure children are white */
+}
+
+/* =========================================
+   Admin Styles
+   ========================================= */
+.admin-divider {
+    margin: 20px 0;
+    border: 0;
+    border-top: 1px solid #eee;
 }
