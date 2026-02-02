@@ -1677,7 +1677,12 @@ ul {
     cursor: grab;
     -ms-overflow-style: none;
     /* Hide scrollbar */
-    scrollbar-width: none;
+}
+
+@supports (scrollbar-width: none) {
+    .carousel-container {
+        scrollbar-width: none;
+    }
 }
 
 .carousel-container::-webkit-scrollbar {
