@@ -37,8 +37,9 @@ async function sendEmail(to, subject, html) {
     };
 
     try {
-        await mailTransport.sendMail(mailOptions);
-        console.log(`Email sent to ${to}`);
+        // PERIGO: O envio automático foi desativado temporariamente para evitar bloqueio da conta Google.
+        // await mailTransport.sendMail(mailOptions);
+        console.log(`[DISABLED] Would send email to ${to} with subject: ${subject}`);
     } catch (error) {
         console.error('Error sending email:', error);
     }

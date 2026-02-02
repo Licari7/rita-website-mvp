@@ -9,7 +9,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@300;400;500&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=5.2.0">
+    <link rel="stylesheet" href="style.css?v=5.5.0">
     <script src="https://unpkg.com/lucide@latest"></script>
 
 
@@ -152,7 +152,7 @@
 
 
     <!-- Navigation -->
-    <nav class="navbar">
+    <nav class="navbar navbar-always-solid">
         <div class="container nav-content">
             <div class="brand-container">
                 <a href="index.html" class="logo-link" aria-label="site público">
@@ -449,7 +449,42 @@
                                     <div class="p-10 border-light mt-5 bg-gray-light border-radius-8">
                                         <form id="service-config-form"
                                             onsubmit="event.preventDefault(); window.handleServiceConfigSubmit();">
+                                            <div class="form-group mb-10">
+                                                <label class="font-xs text-muted mb-2 block">Título da Secção</label>
+                                                <input type="text" id="service-section-title"
+                                                    placeholder="Sessões Individuais"
+                                                    class="admin-input-select font-xs">
+                                            </div>
+
+                                            <div class="form-group mb-10 border-bottom-light pb-10">
+                                                <div class="flex-align-center-gap-10 mb-5">
+                                                    <input type="checkbox" id="service-title-highlight-enabled"
+                                                        class="w-auto">
+                                                    <label for="service-title-highlight-enabled"
+                                                        class="font-xs text-muted margin-0 cursor-pointer">Destaque
+                                                        de Fundo?</label>
+                                                </div>
+                                                <div class="flex-align-center-gap-5">
+                                                    <label class="font-xs text-muted margin-0">Cor:</label>
+                                                    <input type="color" id="service-title-highlight-color"
+                                                        value="#f7f2e0" class="input-color-sm">
+                                                </div>
+
+                                                <div class="flex-column gap-5 mt-10 border-top-light pt-5">
+                                                    <div class="flex-between-center">
+                                                        <label class="font-xs text-muted margin-0">Opacidade:</label>
+                                                        <span id="service-title-opacity-val"
+                                                            class="font-xs text-muted">100%</span>
+                                                    </div>
+                                                    <input type="range" id="service-title-highlight-opacity" min="0"
+                                                        max="1" step="0.1" value="1" class="input-range-full"
+                                                        oninput="document.getElementById('service-title-opacity-val').innerText = Math.round(this.value * 100) + '%'">
+                                                </div>
+                                            </div>
+
                                             <div class="form-group mb-5">
+                                                <label class="font-xs text-muted mb-2 block">Imagem de Fundo
+                                                    (Geral)</label>
                                                 <input type="text" id="service-bg-url" placeholder="URL da Imagem..."
                                                     class="admin-input-select font-xs">
                                             </div>
@@ -896,6 +931,27 @@
                             <input type="text" id="footer-dev-input"
                                 placeholder="Ex: CREATED IN PORTUGAL WITH ❤️ BY CALB">
                         </div>
+
+                        <!-- Footer Colors -->
+                        <div class="form-group grid-2-col-gap-20">
+                            <div>
+                                <label>Cor de Fundo</label>
+                                <div class="flex-align-center-gap-10">
+                                    <input type="color" id="footer-bg-color" value="#80864f" class="color-preview-box">
+                                    <input type="text" id="footer-bg-hex" value="#80864f" maxlength="7"
+                                        class="color-text-input">
+                                </div>
+                            </div>
+                            <div>
+                                <label>Cor do Texto</label>
+                                <div class="flex-align-center-gap-10">
+                                    <input type="color" id="footer-text-color" value="#ffffff"
+                                        class="color-preview-box">
+                                    <input type="text" id="footer-text-hex" value="#ffffff" maxlength="7"
+                                        class="color-text-input">
+                                </div>
+                            </div>
+                        </div>
                         <button type="submit" class="cta-button primary full-width">Guardar Alterações do
                             Rodapé</button>
                     </form>
@@ -1260,7 +1316,7 @@
     <script src="init-firebase.js?v=2"></script>
 
     <!-- CMS Logic -->
-    <script src="cms.js?v=4"></script>
+    <script src="cms.js?v=6.5.0"></script>
     <script>
         // Initialize CMS
         if (window.initCMS) {
@@ -1386,6 +1442,24 @@
                         if (user.email !== localUser) {
                             localStorage.setItem('userEmail', user.email);
                         }
+
+                        // Check Admin for Central Button
+                        const isAdmin = localStorage.getItem('isAdmin') === 'true';
+                        const adminBtn = document.getElementById('admin-toggle-btn');
+                        const adminPanel = document.getElementById('admin-panel');
+
+                        if (isAdmin && adminBtn) {
+                            adminBtn.style.display = 'inline-flex'; // Show button
+
+                            // Add Click Listener
+                            adminBtn.onclick = () => {
+                                if (adminPanel) {
+                                    adminPanel.style.display = 'block'; // Ensure it's not hidden
+                                    adminPanel.scrollIntoView({ behavior: 'smooth' });
+                                }
+                            };
+                        }
+
                         // Verify Status Background Check
                         try {
                             if (window.verifyUserStatus) {

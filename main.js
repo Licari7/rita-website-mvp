@@ -1,4 +1,5 @@
 // Main Script (Loaded)
+console.log("DEBUG: main.js v7.0.6 LOADED - Font Size 0.725rem");
 document.addEventListener('DOMContentLoaded', () => {
 
     // Header Scroll & Style Effect (Dynamic)
@@ -60,8 +61,18 @@ document.addEventListener('DOMContentLoaded', () => {
             updateScroll(); // Run immediately
         };
 
+        const applyFooterStyles = () => {
+            const savedFooter = localStorage.getItem('site_footer');
+            if (savedFooter) {
+                const settings = JSON.parse(savedFooter);
+                if (settings.bg_color) document.documentElement.style.setProperty('--color-footer-bg', settings.bg_color);
+                if (settings.text_color) document.documentElement.style.setProperty('--color-footer-text', settings.text_color);
+            }
+        };
+
         // 1. Load from LocalStorage (Fast Preview)
         applyHeaderStyles();
+        applyFooterStyles();
 
         // 2. Load from Firestore (Global Source of Truth)
         if (window.db) {
@@ -72,6 +83,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         localStorage.setItem('site_header', JSON.stringify(data.header));
                         applyHeaderStyles();
                     }
+                    if (data.footer) {
+                        // Ensure we preserve existing title/copyright if not present in update? 
+                        // No, data.footer is usually the whole object.
+                        // Ideally we merge with existing local storage if we are doing partial updates, 
+                        // but here we trust Firestore is the source of truth.
+                        localStorage.setItem('site_footer', JSON.stringify(data.footer));
+                        applyFooterStyles();
+                    }
                 }
             });
         }
@@ -79,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Listen for live updates from CMS (same window)
         window.addEventListener('storage', (e) => {
             if (e.key === 'site_header') applyHeaderStyles();
+            if (e.key === 'site_footer') applyFooterStyles();
         });
 
         // Global Welcome Message (Added Logic)
@@ -99,6 +119,28 @@ document.addEventListener('DOMContentLoaded', () => {
         // Initial Call
         window.updateWelcomeUI();
 
+        // 3. Admin UI Logic (Gerir Site Button)
+        window.updateAdminUI = () => {
+            const isAdmin = localStorage.getItem('isAdmin') === 'true';
+            console.log("Admin UI Update: Is Admin?", isAdmin); // Debug
+
+            const navActions = document.querySelector('.nav-actions');
+            if (!navActions) console.warn("Admin UI: .nav-actions container not found");
+
+            const adminBtnId = 'admin-dashboard-btn';
+
+            // Check if button already exists
+            const existingBtn = document.getElementById(adminBtnId);
+
+            if (isAdmin) {
+                // Logic moved to dashboard.html center button
+            } else {
+                if (existingBtn) existingBtn.remove();
+            }
+        };
+        // Run immediately
+        window.updateAdminUI();
+
         // Global Mobile Auth UI (Logout Button)
         // Handled by sidebar.js now
         window.updateMobileAuthUI = () => {
@@ -110,6 +152,9 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('storage', (e) => {
             if (e.key === 'userName' || e.key === 'isMember') {
                 if (window.updateWelcomeUI) window.updateWelcomeUI();
+            }
+            if (e.key === 'isAdmin' || e.key === 'userEmail') {
+                if (window.updateAdminUI) window.updateAdminUI();
             }
         });
     }
@@ -338,20 +383,45 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Load Background Image for Section
+        // Load Background Image and Title for Section
         try {
             const doc = await window.db.collection('site_content').doc('main').get();
-            if (doc.exists && doc.data().service_section && doc.data().service_section.background_image) {
+            if (doc.exists && doc.data().service_section) {
+                const svcData = doc.data().service_section;
                 const section = document.querySelector('.services-section');
-                if (section) {
+
+                if (section && svcData.background_image) {
                     section.classList.add('has-bg');
-                    section.style.backgroundImage = `url('${doc.data().service_section.background_image}')`;
+                    section.style.backgroundImage = `url('${svcData.background_image}')`;
                     section.style.backgroundSize = 'cover';
                     section.style.backgroundPosition = 'center';
                 }
+
+                // Title & Highlight
+                const titleEl = document.getElementById('services-title-display');
+                if (titleEl) {
+                    if (svcData.title) titleEl.textContent = svcData.title;
+
+                    if (svcData.title_highlight_enabled) {
+                        const color = svcData.title_highlight_color || '#f7f2e0';
+                        const opacity = (svcData.title_highlight_opacity !== undefined) ? svcData.title_highlight_opacity : 1;
+
+                        // Check if hexToRgba exists, otherwise fallback to hex
+                        if (typeof hexToRgba === 'function') {
+                            titleEl.style.backgroundColor = hexToRgba(color, opacity);
+                        } else {
+                            titleEl.style.backgroundColor = color;
+                            titleEl.style.opacity = opacity; // Fallback (affects text too, so ideal is rgba)
+                        }
+
+                        titleEl.style.display = 'inline-block';
+                        titleEl.style.padding = '5px 20px'; // Added visual padding
+                        titleEl.style.borderRadius = '8px';
+                    }
+                }
             }
         } catch (e) {
-            console.error("BG Load Error", e);
+            console.error("BG/Title Load Error", e);
         }
 
         try {
@@ -463,26 +533,55 @@ document.addEventListener('DOMContentLoaded', () => {
             const setWidth = totalWidth / 3;
 
             // Start in the Middle Set
-            container.scrollLeft = setWidth;
+            if (container.scrollLeft === 0) {
+                container.scrollLeft = setWidth;
+            }
 
-            // Scroll Handler for "Teleportation"
-            // Using requestAnimationFrame to prevent scroll locking? No, simple logic first.
+            // Toggle Snap Helper
+            const toggleSnap = (enable) => {
+                container.style.scrollSnapType = enable ? 'x mandatory' : 'none';
+            };
+
+            // Scroll Handler (Debounced to simulate scrollend)
+            let isScrolling;
             const handleInfiniteScroll = () => {
-                if (container.scrollLeft >= setWidth * 2) {
-                    // Normalize: Prevent jumping too far back if user scrolled FAST
-                    // New Pos = Current - SetWidth
-                    container.scrollLeft -= setWidth;
-                } else if (container.scrollLeft <= 0) {
-                    // New Pos = Current + SetWidth
-                    container.scrollLeft += setWidth;
-                }
+                window.clearTimeout(isScrolling);
+
+                isScrolling = setTimeout(() => {
+                    // Animation has likely ended
+
+                    const tolerance = 10;
+                    // Check End (Clone)
+                    if (container.scrollLeft >= (setWidth * 2) - tolerance) {
+                        toggleSnap(false);
+                        container.style.scrollBehavior = 'auto'; // Instant
+                        container.scrollLeft -= setWidth;
+
+                        // Restore
+                        requestAnimationFrame(() => {
+                            toggleSnap(true);
+                            container.style.scrollBehavior = '';
+                        });
+                    }
+                    // Check Start (Buffer)
+                    else if (container.scrollLeft <= tolerance) {
+                        toggleSnap(false);
+                        container.style.scrollBehavior = 'auto';
+                        container.scrollLeft += setWidth;
+
+                        requestAnimationFrame(() => {
+                            toggleSnap(true);
+                            container.style.scrollBehavior = '';
+                        });
+                    }
+                }, 60); // 60ms debounce (wait for snap to settle)
             };
             container.addEventListener('scroll', handleInfiniteScroll);
 
             // Init Drag Scroll Logic
             initDragScroll(container);
 
-            // AUTO ROTATION (5s)
+            // AUTO ROTATION (7s)
             // Clear existing if any
             if (window.serviceAutoScroll) clearInterval(window.serviceAutoScroll);
 
@@ -490,28 +589,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Determine width of one item + gap
                 const firstCard = container.querySelector('.premium-card');
                 if (firstCard) {
-                    const style = window.getComputedStyle(firstCard);
                     const cardWidth = firstCard.offsetWidth;
-                    // Assuming gap is 30px from CSS
                     const gap = 30; // Hardcoded fallback or measure
                     const stride = cardWidth + gap;
 
                     container.scrollBy({ left: stride, behavior: 'smooth' });
                 }
-            }, 5000);
+            }, 7000);
 
             // Pause on Interaction
             const pause = () => clearInterval(window.serviceAutoScroll);
             const resume = () => {
                 clearInterval(window.serviceAutoScroll);
                 window.serviceAutoScroll = setInterval(() => {
-                    // Re-declare logic to avoid closure stale issues
                     const firstCard = container.querySelector('.premium-card');
                     if (firstCard) {
                         const stride = firstCard.offsetWidth + 30;
                         container.scrollBy({ left: stride, behavior: 'smooth' });
                     }
-                }, 5000);
+                }, 7000);
             };
 
             container.addEventListener('mousedown', pause);
@@ -620,56 +716,51 @@ document.addEventListener('DOMContentLoaded', () => {
             // Wait for render to calculate widths
             setTimeout(() => {
                 const totalWidth = container.scrollWidth;
-                // If we duplicated 3 times, set is 1/3. If 5 times, it is 1/5.
-                // Dynamic approach: measure first card * count. 
-                // Simpler: Just rely on "scrollWidth / duplicationFactor" if we knew it.
-                // Let's stick to the 3x standard mostly, or assume 3 chunks.
-                // If 5x, logic needs adaptation.
-                // Robust way:
                 const singleSetCount = snapshot.size;
                 const cards = container.querySelectorAll('.review-card');
                 if (cards.length === 0) return;
 
                 // Calculate width of one single set of original cards
-                // Sum width + gap of first N cards
-                let singleSetWidth = 0;
-                for (let i = 0; i < singleSetCount; i++) {
-                    singleSetWidth += cards[i].offsetWidth + 30; // 30 is gap
-                }
+                // With new CSS, width is 100% of container, gap is 0.
+                const cardWidth = container.offsetWidth; // Visible width
+                const singleSetWidth = cardWidth * singleSetCount;
 
-                // Start in the Middle (roughly, or just after first set)
-                // Let's safely start at Set 2
+                // Start in the Middle (at start of Set 2)
                 container.scrollLeft = singleSetWidth;
 
                 const handleInfiniteScroll = () => {
+                    const tolerance = 5; // Pixel tolerance
                     // Force disable smooth behavior for the jump
                     if (container.scrollLeft >= singleSetWidth * 2) {
+                        // We reached end of Set 2, jump back to start of Set 2
                         container.style.scrollBehavior = 'auto'; // Disable smooth
-                        container.scrollLeft -= singleSetWidth;
+                        container.scrollLeft = container.scrollLeft - singleSetWidth;
                         container.style.scrollBehavior = ''; // Restore
                     } else if (container.scrollLeft <= 0) {
+                        // We reached start of Set 1 (shouldn't happen often if we started in middle), jump to end of Set 2?
+                        // actually if < 0 (impossible) or near 0.
+                        // Standard logic: if at start of buffer (0), jump to start of Set 2
                         container.style.scrollBehavior = 'auto';
-                        container.scrollLeft += singleSetWidth;
+                        container.scrollLeft = singleSetWidth;
                         container.style.scrollBehavior = '';
                     }
                 };
 
-                container.removeEventListener('scroll', window.testimonialsScrollHandler); // Clean old
+                // Remove Old
+                container.removeEventListener('scroll', window.testimonialsScrollHandler);
                 window.testimonialsScrollHandler = handleInfiniteScroll;
+                // Add New (Throttle?)
                 container.addEventListener('scroll', handleInfiniteScroll);
 
-                // --- Auto Scroll Logic ---
+                // --- Auto Scroll Logic (8s) ---
                 if (window.testimonialsAutoScroll) clearInterval(window.testimonialsAutoScroll);
 
                 const startAutoScroll = () => {
                     window.testimonialsAutoScroll = setInterval(() => {
-                        const firstCard = container.querySelector('.review-card');
-                        if (firstCard) {
-                            const stride = firstCard.offsetWidth + 30; // card + gap
-                            // Smooth scroll for the auto-movement
-                            container.scrollBy({ left: stride, behavior: 'smooth' });
-                        }
-                    }, 5000);
+                        // Scroll by ONE container width (NEXT CARD)
+                        const stride = container.offsetWidth;
+                        container.scrollBy({ left: stride, behavior: 'smooth' });
+                    }, 8000); // 8 Seconds
                 };
 
                 startAutoScroll();
@@ -681,16 +772,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     startAutoScroll();
                 };
 
-                // Clear old listeners if possible (hard without named reference, but new ones stack safely if logic is robust)
-                // To be safe against duplicates on re-run, we use 'on' or named functions, but here we use closures.
-                // We rely on 'mouseenter' etc not causing issues if doubled, but let's try to be clean.
-                // We will just add them.
                 container.addEventListener('mouseenter', pauseTestinians);
                 container.addEventListener('touchstart', pauseTestinians);
                 container.addEventListener('mouseleave', resumeTestimonials);
                 container.addEventListener('touchend', resumeTestimonials);
 
-            }, 500); // Small delay for layout
+                // Add Manual Control Function
+                window.moveTestimonials = (dir) => {
+                    // Move by one full card width
+                    const stride = container.offsetWidth;
+                    container.scrollBy({ left: dir * stride, behavior: 'smooth' });
+
+                    // Reset auto timer to avoid double jump
+                    resumeTestimonials();
+                }
+
+            }, 500); // Delay for layout to settle
 
         } catch (error) {
             console.error("Error loading testimonials:", error);

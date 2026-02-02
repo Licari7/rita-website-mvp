@@ -46,4 +46,5 @@ auth.onAuthStateChanged(user => {
     // 3. Trigger UI Updates
     if (window.updateWelcomeUI) window.updateWelcomeUI();
     if (window.updateSidebarAuth) window.updateSidebarAuth();
+    if (window.updateAdminUI) window.updateAdminUI();
 });

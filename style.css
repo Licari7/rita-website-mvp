@@ -18,7 +18,7 @@
     --color-secondary-blue: #dac2b2;
 
     /* Footer */
-    --color-footer-bg: #F7F2E0;
+    --color-footer-bg: #80864F;
 
     --font-serif: 'Cormorant Garamond', serif;
     --font-sans: 'Montserrat', sans-serif;
@@ -175,20 +175,31 @@ ul {
     box-shadow: var(--shadow-soft);
 }
 
+/* Footer Variables Default */
+:root {
+    --color-footer-text: #ffffff;
+}
+
 .footer {
-    background-color: #80864f;
-    /* Green background to support white text */
-    color: #ffffff !important;
-    /* Force White text */
+    background-color: var(--color-footer-bg);
+    color: var(--color-footer-text);
     text-align: center;
+    padding: 60px 0 30px;
+    margin-top: auto;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.15);
+    /* Stronger shadow */
+    position: relative;
+    z-index: 100;
 }
 
 .footer a,
 .footer p,
 .footer span,
 .footer div {
-    color: #ffffff !important;
-    /* Ensure all children are white */
+    color: inherit !important;
+    /* Allow inheritance but keep specificity high against other overrides if needed, or better: var(--color-footer-text) */
+    color: var(--color-footer-text) !important;
 }
 
 .btn-outline {
@@ -442,7 +453,8 @@ ul {
     font-family: var(--font-serif);
     font-size: 22px;
     /* Increased for better presence */
-    color: var(--color-bg);
+    color: #80864f;
+    /* Fixed Green for contrast on white sidebar */
     /* Green text for visibility on white */
     text-decoration: none;
     border-bottom: 1px solid transparent;
@@ -452,11 +464,12 @@ ul {
     /* Added border radius for better highlight feel */
 }
 
-.mobile-menu a:hover {
+.mobile-links-list a:hover,
+#mobile-logout-btn:hover {
     color: var(--color-primary);
     background-color: var(--color-secondary-beige);
     /* Light beige highlight */
-    padding-left: 20px;
+    padding-left: 25px !important;
     /* Slightly increased padding animation */
 }
 
@@ -467,7 +480,7 @@ ul {
     background: none;
     border: none;
     cursor: pointer;
-    color: var(--color-text-muted);
+    color: #80864f;
 }
 
 /* Hero Section */
@@ -1551,43 +1564,57 @@ ul {
 }
 
 /* Restored Testimonials (Dynamic Container) */
+/* Restored Testimonials (Single View Focus) */
 #dynamic-testimonials-container {
     display: flex;
-    gap: 30px;
+    gap: 0;
+    /* No gap for single view snapping */
     width: 100%;
-    /* Scroller logic handled by JS clone, but needs basic styling */
+    scroll-snap-type: x mandatory;
+    /* Snap for clean single view */
+    align-items: center;
 }
 
 #dynamic-testimonials-container .review-card {
-    min-width: 300px;
-    /* Prevent shrink */
-    max-width: 350px;
+    min-width: 100%;
+    /* Take full width of container */
+    max-width: 100%;
     flex-shrink: 0;
-    /* CRITICAL: Don't let flex shrink them */
+    scroll-snap-align: center;
+    /* Center snap */
+
     background: #fff;
     border-radius: 12px;
-    padding: 30px;
+    padding: 60px 40px;
+    /* Big padding for impact */
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
     justify-content: center;
     text-align: center;
-    margin: 0 15px;
-    /* Add spacing if marquee calculation fails */
+    margin: 0;
     color: #666;
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 #dynamic-testimonials-container .review-card p {
-    font-size: 1.05rem;
+    font-size: 1.4rem;
+    /* Larger font for impact */
     line-height: 1.6;
+    font-family: var(--font-serif);
+    /* More elegant */
     font-style: italic;
-    color: #555;
-    margin-bottom: 15px;
+    color: #4F553D;
+    /* Theme dark */
+    margin-bottom: 25px;
 }
 
 #dynamic-testimonials-container .review-card .author {
     color: var(--color-primary);
     font-weight: 600;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 @keyframes slideUp {
@@ -1602,36 +1629,55 @@ ul {
     }
 }
 
-/* Carousel for Dashboard - Manual Control */
+/* Carousel Wrapper */
 .carousel-wrapper {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    max-width: 100%;
+    max-width: 900px;
+    /* Constrain width on desktop */
     margin: 0 auto;
     overflow: hidden;
-    /* Keep wrapper hidden, container auto */
+}
+
+/* Navigation Buttons */
+.nav-btn {
+    background: none;
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    z-index: 10;
+    flex-shrink: 0;
+    /* Verify */
+    margin: 0 10px;
+}
+
+.nav-btn:hover {
+    background: var(--color-primary);
+    color: #fff;
 }
 
 .carousel-container {
     display: flex;
     overflow-x: auto;
     scroll-behavior: smooth;
-    gap: 30px;
-    padding: 20px 5px;
+    gap: 0;
+    /* No gap */
+    padding: 20px 0;
+    /* Vertical breathing room */
     width: 100%;
     cursor: grab;
-    /* Hide scrollbar */
     -ms-overflow-style: none;
-    /* Ensure no animation interference */
-    animation: none;
-}
-
-@supports (scrollbar-width: none) {
-    .carousel-container {
-        scrollbar-width: none;
-    }
+    /* Hide scrollbar */
+    scrollbar-width: none;
 }
 
 .carousel-container::-webkit-scrollbar {
@@ -1640,6 +1686,47 @@ ul {
 
 .carousel-container:hover {
     animation: none;
+}
+
+/* Mobile & Tablet Overrides */
+@media (max-width: 768px) {
+    .carousel-wrapper {
+        max-width: 100%;
+        padding: 0;
+    }
+
+    /* Hide Desktop Arrows */
+    .nav-btn {
+        display: none !important;
+    }
+
+    #dynamic-testimonials-container .review-card {
+        box-sizing: border-box;
+        /* Ensure padding doesn't add to width */
+        min-width: 90%;
+        /* Relative to container, not viewport */
+        width: 90%;
+        margin: 0 5%;
+        /* Center: (100% - 90%) / 2 = 5% */
+        padding: 40px 25px;
+        /* Comfortable padding */
+
+        /* Box shadow for depth? */
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        /* Softer shadow */
+    }
+
+    #dynamic-testimonials-container {
+        padding-left: 0;
+        padding-right: 0;
+        /* Ensure scroll snapping works with margins */
+        scroll-padding: 0 5%;
+        /* Match margin for snap */
+    }
+
+    #dynamic-testimonials-container .review-card p {
+        font-size: 1.1rem;
+    }
 }
 
 .carousel-container.active {
@@ -1944,17 +2031,27 @@ body.dashboard-body {
 
 /* Default Body is Terracotta (#b16a4c), Text Beige */
 
-/* Navbar & Footer (Matching Green) -> Footer Only now */
-.footer {
-    background-color: var(--color-footer-bg);
-    /* Verde Seco */
-    color: var(--color-text-main);
-    /* Beige Text */
-}
+/* Navbar.scrolled */
 
 .navbar.scrolled {
     background-color: var(--color-secondary-beige);
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    /* Match footer intensity */
+}
+
+/* Force Solid Navbar (overrides JS) */
+.navbar.navbar-always-solid {
+    background-color: var(--nav-bg) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.navbar.navbar-always-solid .logo,
+.navbar.navbar-always-solid .nav-links a,
+.navbar.navbar-always-solid .menu-toggle,
+.navbar.navbar-always-solid .header-socials a {
+    color: var(--nav-text) !important;
 }
 
 /* Beige Sections (About, Events - Contact has special handling) */
@@ -2242,18 +2339,28 @@ body.auth-page {
 
 /* Compact Mobile Menu Items - Unified */
 .mobile-links-list li a,
-.mobile-menu a,
 #mobile-logout-btn {
-    padding: 6px 0 !important;
+    display: block;
+    /* Ensure it takes full width */
+    width: 100%;
+    padding: 10px 15px !important;
+    /* increased padding for better touch target and visual */
     font-size: 20px !important;
     line-height: 1.2 !important;
-    /* Fixed line-height to prevent scaling variations */
+    border-radius: 8px;
+    /* consistent with earlier styles */
 }
 
 .mobile-socials {
+    display: flex;
     margin-top: 10px;
     margin-bottom: 30px;
     gap: 15px;
+}
+
+.mobile-socials a:hover {
+    color: var(--color-primary);
+    transform: translateY(-2px);
 }
 
 /* --- About Page Split Layout --- */
@@ -2606,11 +2713,16 @@ body.auth-page {
 }
 
 .services-carousel {
-    display: flex;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% - 120px) / 3);
+    /* Desktop Width */
+    align-items: stretch;
     overflow-x: auto;
     scroll-behavior: auto !important;
     gap: 30px;
-    padding: 0 30px 20px 30px;
+    padding: 0 30px 50px 30px;
+    /* Increased bottom padding */
     /* Added 30px padding Left/Right for edge gaps */
     cursor: grab;
     -ms-overflow-style: none;
@@ -2633,6 +2745,7 @@ body.auth-page {
     cursor: grabbing;
 }
 
+/* Navigation Arrows */
 /* Navigation Arrows */
 .carousel-arrow {
     position: absolute;
@@ -2661,16 +2774,53 @@ body.auth-page {
     right: 2%;
 }
 
+/* Snap properties */
+.services-carousel {
+    scroll-snap-type: x mandatory;
+}
+
+.premium-card {
+    scroll-snap-align: center;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .carousel-arrow {
+        display: none !important;
+    }
+
+    .services-carousel-wrapper {
+        width: 100vw;
+        margin-left: -50vw;
+        left: 50%;
+        padding: 0;
+        overflow: visible;
+        /* Prevent clipping */
+    }
+
+    .services-carousel {
+        grid-auto-columns: 280px;
+        /* Mobile Width */
+        gap: 30px;
+    }
+
+    .premium-card {
+        /* On mobile, show fewer cards? Or allow them to snap center */
+        /* Currently it's flexible, but let's ensure snap aligns nicely */
+        scroll-snap-align: center;
+    }
+}
+
 /* Premium Card Design */
 .premium-card {
-    /* Dynamic 3-column layout relative to container */
-    /* (100% - 2 gaps @ 30px - 2 padding @ 30px) / 3 = (100% - 120px) / 3 */
-    flex: 0 0 calc((100% - 120px) / 3);
-    min-width: 250px;
+    /* Dynamic Layout handled by Grid Container now */
+    height: 100%;
+    /* Fill Grid Cell Height */
+    width: 100%;
+    /* Fill Grid Cell Width */
     display: flex;
     flex-direction: column;
     border-radius: 0;
-    /* Sharp or slight? Image was sharp */
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease;
@@ -2770,6 +2920,8 @@ body.auth-page {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    margin-top: auto;
+    /* Push to bottom */
 }
 
 .btn-premium-outline {
@@ -2795,23 +2947,53 @@ body.auth-page {
 
 /* Mobile Adjustments */
 @media (max-width: 768px) {
+    .services-carousel {
+        grid-auto-columns: 280px;
+        /* Mobile Width */
+        gap: 30px;
+        /* Standard gap */
+    }
+
     .premium-card {
-        flex: 0 0 280px;
-        /* Smaller width on mobile */
+        min-height: 0;
+        overflow: visible;
     }
 
     .premium-card-top {
-        height: 250px;
+        height: 200px;
+    }
+
+    .premium-card-bottom {
+        padding: 20px 15px 40px 15px !important;
+        height: auto;
+        min-height: 0;
+        justify-content: flex-start;
+        flex-grow: 1;
+    }
+
+    .premium-actions {
+        margin-bottom: 10px;
+    }
+
+    .premium-desc {
+        flex: 0 0 auto;
+        height: 150px;
+        /* Fixed height for text */
+        overflow: hidden;
+        /* Hide excess text */
+        margin-bottom: 20px;
+    }
+
+    .premium-desc * {
+        font-size: 0.725rem !important;
+        /* Force override TinyMCE */
+        line-height: 1.4 !important;
+        /* Force override TinyMCE */
     }
 
     .services-carousel-wrapper {
         padding: 0 10px;
-        /* Reduce padding */
-    }
-
-    .services-carousel-wrapper {
-        padding: 0 10px;
-        /* Reduce padding */
+        overflow: visible;
     }
 }
 
@@ -2869,12 +3051,20 @@ body.auth-page {
 }
 
 /* Lower specific images to align with paragraph text */
+/* Lower specific images to align with paragraph text */
 #about-intro .about-image-container {
     margin-top: 100px;
 }
 
+/* User Req: Text down, Image up */
+#about-art .about-text-content {
+    margin-top: 80px;
+    /* Push text down */
+}
+
 #about-art .about-image-container {
-    margin-top: 150px;
+    margin-top: 40px;
+    /* Pull image up (reduced from 150px) */
 }
 
 @media (max-width: 768px) {
@@ -2888,8 +3078,15 @@ body.auth-page {
     }
 
     .about-split-section#about-art .about-image-container {
-        order: 1;
-        /* Except Art section? User didn't specify, but let's keep standard stacking */
+        border: none;
+        /* Ensure it inherits order: -1 from above, or explicitly set it */
+        order: -1 !important;
+    }
+
+    /* Reset margins on mobile */
+    #about-art .about-text-content,
+    #about-art .about-image-container {
+        margin-top: 0;
     }
 }
 
@@ -3107,4 +3304,40 @@ body.auth-page {
     margin: 20px 0;
     border: 0;
     border-top: 1px solid #eee;
+}
+
+/* Legal Section (Privacy/Terms) - Clear Fixed Header */
+.legal-section {
+    padding-top: 160px;
+}
+
+/* Dashboard spacing override */
+.dashboard-page .section-padding {
+    padding-top: 160px;
+}
+
+/* Admin Toggle Button (Restored) */
+.admin-toggle-btn {
+    display: none;
+    /* JS toggles to flex */
+    margin: 20px auto 40px auto;
+    background-color: #2c2c2c;
+    color: #e6dfc8;
+    border-radius: 50px;
+    padding: 12px 35px;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    font-weight: 500;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    border: 1px solid #444;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.admin-toggle-btn:hover {
+    background-color: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
 }

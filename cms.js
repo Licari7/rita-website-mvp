@@ -406,7 +406,6 @@ window.resetEventForm = function () {
     const btn = document.querySelector('#event-form button[type="submit"]');
     if (btn) btn.innerText = "Publicar Evento";
 };
-
 window.deleteEvent = async (id) => {
     if (confirm("Tens a certeza que queres apagar este evento?")) {
         try {
@@ -417,6 +416,23 @@ window.deleteEvent = async (id) => {
         }
     }
 };
+
+// Color Sync Helper
+function setupColorSync(pickerId, textId) {
+    const picker = document.getElementById(pickerId);
+    const text = document.getElementById(textId);
+    if (picker && text) {
+        picker.addEventListener('input', (e) => text.value = e.target.value);
+        text.addEventListener('input', (e) => picker.value = e.target.value);
+    }
+}
+
+// Setup Footer Color Sync
+document.addEventListener('DOMContentLoaded', () => {
+    setupColorSync('footer-bg-color', 'footer-bg-hex');
+    setupColorSync('footer-text-color', 'footer-text-hex');
+});
+
 
 // --- Testimonials Logic ---
 
@@ -734,25 +750,30 @@ window.handleServiceConfigSubmit = async () => {
         let imageUrl = document.getElementById('service-bg-url').value;
         const imageFile = document.getElementById('service-bg-file').files[0];
 
+        // New Fields
+        const title = document.getElementById('service-section-title').value;
+        const highlightEnabled = document.getElementById('service-title-highlight-enabled') ? document.getElementById('service-title-highlight-enabled').checked : false;
+        const highlightColor = document.getElementById('service-title-highlight-color') ? document.getElementById('service-title-highlight-color').value : '#f7f2e0';
+        const highlightOpacity = document.getElementById('service-title-highlight-opacity') ? parseFloat(document.getElementById('service-title-highlight-opacity').value) : 1;
+
         if (imageFile) {
             btn.textContent = "A enviar imagem...";
             const path = `site_content/services_bg_${Date.now()}`;
             imageUrl = await uploadImageToStorage(imageFile, path);
         }
 
-        if (!imageUrl) {
-            alert("Por favor selecione uma imagem ou URL.");
-            return;
-        }
-
         // Save to site_content/main -> service_section
         await window.db.collection('site_content').doc('main').set({
             service_section: {
-                background_image: imageUrl
+                background_image: imageUrl,
+                title: title,
+                title_highlight_enabled: highlightEnabled,
+                title_highlight_color: highlightColor,
+                title_highlight_opacity: highlightOpacity
             }
         }, { merge: true });
 
-        alert("Imagem de fundo atualizada!");
+        alert("Configuração de Serviços atualizada!");
 
     } catch (error) {
         console.error("Error saving service config:", error);
@@ -763,20 +784,35 @@ window.handleServiceConfigSubmit = async () => {
     }
 };
 
-async function loadServices() {
-    // initTinyMCE(); // Removed
-
+async function loadServices(retryCount = 0) {
     const listContainer = document.getElementById('admin-services-list');
     if (!listContainer) return;
-    listContainer.innerHTML = '<p>A carregar...</p>';
+
+    // Retry Logic (Max 10 attempts = 5 seconds)
+    if (!window.db) {
+        if (retryCount < 10) {
+            console.warn(`CMS: Waiting for DB... (${retryCount + 1}/10)`);
+            setTimeout(() => loadServices(retryCount + 1), 500);
+            return;
+        } else {
+            listContainer.innerHTML = '<p style="color:red; font-weight:bold;">Erro Crítico: Base de Dados não detetada após 5 segundos.</p>';
+            alert("Erro: A ligação à Base de Dados falhou. Verifique a consola.");
+            return;
+        }
+    }
+
+    listContainer.innerHTML = '<p style="color:#666;">A carregar serviços...</p>';
 
     try {
+        console.log("CMS: Fetching services...");
         const querySnapshot = await window.db.collection("services").orderBy("order", "asc").get();
 
         if (querySnapshot.empty) {
-            listContainer.innerHTML = '<p class="text-muted">Sem serviços ativos.</p>';
+            listContainer.innerHTML = '<p class="text-muted">A coleção "services" está vazia na Base de Dados.</p>';
             return;
         }
+
+        console.log(`CMS: Found ${querySnapshot.size} services.`);
 
         // Generate items directly (no UL wrapper) for better flex control
         let html = '';
@@ -786,7 +822,7 @@ async function loadServices() {
             html += `
                 <div class="admin-event-item">
                     <div class="event-info">
-                        <span class="font-sm">${data.title}</span>
+                        <span class="font-sm"><strong>${data.title || 'Sem Título'}</strong></span>
                     </div>
                     <div class="flex-center gap-5 mt-5">
                         <button class="btn-outline font-xs" style="padding: 2px 8px;" onclick="window.editService('${doc.id}')">Editar</button>
@@ -800,7 +836,10 @@ async function loadServices() {
 
     } catch (error) {
         console.error("Error loading services:", error);
-        listContainer.innerHTML = '<p style="color:red">Erro.</p>';
+        listContainer.innerHTML = `<div style="color:red; background:#fff2f2; padding:10px; border-radius:5px;">
+            <strong>Erro ao carregar dados:</strong><br>${error.message}<br>
+            <small>Código: ${error.code || 'N/A'}</small>
+        </div>`;
     }
 }
 
@@ -1297,10 +1336,30 @@ window.resetMeditationForm = () => {
 // --- Site Content (Home & About) ---
 
 async function loadSiteContent() {
+    // Wait for DB to initialize (Localhost race condition fix)
+    if (!window.db) {
+        setTimeout(loadSiteContent, 500);
+        return;
+    }
+
     try {
         const doc = await window.db.collection('site_content').doc('main').get();
         if (doc.exists) {
             const data = doc.data();
+
+            // Populate Service Config Form
+            if (data.service_section) {
+                if (document.getElementById('service-bg-url')) document.getElementById('service-bg-url').value = data.service_section.background_image || '';
+                if (document.getElementById('service-section-title')) document.getElementById('service-section-title').value = data.service_section.title || '';
+                if (document.getElementById('service-title-highlight-enabled')) document.getElementById('service-title-highlight-enabled').checked = data.service_section.title_highlight_enabled || false;
+                if (document.getElementById('service-title-highlight-color')) document.getElementById('service-title-highlight-color').value = data.service_section.title_highlight_color || '#f7f2e0';
+
+                if (document.getElementById('service-title-highlight-opacity')) {
+                    const op = (data.service_section.title_highlight_opacity !== undefined) ? data.service_section.title_highlight_opacity : 1;
+                    document.getElementById('service-title-highlight-opacity').value = op;
+                    if (document.getElementById('service-title-opacity-val')) document.getElementById('service-title-opacity-val').innerText = Math.round(op * 100) + '%';
+                }
+            }
 
             // Populate Home Form
             if (data.home) {
@@ -1342,6 +1401,19 @@ async function loadSiteContent() {
                 if (document.getElementById('footer-title-input')) document.getElementById('footer-title-input').value = data.footer.title || '';
                 if (document.getElementById('footer-copyright-input')) document.getElementById('footer-copyright-input').value = data.footer.copyright || '';
                 if (document.getElementById('footer-dev-input')) document.getElementById('footer-dev-input').value = data.footer.dev_credit || '';
+
+                // Footer Colors
+                const fBg = data.footer.bg_color || '#80864f';
+                const fText = data.footer.text_color || '#ffffff';
+
+                if (document.getElementById('footer-bg-color')) {
+                    document.getElementById('footer-bg-color').value = fBg;
+                    document.getElementById('footer-bg-hex').value = fBg;
+                }
+                if (document.getElementById('footer-text-color')) {
+                    document.getElementById('footer-text-color').value = fText;
+                    document.getElementById('footer-text-hex').value = fText;
+                }
             }
 
             // Populate Contact Form
@@ -1352,6 +1424,7 @@ async function loadSiteContent() {
                 if (document.getElementById('contact-phone-input')) document.getElementById('contact-phone-input').value = data.contact.phone || '';
                 if (document.getElementById('contact-instagram-input')) document.getElementById('contact-instagram-input').value = data.contact.instagram || '';
             }
+
         }
     } catch (error) {
         console.error("Error loading site content:", error);
@@ -1514,15 +1587,32 @@ window.handleFooterSubmit = async () => {
     const title = document.getElementById('footer-title-input').value;
     const copyright = document.getElementById('footer-copyright-input').value;
     const devCredit = document.getElementById('footer-dev-input').value;
+    const bgColor = document.getElementById('footer-bg-hex').value;
+    const textColor = document.getElementById('footer-text-hex').value;
 
     try {
         await window.db.collection('site_content').doc('main').set({
             footer: {
                 title: title,
                 copyright: copyright,
-                dev_credit: devCredit
+                dev_credit: devCredit,
+                bg_color: bgColor,
+                text_color: textColor
             }
         }, { merge: true });
+
+        // Update Local Storage Immediately for Live Preview
+        const newFooter = {
+            title: title,
+            copyright: copyright,
+            dev_credit: devCredit,
+            bg_color: bgColor,
+            text_color: textColor
+        };
+        localStorage.setItem('site_footer', JSON.stringify(newFooter));
+
+        // Trigger event for main.js to pick up
+        window.dispatchEvent(new Event('storage'));
 
         alert("Rodapé atualizado com sucesso!");
     } catch (error) {
@@ -1915,15 +2005,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (themeResetBtn) themeResetBtn.addEventListener('click', resetThemeSettings);
 
     loadSiteContent();
-    loadThemeSettings(); // Load Theme Settings
-    loadHeaderSettings(); // Load Header Settings
-    setupHexListeners(); // Initialize Hex Sync
+    loadThemeSettings();
+    loadHeaderSettings();
+    setupHexListeners();
+
+    // Init Admin Panels
+    if (window.loadServices) window.loadServices();
+    if (window.loadMembers) window.loadMembers();
 });
 // --- Member Management Logic ---
 
 window.membersCache = {};
 
 window.loadMembers = async function () {
+    // Wait for DB to initialize
+    if (!window.db) {
+        setTimeout(window.loadMembers, 500);
+        return;
+    }
     const listContainer = document.getElementById('admin-members-list');
     if (!listContainer) return;
     listContainer.innerHTML = '<p>A carregar membros...</p>';

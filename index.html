@@ -62,14 +62,14 @@
         rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="style.css?v=5.2.0">
+    <link rel="stylesheet" href="style.css?v=7.0.6">
 
     <!-- Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body>
-
+    <script src="main.js?v=7.0.6"></script>
     <!-- Navigation -->
     <nav class="navbar">
         <div class="container nav-content">
@@ -128,7 +128,6 @@
     <section id="about" class="section about-section">
         <div class="container">
             <div class="section-header">
-                <span class="section-tag">Sobre</span>
                 <h2 id="home-about-title-display" class="section-title"></h2>
             </div>
             <div class="about-grid">
@@ -148,7 +147,7 @@
         <div class="container">
             <div class="section-header text-center">
 
-                <h2 class="section-title">Sessões individuais</h2>
+                <h2 class="section-title" id="services-title-display">Sessões individuais</h2>
             </div>
             <div class="services-carousel-wrapper">
                 <button class="carousel-arrow prev" onclick="moveCarousel(-1)">&#10094;</button>
@@ -181,7 +180,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
-    <script src="init-firebase.js"></script>
+    <script src="init-firebase.js?v=3.1.0"></script>
 
     <!-- Reviews/Feedback -->
     <section class="section reviews-section">
@@ -296,7 +295,7 @@
         <img src="assets/icons/whatsapp.svg" alt="WhatsApp" />
     </a>
 
-    <script src="main.js?v=5.0.1"></script>
+    <script src="main.js?v=7.0.0"></script>
     <script src="sidebar.js?v=4.6.0"></script>
     <script>
         lucide.createIcons();

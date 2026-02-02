@@ -20,6 +20,19 @@
         rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        body {
+            background-color: #DAC2B2;
+        }
+
+        .service-detail-header {
+            background: transparent;
+            /* Allow body color to show or keep alt? User said "just body", but usually header matches. Let's assume transparent or same color. */
+            /* safer to just set body and see, but typically 'just body' implies the whole page canvas */
+            /* Actually, if I just set body, and header has a diff color, it might look odd. 
+               But 'change just the body' might mean 'don't change the text colors etc'.
+               I'll stick to body. */
+        }
+
         .service-detail-header {
             background: var(--bg-color-alt);
             padding: 120px 20px 60px;

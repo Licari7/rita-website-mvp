@@ -64,8 +64,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Close upon mouse leave (Requested by User)
+    // Close upon mouse leave (Requested by User)
     mobileMenu.addEventListener('mouseleave', () => {
         mobileMenu.classList.remove('active');
+    });
+
+    // Close when clicking outside (Mobile/Touch Support)
+    document.addEventListener('click', (e) => {
+        const isClickInsideMenu = mobileMenu.contains(e.target);
+        const isClickOnToggle = e.target.closest('.menu-toggle'); // handle icon clicks
+
+        if (mobileMenu.classList.contains('active') && !isClickInsideMenu && !isClickOnToggle) {
+            mobileMenu.classList.remove('active');
+        }
     });
 
     // 5. Active Link Highlighting
@@ -81,15 +92,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 6. Logout Button Logic (Unified)
-    const updateLogoutVisibility = () => {
+    // 6. Logout Button & Admin Link Logic
+    const updateAuthVisibility = () => {
         const userName = localStorage.getItem('userName');
+        const isAdmin = localStorage.getItem('isAdmin') === 'true';
         const socials = mobileMenu.querySelector('.mobile-socials');
+        const list = mobileMenu.querySelector('.mobile-links-list');
+
+        // Manage Admin Link - Removed specific sidebar link in favor of Dashboard center button
+        let adminLink = document.getElementById('mobile-admin-link');
+        if (adminLink) adminLink.parentElement.remove();
+
         const existingBtn = document.getElementById('mobile-logout-btn');
         const existingDivider = document.getElementById('mobile-logout-divider');
 
         if (userName && userName !== 'Visitante') {
             if (!existingBtn && socials) {
+                // ... (Existing logout creation logic) ...
                 // Divider
                 const divider = document.createElement('div');
                 divider.id = 'mobile-logout-divider';
@@ -124,11 +143,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Expose for external updates (e.g. from init-firebase.js)
-    window.updateSidebarAuth = updateLogoutVisibility;
+    window.updateSidebarAuth = updateAuthVisibility;
 
     // Run immediately and listen for changes
-    updateLogoutVisibility();
+    updateAuthVisibility();
     window.addEventListener('storage', (e) => {
-        if (e.key === 'userName' || e.key === 'isMember') updateLogoutVisibility();
+        if (e.key === 'userName' || e.key === 'isMember' || e.key === 'isAdmin') updateAuthVisibility();
     });
 });
