@@ -10,7 +10,6 @@
             if (colors.header_bg) root.style.setProperty('--nav-bg', colors.header_bg);
             if (colors.secondary_beige) root.style.setProperty('--color-secondary-beige', colors.secondary_beige);
             if (colors.secondary_blue) root.style.setProperty('--color-secondary-blue', colors.secondary_blue);
-            // Footer color now handled exclusively by site_footer below
         }
 
         const header = localStorage.getItem('site_header');
@@ -23,13 +22,7 @@
             if (h.padding) root.style.setProperty('--nav-padding', h.padding + 'px');
         }
 
-        const footer = localStorage.getItem('site_footer');
-        if (footer) {
-            const f = JSON.parse(footer);
-            const root = document.documentElement;
-            if (f.bg_color) root.style.setProperty('--color-footer-bg', f.bg_color);
-            if (f.text_color) root.style.setProperty('--color-footer-text', f.text_color);
-        }
+        // Footer is handled by main.js
     } catch (e) {
         console.error("Error loading theme:", e);
     }

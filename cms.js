@@ -44,6 +44,27 @@ const uploadImageToStorage = async (file, path) => {
 window.initCMS = function () {
     console.log("Initializing CMS (Global Mode)...");
 
+    // FAST PATH: Apply Footer Styles from LocalStorage immediately
+    try {
+        const savedFooter = localStorage.getItem('site_footer');
+        if (savedFooter) {
+            const settings = JSON.parse(savedFooter);
+            if (settings.bg_color) document.documentElement.style.setProperty('--color-footer-bg', settings.bg_color);
+            if (settings.text_color) document.documentElement.style.setProperty('--color-footer-text', settings.text_color);
+
+            // Apply text if elements exist (Dashboard footer)
+            const footerTitle = document.getElementById('footer-title');
+            const footerCopyright = document.getElementById('footer-copyright');
+            const footerCredit = document.getElementById('footer-credit');
+
+            if (footerTitle && settings.title !== undefined) footerTitle.innerHTML = settings.title;
+            if (footerCopyright && settings.copyright !== undefined) footerCopyright.innerHTML = settings.copyright;
+            if (footerCredit && settings.dev_credit !== undefined) footerCredit.innerHTML = settings.dev_credit;
+        }
+    } catch (e) {
+        console.error("Error applying fast-path footer styles:", e);
+    }
+
     // Wait for auth to be ready if it's not immediately available
     const checkAuth = () => {
         if (!window.auth) {
@@ -1414,6 +1435,22 @@ async function loadSiteContent() {
                     document.getElementById('footer-text-color').value = fText;
                     document.getElementById('footer-text-hex').value = fText;
                 }
+
+                // FIX: Update actual Footer DOM elements dynamically (for Dashboard view)
+                const footerTitle = document.getElementById('footer-title');
+                const footerCopyright = document.getElementById('footer-copyright');
+                const footerCredit = document.getElementById('footer-credit');
+
+                if (footerTitle && data.footer.title !== undefined) footerTitle.innerHTML = data.footer.title;
+                if (footerCopyright && data.footer.copyright !== undefined) footerCopyright.innerHTML = data.footer.copyright;
+                if (footerCredit && data.footer.dev_credit !== undefined) footerCredit.innerHTML = data.footer.dev_credit;
+
+                // Update Footer Styles dynamically
+                document.documentElement.style.setProperty('--color-footer-bg', fBg);
+                document.documentElement.style.setProperty('--color-footer-text', fText);
+
+                // FIX: Sync to LocalStorage so main.js has fresh data immediately
+                localStorage.setItem('site_footer', JSON.stringify(data.footer));
             }
 
             // Populate Contact Form
@@ -1613,6 +1650,19 @@ window.handleFooterSubmit = async () => {
 
         // Trigger event for main.js to pick up
         window.dispatchEvent(new Event('storage'));
+
+        // FIX: Manually update Dashboard DOM elements for immediate feedback
+        const fTitle = document.getElementById('footer-title');
+        const fCopyright = document.getElementById('footer-copyright');
+        const fCredit = document.getElementById('footer-credit');
+
+        if (fTitle) fTitle.innerHTML = title;
+        if (fCopyright) fCopyright.innerHTML = copyright;
+        if (fCredit) fCredit.innerHTML = devCredit;
+
+        // Update CSS Vars
+        document.documentElement.style.setProperty('--color-footer-bg', bgColor);
+        document.documentElement.style.setProperty('--color-footer-text', textColor);
 
         alert("Rodapé atualizado com sucesso!");
     } catch (error) {
@@ -1992,6 +2042,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const homeAboutForm = document.getElementById('home-about-form');
     if (homeAboutForm) homeAboutForm.addEventListener('submit', handleHomeAboutSubmit);
+
+    // Footer Listener
+    const footerForm = document.getElementById('footer-form');
+    if (footerForm) {
+        footerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            handleFooterSubmit();
+        });
+    }
+
+    // Contact Listener
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            handleContactSubmit();
+        });
+    }
 
     // Header Listeners
     const headerForm = document.getElementById('header-form');

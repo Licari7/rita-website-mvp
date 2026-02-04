@@ -9,7 +9,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@300;400;500&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=5.5.0">
+    <link rel="stylesheet" href="style.css?v=7.1.5">
     <script src="https://unpkg.com/lucide@latest"></script>
 
 
@@ -915,8 +915,7 @@
                         Rodapé</span>
                 </summary>
                 <div class="admin-card-body">
-                    <form id="footer-form" class="auth-form"
-                        onsubmit="event.preventDefault(); window.handleFooterSubmit();">
+                    <form id="footer-form" class="auth-form">
                         <div class="form-group">
                             <label>Título / Logótipo do Rodapé</label>
                             <input type="text" id="footer-title-input" placeholder="Ex: Floresce Terapias">
@@ -965,8 +964,7 @@
                         Contactos</span>
                 </summary>
                 <div class="admin-card-body">
-                    <form id="contact-form" class="auth-form"
-                        onsubmit="event.preventDefault(); window.handleContactSubmit();">
+                    <form id="contact-form" class="auth-form">
                         <div class="form-group">
                             <label>Título da Secção</label>
                             <input type="text" id="contact-title-input" placeholder="Ex: Vamos conversar?">
@@ -1316,7 +1314,7 @@
     <script src="init-firebase.js?v=2"></script>
 
     <!-- CMS Logic -->
-    <script src="cms.js?v=6.5.0"></script>
+    <script src="cms.js?v=7.1.0"></script>
     <script>
         // Initialize CMS
         if (window.initCMS) {
@@ -1549,9 +1547,8 @@
                     <a href="privacidade.html">Privacidade</a>
                     <a href="termos.html">Termos</a>
                 </div>
-                <p class="copyright" id="footer-copyright">&copy; 2026 Floresce Terapias. Todos os direitos reservados.
-                </p>
-                <p class="developer-credit" id="footer-credit">CREATED BY CALB</p>
+                <p class="copyright" id="footer-copyright"></p>
+                <p class="developer-credit" id="footer-credit"></p>
             </div>
         </div>
     </footer>

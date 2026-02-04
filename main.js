@@ -1,5 +1,5 @@
 // Main Script (Loaded)
-console.log("DEBUG: main.js v7.0.6 LOADED - Font Size 0.725rem");
+console.log("DEBUG: main.js v7.1.1 LOADED - Debug Enabled");
 document.addEventListener('DOMContentLoaded', () => {
 
     // Header Scroll & Style Effect (Dynamic)
@@ -63,10 +63,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const applyFooterStyles = () => {
             const savedFooter = localStorage.getItem('site_footer');
+            console.log("DEBUG: applyFooterStyles running. Storage:", savedFooter);
             if (savedFooter) {
                 const settings = JSON.parse(savedFooter);
                 if (settings.bg_color) document.documentElement.style.setProperty('--color-footer-bg', settings.bg_color);
                 if (settings.text_color) document.documentElement.style.setProperty('--color-footer-text', settings.text_color);
+
+                // Live Text Update
+                const footerTitle = document.getElementById('footer-title');
+                const footerCopyright = document.getElementById('footer-copyright');
+                const footerCredit = document.getElementById('footer-credit');
+
+                console.log("DEBUG: Footer Elements:", { title: !!footerTitle, copyright: !!footerCopyright, credit: !!footerCredit });
+
+                if (footerTitle && settings.title !== undefined) footerTitle.innerHTML = settings.title;
+                if (footerCopyright && settings.copyright !== undefined) footerCopyright.innerHTML = settings.copyright;
+                if (footerCredit && settings.dev_credit !== undefined) footerCredit.innerHTML = settings.dev_credit;
+            } else {
+                console.log("DEBUG: No site_footer in localStorage");
             }
         };
 

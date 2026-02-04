@@ -15,7 +15,7 @@
     <meta name="description"
         content="Marque a sua sessão de Leitura de Aura ou participe nos nossos eventos e workshops de espiritualidade. Agenda aberta para consultas online e presenciais.">
 
-    <link rel="stylesheet" href="style.css?v=5.1.8">
+    <link rel="stylesheet" href="style.css?v=7.1.5">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -81,12 +81,17 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-bottom">
-            <p>&copy; 2026 Floresce Terapias. Todos os direitos reservados.</p>
-            <p class="footer-credits">CREATED BY CALB</p>
+            <p class="logo-text" id="footer-title"></p>
+            <div class="footer-links">
+                <a href="privacidade.html">Privacidade</a>
+                <a href="termos.html">Termos</a>
+            </div>
+            <p class="copyright" id="footer-copyright"></p>
+            <p class="footer-credits" id="footer-credit"></p>
         </div>
     </footer>
 
-    <script src="main.js"></script>
+    <script src="main.js?v=7.1.0"></script>
     <script src="sidebar.js"></script>
     <script type="module">
         import { auth, db } from './firebase-config.js';
