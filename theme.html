@@ -158,44 +158,28 @@
     <script>
         lucide.createIcons();
 
-        // Theme Names Mapping
-        const themeNames = {
-            'enraizamento': 'Enraizamento',
-            'limpeza': 'Limpeza Energética',
-            'protecao': 'Proteção',
-            'intuicao': 'Intuição',
-            'chakras': 'Equilíbrio dos Chakras',
-            'innerdance': 'Innerdance',
-            'constellations': 'Constelações Familiares',
-            'expansion': 'Expansão de Consciência'
-        };
-
         async function loadThemeContent() {
             const params = new URLSearchParams(window.location.search);
-            let themeId = params.get('id');
+            let docId = params.get('id');
 
-            // Fallback: Check Hash (e.g., #innerdance)
-            if (!themeId && window.location.hash) {
-                themeId = window.location.hash.substring(1); // Remove '#'
-            }
-
-            if (!themeId) {
+            if (!docId) {
+                // Return to dashboard if accessed directly without ID
                 window.location.href = 'dashboard.html';
                 return;
             }
 
-            // Set Title w/o Debug
-            const displayTitle = themeNames[themeId] || 'Tema Específico';
-            document.getElementById('theme-title').innerText = displayTitle;
-            document.title = `${displayTitle} | Floresce Terapias`;
+            // Initial Loading State
+            document.getElementById('theme-title').innerText = "A carregar...";
+            document.title = "A carregar... | Floresce Terapias";
 
-            // Wait for DB
+            // Wait for DB (Firebase initialization)
             const MAX_RETRIES = 50; // 5 seconds
             let retries = 0;
 
             const checkDb = () => {
                 if (window.db) {
-                    fetchMeditations(themeId);
+                    console.log("DB connection established, fetching:", docId);
+                    fetchMeditations(docId);
                 } else {
                     retries++;
                     if (retries > MAX_RETRIES) {
@@ -218,141 +202,154 @@
             checkDb();
         }
 
-        async function fetchMeditations(themeId) {
+        async function fetchMeditations(docId) {
             const container = document.getElementById('dynamic-meditations');
             try {
-                const snapshot = await window.db.collection('meditations')
-                    .where('theme', '==', themeId)
-                    .get();
+                // FETCH SINGLE DOCUMENT BY ID
+                const docRef = await window.db.collection('meditations').doc(docId).get();
 
-                if (snapshot.empty) {
+                if (!docRef.exists) {
                     container.innerHTML = `
                         <div style="text-align: center; padding: 40px; background: whitesmoke; border-radius: 8px;">
-                            <i data-lucide="cloud-off" style="margin-bottom: 15px; color: #999;"></i>
-                            <p>Ainda não existem recursos para o tema: <strong>${themeId}</strong></p>
-                            <p style="font-size:0.8rem; color:#666;">Verifique se adicionou os itens no tema correto.</p>
-                            <a href="dashboard.html" class="btn btn-primary" style="margin-top:20px; display:inline-block;">Voltar</a>
+                            <i data-lucide="file-warning" style="margin-bottom: 15px; color: #999;"></i>
+                            <p>Recurso não encontrado ou removido.</p>
+                            <a href="dashboard.html" class="btn btn-primary" style="margin-top:20px; display:inline-block;">Voltar para Dashboard</a>
                         </div>
                     `;
                     lucide.createIcons();
                     return;
                 }
 
-                let html = '';
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    let playerHtml = '';
+                const data = docRef.data();
 
-                    // Auto-detect Playback Type
-                    const lowerUrl = (data.url || '').trim().toLowerCase();
-                    const isVideo = lowerUrl.includes('youtube') || lowerUrl.includes('youtu.be') || lowerUrl.includes('vimeo');
-                    const isEmbed = lowerUrl.includes('spotify') || lowerUrl.includes('soundcloud') || lowerUrl.includes('anchor.fm') || lowerUrl.includes('drive.google.com');
+                // 1. UPDATE PAGE HEADERS
+                const pageTitle = data.page_title || data.title;
+                const pageSubtitle = data.page_subtitle || '';
 
-                    console.log("[DEBUG] Item:", data.title);
-                    console.log("[DEBUG] URL:", lowerUrl);
-                    console.log("[DEBUG] IsEmbed:", isEmbed);
+                document.getElementById('theme-title').innerHTML = pageTitle;
+                document.title = `${pageTitle.replace(/<[^>]*>?/gm, '')} | Floresce Terapias`;
 
-                    if (data.type === 'video' || isVideo || isEmbed) {
-                        let embedUrl = data.url;
+                // Add Subtitle to Header
+                const headerP = document.querySelector('.theme-header p');
+                if (headerP) headerP.innerHTML = pageSubtitle;
 
-                        // YouTube Formatting
-                        if (embedUrl.includes('youtube.com/watch?v=')) {
-                            const videoId = embedUrl.split('v=')[1].split('&')[0];
-                            embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
-                        } else if (embedUrl.includes('youtu.be/')) {
-                            const videoId = embedUrl.split('youtu.be/')[1];
-                            embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
-                        } else if (embedUrl.includes('youtube.com/embed/')) {
-                            embedUrl = embedUrl.replace('youtube.com', 'youtube-nocookie.com');
-                        }
+                // 2. UPDATE VISUALS (Background Color based on 'Theme' tag)
+                // Map themes to colors (using CSS variables or hex)
+                const themeColors = {
+                    'enraizamento': '#80864f', // Green
+                    'limpeza': '#1565c0',      // Blue
+                    'protecao': '#7b1fa2',     // Purple
+                    'intuicao': '#ef6c00',     // Orange
+                    'chakras': '#8e24aa',      // Violet
+                    'innerdance': '#2c3e50'    // Dark
+                };
+                const bgHex = themeColors[data.theme] || '#80864f';
+                document.querySelector('.theme-header').style.backgroundColor = bgHex;
+                // Ensure text contrast if dark bg
+                document.querySelector('.theme-header').style.color = '#fff';
+                document.querySelector('.theme-header p').style.color = 'rgba(255,255,255, 0.9)';
 
-                        // Spotify Formatting (Auto-Embed)
-                        try {
-                            if (embedUrl.includes('open.spotify.com') && !embedUrl.includes('/embed/')) {
-                                let urlObj = new URL(embedUrl);
-                                const path = urlObj.pathname;
-                                // path is like "/playlist/ID" or "/track/ID"
-                                if (path.startsWith('/playlist') || path.startsWith('/track') || path.startsWith('/album')) {
-                                    embedUrl = `https://open.spotify.com/embed${path}${urlObj.search}`;
-                                }
+
+                // 3. RENDER CONTENT
+                let playerHtml = '';
+
+                // Auto-detect Playback Type (Same logic as before)
+                const lowerUrl = (data.url || '').trim().toLowerCase();
+                const isVideo = lowerUrl.includes('youtube') || lowerUrl.includes('youtu.be') || lowerUrl.includes('vimeo');
+                const isEmbed = lowerUrl.includes('spotify') || lowerUrl.includes('soundcloud') || lowerUrl.includes('anchor.fm') || lowerUrl.includes('drive.google.com');
+
+                if (data.type === 'video' || isVideo || isEmbed) {
+                    let embedUrl = data.url;
+
+                    // YouTube Formatting
+                    if (embedUrl.includes('youtube.com/watch?v=')) {
+                        const videoId = embedUrl.split('v=')[1].split('&')[0];
+                        embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
+                    } else if (embedUrl.includes('youtu.be/')) {
+                        const videoId = embedUrl.split('youtu.be/')[1];
+                        embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
+                    } else if (embedUrl.includes('youtube.com/embed/')) {
+                        embedUrl = embedUrl.replace('youtube.com', 'youtube-nocookie.com');
+                    }
+
+                    // Spotify Formatting (Auto-Embed)
+                    try {
+                        if (embedUrl.includes('open.spotify.com') && !embedUrl.includes('/embed/')) {
+                            let urlObj = new URL(embedUrl);
+                            const path = urlObj.pathname;
+                            if (path.startsWith('/playlist') || path.startsWith('/track') || path.startsWith('/album')) {
+                                embedUrl = `https://open.spotify.com/embed${path}${urlObj.search}`;
                             }
-                        } catch (e) {
-                            console.error("Spotify Conversion Error:", e);
                         }
+                    } catch (e) { console.error("Spotify Error", e); }
 
-                        // Google Drive Formatting (Force Preview Mode)
-                        if (embedUrl.includes('drive.google.com') && embedUrl.includes('/file/d/')) {
-                            const match = embedUrl.match(/\/file\/d\/([^/]+)/);
-                            if (match && match[1]) {
-                                embedUrl = `https://drive.google.com/file/d/${match[1]}/preview`;
-                            }
+                    // Google Drive Formatting
+                    if (embedUrl.includes('drive.google.com') && embedUrl.includes('/file/d/')) {
+                        const match = embedUrl.match(/\/file\/d\/([^/]+)/);
+                        if (match && match[1]) {
+                            embedUrl = `https://drive.google.com/file/d/${match[1]}/preview`;
                         }
+                    }
 
-                        // Determine height style based on content
-                        const isAudioEmbed = isEmbed && !isVideo;
-                        const wrapperStyle = isAudioEmbed ? 'height: 152px;' : 'aspect-ratio: 16/9;';
-                        const iframeStyle = isAudioEmbed ? 'height: 152px;' : 'position: absolute; top:0; left:0; width:100%; height:100%;';
+                    const isAudioEmbed = isEmbed && !isVideo;
 
-                        /* 
-                           Note: innerdance playlists often are Spotify or SoundCloud. 
-                           The "video-wrapper" class enforces 16:9 aspect ratio which is bad for Spotify.
-                           We need conditional styling.
-                        */
-
-                        if (isAudioEmbed) {
-                            playerHtml = `
-                            <div class="med-player-container">
-                                <iframe src="${embedUrl}" style="width:100%; height:152px; border:none; border-radius:12px;" sandbox="allow-forms allow-scripts allow-same-origin allow-presentation" allow="encrypted-media;" loading="lazy"></iframe>
-                            </div>`;
-                        } else {
-                            // Video (YouTube/Vimeo) - Keep 16:9
-                            playerHtml = `
-                            <div class="med-player-container">
-                                <div class="video-wrapper">
-                                    <iframe src="${embedUrl}" frameborder="0" sandbox="allow-forms allow-scripts allow-same-origin allow-presentation" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-                                </div>
-                            </div>`;
-                        }
-
-                    } else {
-                        // Default to Native Audio (MP3 imports)
+                    if (isAudioEmbed) {
                         playerHtml = `
                         <div class="med-player-container">
-                            <audio controls controlsList="nodownload" oncontextmenu="return false;" style="width: 100%;">
-                                <source src="${data.url}" type="audio/mpeg">
-                                O teu navegador não suporta o elemento de áudio.
-                            </audio>
+                            <iframe src="${embedUrl}" style="width:100%; height:152px; border:none; border-radius:12px;" sandbox="allow-forms allow-scripts allow-same-origin allow-presentation" allow="encrypted-media;" loading="lazy"></iframe>
+                        </div>`;
+                    } else {
+                        // Video
+                        playerHtml = `
+                        <div class="med-player-container">
+                            <div class="video-wrapper">
+                                <iframe src="${embedUrl}" frameborder="0" sandbox="allow-forms allow-scripts allow-same-origin allow-presentation" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                            </div>
                         </div>`;
                     }
 
-                    const iconName = data.type === 'video' ? 'video' : 'music';
-
-                    // Image HTML
-                    let imageHtml = '';
-                    if (data.image_url) {
-                        imageHtml = `<div style="margin-bottom:15px; border-radius:8px; overflow:hidden;"><img src="${data.image_url}" style="width:100%; max-height:300px; object-fit:cover;"></div>`;
-                    }
-
-                    html += `
-                    <div class="meditation-item">
-                        <div class="med-header">
-                            <div class="med-icon-wrapper"><i data-lucide="${iconName}"></i></div>
-                            <div class="med-info">
-                                <h3>${data.title}</h3>
-                                ${data.description ? `<div style="color:#666; font-size:0.95rem;">${data.description}</div>` : ''}
-                            </div>
-                        </div>
-                        ${imageHtml}
-                        ${playerHtml}
+                } else {
+                    // Native Audio
+                    playerHtml = `
+                    <div class="med-player-container">
+                        <audio controls controlsList="nodownload" oncontextmenu="return false;" style="width: 100%;">
+                            <source src="${data.url}" type="audio/mpeg">
+                            O teu navegador não suporta o elemento de áudio.
+                        </audio>
                     </div>`;
-                });
+                }
 
-                container.innerHTML = html;
+                const iconName = data.type === 'video' ? 'video' : 'music';
+                let imageHtml = '';
+                if (data.image_url) {
+                    imageHtml = `<div style="margin-bottom:15px; border-radius:8px; overflow:hidden;"><img src="${data.image_url}" style="width:100%; max-height:400px; object-fit:cover;"></div>`;
+                }
+
+                // Render Single Item
+                // Note: We use 'meditation-item' class but in a single view context
+                container.innerHTML = `
+                <div class="meditation-item">
+                    <div class="med-header">
+                        <div class="med-icon-wrapper"><i data-lucide="${iconName}"></i></div>
+                        <div class="med-info">
+                            <h3>${data.title}</h3>
+                            ${data.description ? `<div style="color:#666; font-size:1rem; margin-top:5px;">${data.description}</div>` : ''}
+                        </div>
+                    </div>
+                    ${imageHtml}
+                    ${playerHtml}
+                    
+                    <!-- Back Button -->
+                    <div style="margin-top:20px;">
+                        <a href="dashboard.html" class="btn-outline">Voltar ao Dashboard</a>
+                    </div>
+                </div>`;
+
                 lucide.createIcons();
 
             } catch (error) {
-                console.error("Error loading meditations:", error);
-                container.innerHTML = '<p style="text-align:center; color:red;">Erro ao carregar recursos.</p>';
+                console.error("Error loading meditation:", error);
+                container.innerHTML = '<p style="text-align:center; color:red;">Erro ao carregar recurso.</p>';
             }
         }
 

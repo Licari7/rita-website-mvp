@@ -190,6 +190,11 @@ window.initCMS = function () {
             }
         });
     }
+
+    // Initialize Testimonials Selector
+    if (typeof window.loadTestimonialsSelector === 'function') {
+        window.loadTestimonialsSelector(new Set());
+    }
 };
 
 // --- HTML Generator Helpers ---
@@ -489,6 +494,7 @@ async function handleReviewSubmit(e) {
             name,
             role,
             text,
+            type: 'general',
             active: true,
             created_at: new Date()
         };
@@ -702,12 +708,19 @@ window.handleServiceSubmit = async function (e) {
         const cleanBenefitsRaw = benefitsRaw.replace(/<\/?(p|div|br|h[1-6])[^>]*>/gi, ''); // Strip blocks
         const benefits = cleanBenefitsRaw.split(',').map(b => b.trim()).filter(b => b.length > 0);
 
+        // Collect Testimonials
+        const testimonialIds = [];
+        document.querySelectorAll('#svc-testimonials-selector input[type="checkbox"]:checked').forEach(cb => {
+            testimonialIds.push(cb.value);
+        });
+
         const serviceData = {
             title: title.replace(/<\/?(p|div|br|h[1-6])[^>]*>/gi, '').trim(),
             description,
             long_description: longDescription,
 
             benefits,
+            testimonial_ids: testimonialIds, // New Field
             customColors: {
                 // New Structure (Ensuring Numbers)
                 topBg: document.getElementById('svc-top-bg-color').value,
@@ -866,6 +879,9 @@ async function loadServices(retryCount = 0) {
 
 window.editService = async (id) => {
     try {
+        // Switch to Services Panel
+        window.openSection('panel-services');
+
         const doc = await window.db.collection("services").doc(id).get();
         if (!doc.exists) {
             alert("Serviço não encontrado.");
@@ -933,10 +949,19 @@ window.editService = async (id) => {
         }
         document.getElementById('svc-benefits').value = cleanBenefits.join(', ');
 
+        // Populate Testimonials
+        if (data.testimonial_ids) {
+            const selectedIds = new Set(data.testimonial_ids || []);
+            loadTestimonialsSelector(selectedIds);
+        } else {
+            loadTestimonialsSelector(new Set());
+        }
+
         // Populate Colors
         if (data.customColors) {
             // New Scheme Mapping
             const cc = data.customColors;
+            document.getElementById('svc-colors-config').classList.remove('hidden');
 
             // Top Section
             if (document.getElementById('svc-top-bg-color')) {
@@ -970,6 +995,7 @@ window.editService = async (id) => {
 
         } else {
             // Defaults if no data
+            document.getElementById('svc-colors-config').classList.add('hidden');
             resetColorInputs();
         }
 
@@ -996,6 +1022,11 @@ window.resetServiceForm = async () => {
     document.getElementById('service-form').reset();
 
     // Explicitly Clear Fields to be safe
+    document.getElementById('svc-id').value = '';
+    // Load Testimonials for selection
+    loadTestimonialsSelector(new Set()); // Load unchecked by default
+
+    // Clear Form
     document.getElementById('svc-id').value = '';
     document.getElementById('svc-title').value = '';
     document.getElementById('svc-benefits').value = '';
@@ -1026,33 +1057,214 @@ window.resetServiceForm = async () => {
     }
 
     // Load Template Content - DISABLED as per user request to keep fields empty
-    document.getElementById('svc-full-desc').value = '';
-    /*
-    try {
-        const response = await fetch('service-template.html');
-        if (response.ok) {
-            const text = await response.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(text, 'text/html');
-            const mainContent = doc.querySelector('.service-detail-content');
 
-            if (mainContent) {
-                document.getElementById('svc-full-desc').value = mainContent.innerHTML;
-            }
-        }
-    } catch (e) {
-        console.error("Could not load template:", e);
-    }
-    */
-
-    // document.getElementById('svc-theme').value = '';
-    document.getElementById('svc-image').value = '';
-    document.getElementById('svc-image-file').value = '';
     document.getElementById('svc-submit-btn').innerText = "Publicar Serviço";
-    document.getElementById('svc-cancel-btn').style.display = 'none';
+    document.getElementById('svc-cancel-btn').classList.add('hidden');
+};
 
-    // Scroll
-    document.getElementById('service-form').scrollIntoView({ behavior: 'smooth' });
+// Duplicate editService removed.
+
+
+// Helper: Load Testimonials Checkboxes
+window.loadTestimonialsSelector = async (selectedSet = new Set()) => {
+    const list = document.getElementById('svc-testimonials-selector');
+    const loading = document.getElementById('loading-testimonials-selector');
+    if (!list) return;
+
+    // Check if already loaded to avoid re-fetching? 
+    // Maybe force fresh load to ensure we have latest reviews.
+
+    try {
+        const snapshot = await window.db.collection('testimonials').orderBy('created_at', 'desc').get();
+        loading.style.display = 'none';
+
+        if (snapshot.empty) {
+            list.innerHTML = '<span class="text-xs">Não existem testemunhos.</span>';
+            return;
+        }
+
+        let html = '';
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const isChecked = selectedSet.has(doc.id) ? 'checked' : '';
+            const isSelectedClass = selectedSet.has(doc.id) ? 'selected' : '';
+            const text = data.text ? data.text.replace(/<[^>]*>?/gm, '') : 'Sem texto';
+            const roleHtml = data.role ? `<span class="text-muted font-xs ml-10" style="font-weight:400">(${data.role})</span>` : '';
+
+            // Escape single quotes for onclick
+            const safeData = JSON.stringify({ id: doc.id, ...data }).replace(/'/g, "&apos;");
+
+            html += `
+                <div class="testimonial-selector-card compact ${isSelectedClass}" onclick="if(!event.target.closest('.btn-icon-only') && !event.target.closest('.checkbox-wrapper')) this.querySelector('input[type=checkbox]').click()">
+                    
+                    <div class="testimonial-card-header flex-between-center">
+                        <div style="display: flex; align-items: center; gap: 10px; overflow: hidden; flex-grow: 1; margin-right: 10px;">
+                            <!-- Selection Checkbox -->
+                            <div class="checkbox-wrapper" title="Selecionar" onclick="event.stopPropagation()">
+                                <input type="checkbox" value="${doc.id}" ${isChecked} onchange="this.closest('.testimonial-selector-card').classList.toggle('selected', this.checked)">
+                            </div>
+                            
+                            <!-- Name & Role -->
+                            <div style="min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <span class="font-weight-600">${data.name}</span>
+                                ${roleHtml}
+                            </div>
+                        </div>
+                        
+                        <div class="testimonial-card-actions">
+                             <!-- Edit Button -->
+                             <button type="button" class="btn-icon-only" title="Editar" onclick='event.stopPropagation(); window.openQuickTestimonialModal(${safeData})'>
+                                <i data-lucide="pencil" class="icon-14"></i>
+                             </button>
+                             
+                             <!-- Delete Button -->
+                             <button type="button" class="btn-icon-only text-danger" title="Apagar" onclick="event.stopPropagation(); window.deleteServiceTestimonial('${doc.id}')">
+                                <i data-lucide="trash" class="icon-14"></i>
+                             </button>
+                        </div>
+                    </div>
+
+                    <div class="testimonial-card-text small mt-5">"${text}"</div>
+                </div>
+            `;
+        });
+        list.innerHTML = html;
+        lucide.createIcons(); // specific for new icons
+
+    } catch (e) {
+        console.error("Error loading testimonials for selector", e);
+        loading.innerText = "Erro ao carregar.";
+    }
+};
+
+// --- Quick Testimonial Modal Logic ---
+window.openQuickTestimonialModal = (data = null) => {
+    const modal = document.getElementById('quick-testimonial-modal');
+    if (modal) {
+        modal.classList.add('active'); // Use active class for animation
+        const form = document.getElementById('quick-testimonial-form');
+        form.reset();
+
+        if (data) {
+            document.querySelector('.modal-title').innerText = "Editar Testemunho";
+            document.getElementById('quick-rev-id').value = data.id;
+            document.getElementById('quick-rev-name').value = data.name || '';
+            document.getElementById('quick-rev-role').value = data.role || '';
+            document.getElementById('quick-rev-text').value = data.text || '';
+            form.querySelector('button[type="submit"]').innerText = "Atualizar";
+        } else {
+            document.querySelector('.modal-title').innerText = "Novo Testemunho Rápido";
+            document.getElementById('quick-rev-id').value = "";
+            form.querySelector('button[type="submit"]').innerText = "Guardar & Associar";
+        }
+        lucide.createIcons();
+    }
+};
+
+window.closeQuickTestimonialModal = () => {
+    const modal = document.getElementById('quick-testimonial-modal');
+    if (modal) modal.classList.remove('active');
+};
+
+window.handleQuickTestimonialSubmit = async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalText = btn.innerText;
+    btn.innerText = "A guardar...";
+    btn.disabled = true;
+
+    try {
+        const id = document.getElementById('quick-rev-id').value;
+        const name = document.getElementById('quick-rev-name').value;
+        const role = document.getElementById('quick-rev-role').value;
+        const text = document.getElementById('quick-rev-text').value;
+
+        const reviewData = {
+            name,
+            role,
+            text,
+            type: 'service',
+            active: true,
+            updated_at: new Date()
+        };
+
+        if (!id) {
+            reviewData.created_at = new Date();
+        }
+
+        let docId = id;
+
+        // 1. Add/Update to Firestore
+        if (id) {
+            await window.db.collection("testimonials").doc(id).update(reviewData);
+            alert("Testemunho atualizado! 💾");
+        } else {
+            const docRef = await window.db.collection("testimonials").add(reviewData);
+            docId = docRef.id;
+            alert("Testemunho criado e associado! 🔗");
+        }
+
+        // 2. Refresh Selector
+        window.closeQuickTestimonialModal();
+
+        // 3. Get currently selected IDs to preserve them
+        const currentSelected = new Set();
+        document.querySelectorAll('.testimonial-selector-card.selected input[type="checkbox"]').forEach(cb => {
+            // We need to re-select based on the checkboxes hidden inside
+            // Since I changed HTML structure, let's look for valid inputs
+            currentSelected.add(cb.value);
+        });
+
+        // If it was a checkbox checked, `querySelectorAll` finds it.
+        // Wait, I changed structure to `input` inside `label`.
+        // Let's ensure we grab values correctly.
+
+        document.querySelectorAll('#svc-testimonials-selector input[type="checkbox"]:checked').forEach(cb => {
+            currentSelected.add(cb.value);
+        });
+
+        // 4. Add the new/updated ID to selection if it wasn't there (auto-associate on create)
+        if (!id) {
+            currentSelected.add(docId);
+        }
+
+        // 5. Reload List with new selection
+        await window.loadTestimonialsSelector(currentSelected);
+
+        // 6. Refresh Main Testimonials List if function exists
+        if (typeof window.loadReviews === 'function') {
+            window.loadReviews();
+        }
+
+    } catch (error) {
+        console.error("Error creating/updating quick testimonial:", error);
+        alert("Erro: " + error.message);
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+};
+
+window.deleteServiceTestimonial = async (id) => {
+    if (confirm("Apagar este testemunho permanentemente?")) {
+        try {
+            await window.db.collection("testimonials").doc(id).delete();
+
+            // Refresh Selector
+            const currentSelected = new Set();
+            document.querySelectorAll('#svc-testimonials-selector input[type="checkbox"]:checked').forEach(cb => {
+                if (cb.value !== id) currentSelected.add(cb.value);
+            });
+            await window.loadTestimonialsSelector(currentSelected);
+
+            if (typeof window.loadReviews === 'function') {
+                window.loadReviews();
+            }
+
+        } catch (error) {
+            alert("Erro ao apagar: " + error.message);
+        }
+    }
 };
 
 window.deleteService = async (id) => {
@@ -1160,6 +1372,21 @@ window.seedDefaultServices = async () => {
 
 // --- Meditation Management ---
 
+// Helper: Toggle Background Type Inputs
+window.toggleMedBgType = () => {
+    const type = document.getElementById('med-card-bg-type').value;
+    const imgGroup = document.getElementById('med-bg-image-group');
+    const colorGroup = document.getElementById('med-bg-color-group');
+
+    if (type === 'image') {
+        imgGroup.style.display = 'block';
+        colorGroup.style.display = 'none';
+    } else {
+        imgGroup.style.display = 'none';
+        colorGroup.style.display = 'block';
+    }
+};
+
 async function handleMeditationSubmit(e) {
     if (e) e.preventDefault();
     const btn = document.getElementById('med-submit-btn');
@@ -1169,23 +1396,41 @@ async function handleMeditationSubmit(e) {
 
     try {
         const id = document.getElementById('med-id').value;
+
+        // Data Extraction - PRESENTATION
+        let cardTitle = document.getElementById('med-card-title').value;
+        const cardText = document.getElementById('med-card-text').value;
+        const cardBgType = document.getElementById('med-card-bg-type').value;
+        const cardBgColor = document.getElementById('med-card-bg-color').value;
+        let cardOpacity = document.getElementById('med-card-opacity').value;
+        if (cardOpacity) cardOpacity = cardOpacity.replace(',', '.');
+
+        // Data Extraction - DETAIL
+        let pageTitle = document.getElementById('med-page-title').value;
+        let pageSubtitle = document.getElementById('med-page-subtitle').value;
         const title = document.getElementById('med-title').value;
         const theme = document.getElementById('med-theme').value;
         const type = document.getElementById('med-type').value;
         let url = document.getElementById('med-url').value;
 
-        // Smart-Clean: If user stuck full iframe code, extract just the source URL
-        // Improved Regex for src extraction
+        // Fallback: If page title empty, use internal title
+        if (!pageTitle) pageTitle = title;
+        if (!pageSubtitle) pageSubtitle = "";
+
+        // Fallback: If card title empty, use main title (moved logic down or keep it)
+        if (!cardTitle) cardTitle = title;
+
+
+        // Smart-Clean URL
         if (url.includes('<iframe')) {
             const srcMatch = url.match(/src="([^"]+)"/);
-            if (srcMatch && srcMatch[1]) {
-                url = srcMatch[1];
-            }
+            if (srcMatch && srcMatch[1]) url = srcMatch[1];
         }
 
-        // Image Processing
+        // Image Processing (Card Background)
         let imageUrl = document.getElementById('med-image-url').value;
         const imageFile = document.getElementById('med-image').files[0];
+
         if (imageFile) {
             btn.innerText = "A enviar imagem...";
             const path = `meditations/${Date.now()}_${imageFile.name}`;
@@ -1195,18 +1440,32 @@ async function handleMeditationSubmit(e) {
         const desc = (window.tinymce && tinymce.get('med-desc')) ? tinymce.get('med-desc').getContent() : document.getElementById('med-desc').value;
 
         const data = {
+            // Presentation
+            card_title: cardTitle,
+            card_text: cardText,
+            card_bg_type: cardBgType,
+            card_bg_color: cardBgColor,
+            card_opacity: cardOpacity,
+            image_url: imageUrl, // Shared as card bg image and detail cover if needed
+
+            // Detail
+            page_title: pageTitle,
+            page_subtitle: pageSubtitle,
             title,
-            theme, // enraizamento, limpeza, etc
-            type, // audio, video
+            theme,
+            type,
             url,
             description: desc,
-            image_url: imageUrl,
             active: true,
             created_at: new Date().toISOString()
         };
 
         if (id) {
-            await window.db.collection('meditations').doc(id).update(data);
+            // Update
+            // Don't overwrite created_at on edit unless needed, but let's keep it simple. 
+            // Better: delete data.created_at if id exists to preserve original date? 
+            // Or just update 'updated_at'. Firestore doesn't care.
+            await window.db.collection('meditations').doc(id).set(data, { merge: true });
             alert("Recurso atualizado com sucesso! 🎧");
         } else {
             await window.db.collection('meditations').add(data);
@@ -1214,7 +1473,7 @@ async function handleMeditationSubmit(e) {
         }
 
         if (e) e.target.reset();
-        window.resetMeditationForm(); // Reset UI state
+        window.resetMeditationForm();
         loadMeditations();
 
     } catch (error) {
@@ -1245,61 +1504,69 @@ async function loadMeditations() {
             return;
         }
 
-        // Group by Theme
-        const grouped = {};
-        const themeNames = {
-            'enraizamento': 'Enraizamento',
-            'limpeza': 'Limpeza Energética',
-            'protecao': 'Proteção',
-            'intuicao': 'Intuição',
-            'chakras': 'Chakras'
-        };
-
+        // Group by Card Title (Theme)
+        const groups = {};
         snapshot.forEach(doc => {
             const data = doc.data();
             window.meditationsCache[doc.id] = data; // Cache for edit
 
-            const themeKey = data.theme || 'outros';
-            if (!grouped[themeKey]) grouped[themeKey] = [];
-            grouped[themeKey].push({ id: doc.id, ...data });
+            // Use card_title as the grouping key (Theme Name)
+            // Fallback to title if card_title is missing
+            const themeKey = data.card_title || data.title || 'Sem Título';
+
+            if (!groups[themeKey]) {
+                groups[themeKey] = [];
+            }
+            groups[themeKey].push({ id: doc.id, ...data });
         });
 
-        // Build HTML
-        let html = '<div class="cms-list" style="max-height: 400px; overflow-y: auto; padding-right: 5px;">';
+        let html = '';
 
-        Object.keys(grouped).forEach(themeKey => {
-            const displayName = themeNames[themeKey] || themeKey.toUpperCase();
+        // Sort themes alphabetically or by some logic? keeping insertion order (grouped) for now or Object.keys
+        const sortedKeys = Object.keys(groups).sort();
 
+        for (const theme of sortedKeys) {
+            const items = groups[theme];
+
+            // Theme Header
             html += `
-            <div style="position: sticky; top: 0; background: white; padding: 8px 0; border-bottom: 2px solid var(--color-primary); margin-top: 10px; margin-bottom: 5px; z-index: 10; font-weight: bold; color: var(--color-primary);">
-                ${displayName}
-            </div>`;
+                <div class="admin-group mb-20">
+                    <h3 style="font-family: 'Cormorant Garamond', serif; color: var(--color-primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 20px; margin-bottom: 10px;">
+                        ${theme}
+                    </h3>
+                    <div class="group-items">
+            `;
 
-            grouped[themeKey].forEach((item, index) => {
-                const icon = item.type === 'video' ? 'video' : 'music';
+            // Items
+            items.forEach(item => {
+                const displayTitle = item.page_title || item.title || 'Sem Título';
+                const displaySub = item.card_title || item.title;
+
                 html += `
-                <div class="cms-item compact" style="padding: 4px 0; border-bottom: 1px dotted #eee; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;">
-                    <div style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px;">
-                        <span style="color: #999; font-size: 0.8em; min-width: 20px;">#${index + 1}</span>
-                        <i data-lucide="${icon}" style="width:14px; height:14px; color:#666;"></i>
-                        <span title="${item.title}">${item.title}</span>
-                    </div>
-                    <div style="flex-shrink: 0; margin-left: 10px; display: flex; gap: 4px;">
-                        <button class="btn-outline" style="padding: 2px 6px; font-size: 0.75rem; height: auto; min-height: 0;" onclick="editMeditation('${item.id}')">
-                            <i data-lucide="edit-2" style="width:12px; height:12px;"></i>
-                        </button>
-                        <button class="btn-delete" style="padding: 2px 6px; font-size: 0.75rem; height: auto; min-height: 0;" onclick="deleteMeditation('${item.id}')">
-                            <i data-lucide="trash" style="width:12px; height:12px;"></i>
-                        </button>
+                <div class="cms-item compact" style="padding: 10px; border-bottom: 1px solid #eee; background: white; margin-bottom: 5px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <h4 style="margin:0; color: #5a4b41; font-family: 'Montserrat', sans-serif; font-size: 0.85rem; font-weight: 600;">${displayTitle}</h4>
+                            <p style="margin:2px 0 0; font-size: 0.8rem; color: #888;">
+                                ${displaySub}
+                            </p>
+                        </div>
+                        <div style="display:flex; gap: 10px;">
+                            <button onclick="editMeditation('${item.id}')" class="btn-icon" title="Editar" style="background:none; border:none; cursor:pointer;"><i data-lucide="edit-2"></i></button>
+                            <button onclick="deleteMeditation('${item.id}')" class="btn-icon delete" title="Apagar" style="background:none; border:none; cursor:pointer; color:#d32f2f;"><i data-lucide="trash-2"></i></button>
+                        </div>
                     </div>
                 </div>`;
             });
-        });
 
-        html += '</div>';
+            html += `
+                    </div>
+                </div>
+            `;
+        }
 
         list.innerHTML = html;
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide) window.lucide.createIcons();
 
     } catch (error) {
         console.error(error);
@@ -1327,18 +1594,33 @@ window.editMeditation = (id) => {
     }
 
     document.getElementById('med-id').value = id;
+
+    // DETAIL
+    document.getElementById('med-page-title').value = data.page_title || data.title || '';
+    document.getElementById('med-page-subtitle').value = data.page_subtitle || '';
     document.getElementById('med-title').value = data.title;
     document.getElementById('med-theme').value = data.theme;
-    document.getElementById('med-type').value = data.type;
     document.getElementById('med-type').value = data.type;
     document.getElementById('med-url').value = data.url;
     document.getElementById('med-desc').value = data.description || '';
     if (window.tinymce && tinymce.get('med-desc')) tinymce.get('med-desc').setContent(data.description || '');
+
+    // PRESENTATION
+    document.getElementById('med-card-title').value = data.card_title || data.title; // Fallback
+    document.getElementById('med-card-text').value = data.card_text || '';
+    document.getElementById('med-card-bg-type').value = data.card_bg_type || 'image';
+    document.getElementById('med-card-bg-color').value = data.card_bg_color || '#80864f';
+    document.getElementById('med-card-bg-color-hex').value = data.card_bg_color || '#80864f';
+    document.getElementById('med-card-opacity').value = data.card_opacity || '0.6';
+
     document.getElementById('med-image-url').value = data.image_url || '';
-    document.getElementById('med-image').value = ''; // Reset file input
+    document.getElementById('med-image').value = '';
+
+    // Trigger toggle to show correct BG input
+    window.toggleMedBgType();
 
     document.getElementById('med-submit-btn').innerText = "Atualizar Recurso";
-    document.getElementById('med-cancel-btn').style.display = "inline-block";
+    document.getElementById('med-cancel-btn').classList.remove('hidden');
 
     // Scroll to form
     const form = document.getElementById('meditation-form');
@@ -1350,8 +1632,16 @@ window.resetMeditationForm = () => {
     if (form) form.reset();
     document.getElementById('med-id').value = "";
     document.getElementById('med-image-url').value = "";
+
+    // clear tinymce
+    if (window.tinymce && tinymce.get('med-desc')) tinymce.get('med-desc').setContent('');
+
+    // Reset BG Toggle
+    document.getElementById('med-card-bg-type').value = 'image';
+    window.toggleMedBgType();
+
     document.getElementById('med-submit-btn').innerText = "Publicar Recurso";
-    document.getElementById('med-cancel-btn').style.display = "none";
+    document.getElementById('med-cancel-btn').classList.add('hidden');
 };
 
 // --- Site Content (Home & About) ---
@@ -1487,7 +1777,7 @@ async function handleHomeSubmit(e) {
             btn.textContent = "A enviar imagem...";
             try {
                 // Upload to Storage
-                const path = `home/${Date.now()}_${imageFile.name}`;
+                const path = `home / ${Date.now()}_${imageFile.name} `;
                 imageUrl = await uploadImageToStorage(imageFile, path);
             } catch (err) {
                 console.error("Image Processing Error:", err);
@@ -1539,7 +1829,7 @@ async function handleAboutSubmit(e) {
 
         if (imageFile) {
             btn.textContent = "A enviar imagem 1...";
-            const path = `about/${Date.now()}_${imageFile.name}`;
+            const path = `about / ${Date.now()}_${imageFile.name} `;
             imageUrl = await uploadImageToStorage(imageFile, path);
         }
 
@@ -1549,7 +1839,7 @@ async function handleAboutSubmit(e) {
 
         if (imageArtFile) {
             btn.textContent = "A enviar imagem 2...";
-            const path = `about/art_${Date.now()}_${imageArtFile.name}`;
+            const path = `about / art_${Date.now()}_${imageArtFile.name} `;
             imageArtUrl = await uploadImageToStorage(imageArtFile, path);
         }
 
@@ -1592,7 +1882,7 @@ async function handleHomeAboutSubmit(e) {
         // Upload Image
         if (imageFile) {
             btn.textContent = "A enviar imagem...";
-            const path = `home_about/${Date.now()}_${imageFile.name}`;
+            const path = `home_about / ${Date.now()}_${imageFile.name} `;
             imageUrl = await uploadImageToStorage(imageFile, path);
         }
 
@@ -1829,6 +2119,20 @@ async function loadHeaderSettings() {
             if (document.getElementById('header-font-size')) document.getElementById('header-font-size').value = header.font_size;
             if (document.getElementById('header-padding')) document.getElementById('header-padding').value = header.padding;
 
+            if (document.getElementById('med-card-bg-type')) document.getElementById('med-card-bg-type').value = data.card_bg_type || 'color';
+            if (document.getElementById('med-card-bg-color')) document.getElementById('med-card-bg-color').value = data.card_bg_color || '#80864f';
+            if (document.getElementById('med-card-opacity')) {
+                // Fix: Ensure 0 is treated as a value, not false
+                const op = (data.card_opacity !== undefined && data.card_opacity !== null) ? data.card_opacity : 0.3;
+                document.getElementById('med-card-opacity').value = op;
+            }
+
+            // Page Details
+            if (document.getElementById('med-page-title')) document.getElementById('med-page-title').value = data.page_title || '';
+            if (document.getElementById('med-page-subtitle')) document.getElementById('med-page-subtitle').value = data.page_subtitle || '';
+
+            // Trigger visual updates
+            window.toggleMedBgType();
             // Hex Sync
             if (document.getElementById('header-bg-color-hex')) document.getElementById('header-bg-color-hex').value = header.bg_color;
             if (document.getElementById('header-text-color-hex')) document.getElementById('header-text-color-hex').value = header.text_color;
@@ -1861,7 +2165,7 @@ async function handleHeaderSubmit(e) {
         if (logoInput.files && logoInput.files[0]) {
             btn.textContent = "A enviar logo..."; // Update status
             const logoFile = logoInput.files[0];
-            const path = `header_logo/${Date.now()}_${logoFile.name}`;
+            const path = `header_logo / ${Date.now()}_${logoFile.name} `;
 
             try {
                 logoUrl = await uploadImageToStorage(logoFile, path);
@@ -2105,7 +2409,7 @@ window.loadMembers = async function () {
 
         // Table Header
         let html = `
-        <table style="width:100%; border-collapse: collapse; font-size:12px;">
+                < table style = "width:100%; border-collapse: collapse; font-size:12px;" >
             <thead>
                 <tr style="text-align:left; border-bottom:2px solid #eee;">
                     <th style="padding:8px;">Membro</th>
@@ -2158,7 +2462,7 @@ window.loadMembers = async function () {
                 </tr>
             `;
         });
-        html += '</tbody></table>';
+        html += '</tbody></table > ';
         listContainer.innerHTML = html;
 
     } catch (error) {

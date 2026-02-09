@@ -126,13 +126,24 @@
             <p class="text-center" id="loading-msg">A carregar detalhes do serviço...</p>
         </div>
 
-        <!-- Optional: Testimonials Placeholder (Future: Dynamic) -->
-        <!-- 
-        <div id="svc-testimonials-section" style="display:none;">
-            <h3 class="section-title" style="text-align: center; margin-top: 80px; font-size: 2rem;">Experiências Reais</h3>
-            <div class="testimonials-grid" id="svc-testimonials-list"></div>
+        <!-- Testimonials Carousel -->
+        <div id="svc-testimonials-section" class="svc-testimonials-section-hidden">
+            <h3 class="font-serif text-center section-title custom-primary mb-40">Testemunhos</h3>
+
+            <div class="carousel-wrapper">
+                <button class="carousel-nav prev" id="svc-prev-btn" aria-label="Anterior">
+                    <i data-lucide="chevron-left"></i>
+                </button>
+
+                <div class="carousel-container" id="svc-testimonials-carousel">
+                    <!-- Cards Injected Here -->
+                </div>
+
+                <button class="carousel-nav next" id="svc-next-btn" aria-label="Próximo">
+                    <i data-lucide="chevron-right"></i>
+                </button>
+            </div>
         </div>
-        -->
 
         <!-- CTA Buttons -->
         <div class="cta-actions">
@@ -162,6 +173,7 @@
     <script src="init-firebase.js"></script>
 
     <script src="main.js?v=4.9.9"></script>
+    <script src="carousel.js"></script>
     <script src="sidebar.js"></script>
     <script>
         lucide.createIcons();
@@ -246,9 +258,63 @@
                 // Content
                 document.getElementById('svc-content').innerHTML = data.long_description || "<p>Sem descrição detalhada.</p>";
 
+                // Testimonials
+                if (data.testimonial_ids && data.testimonial_ids.length > 0) {
+                    loadServiceTestimonials(data.testimonial_ids);
+                }
+
             } catch (error) {
                 console.error(error);
                 document.getElementById('svc-content').innerHTML = '<p>Erro ao carregar sessão.</p>';
+            }
+        }
+
+        async function loadServiceTestimonials(ids) {
+            try {
+                // Fetch all linked testimonials
+                const promises = ids.map(id => window.db.collection('testimonials').doc(id).get());
+                const snapshots = await Promise.all(promises);
+
+                const reviews = [];
+                snapshots.forEach(doc => {
+                    if (doc.exists) {
+                        reviews.push({ id: doc.id, ...doc.data() });
+                    }
+                });
+
+                if (reviews.length === 0) return;
+
+                // Show Section
+                document.getElementById('svc-testimonials-section').style.display = 'block';
+
+                // Instantiate Carousel with Custom Render
+                new DashboardCarousel({
+                    containerId: 'svc-testimonials-carousel',
+                    prevBtnId: 'svc-prev-btn',
+                    nextBtnId: 'svc-next-btn',
+                    collectionName: 'testimonials', // Not used since we pass data
+                    data: reviews,
+                    renderCard: (item) => {
+                        // Custom Card HTML for Testimonials
+                        // Stars removed as requested
+                        return `
+                        <div class="carousel-card testimonial-card" style="min-width: 300px; max-width: 350px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; text-align: center; scroll-snap-align: center;">
+                            <div style="font-style: italic; color: #555; font-size: 1rem; line-height: 1.6; margin-bottom: 20px; width: 100%;">
+                                "${item.text || ''}"
+                            </div>
+                            <h4 style="font-family: 'Cormorant Garamond', serif; color: var(--color-primary); font-size: 1.2rem; margin: 0;">
+                                ${item.name}
+                            </h4>
+                            <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #999; margin-top: 5px;">
+                                ${item.role || 'Cliente'}
+                            </span>
+                        </div>
+                        `;
+                    }
+                });
+
+            } catch (e) {
+                console.error("Error loading testimonials:", e);
             }
         }
 

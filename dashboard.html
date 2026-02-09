@@ -649,42 +649,101 @@
                                         <textarea id="svc-full-desc" class="admin-textarea input-sand property-editor"
                                             rows="10" placeholder="Use HTML se desejar..."></textarea>
                                     </div>
-                                </div>
 
-                                <!-- ACTIONS -->
-                                <div class="admin-action-bar">
-                                    <button type="button" id="svc-submit-btn"
-                                        onclick="window.handleServiceSubmit(event)"
-                                        class="cta-button primary min-w-200">Publicar Serviço</button>
-                                    <button type="button" id="svc-cancel-btn" class="btn btn-outline hidden"
-                                        onclick="window.resetServiceForm()">Cancelar Edição</button>
-                                    <div class="flex-grow"></div>
+                                    <!-- Testimonials Selector -->
+                                    <div class="form-group mb-20 mt-20">
+                                        <label class="block-mb-8 font-serif">Testemunhos Associados</label>
+                                        <div class="flex-between-center mb-10">
+                                            <p class="font-xs text-muted margin-0">Selecione os testemunhos que devem
+                                                aparecer na página deste serviço.</p>
+                                            <button type="button" class="btn-text-primary font-xs"
+                                                onclick="window.openQuickTestimonialModal()">
+                                                <i data-lucide="plus-circle" class="icon-14"></i> Novo Testemunho
+                                            </button>
+                                        </div>
+                                        <div id="loading-testimonials-selector" class="font-xs text-muted">A carregar
+                                            testemunhos...</div>
+                                        <div id="svc-testimonials-selector" class="testimonial-selector-grid">
+                                            <!-- Checkboxes injected here -->
+                                        </div>
+                                    </div>
 
-                                    <!-- Background Config moved here as utility -->
-                                    <details class="admin-card-inner hidden">
-                                        <summary class="font-xs cursor-pointer">Configurar Fundo da Secção</summary>
-                                        <div class="p-10 border-top-light mt-10">
-                                            <form id="service-config-form"
-                                                onsubmit="event.preventDefault(); window.handleServiceConfigSubmit();">
-                                                <div class="form-group mb-5">
-                                                    <input type="text" id="service-bg-url"
-                                                        placeholder="URL da Imagem..."
-                                                        class="admin-input-select font-xs">
+                                    <!-- Quick Testimonial Modal -->
+                                    <div id="quick-testimonial-modal" class="modal-overlay">
+                                        <div class="modal-card">
+                                            <button type="button" class="modal-close-btn"
+                                                onclick="window.closeQuickTestimonialModal()">
+                                                <i data-lucide="x"></i>
+                                            </button>
+
+                                            <div class="modal-header">
+                                                <h3 class="modal-title">Novo Testemunho Rápido</h3>
+                                            </div>
+
+                                            <form id="quick-testimonial-form"
+                                                onsubmit="window.handleQuickTestimonialSubmit(event)">
+                                                <input type="hidden" id="quick-rev-id">
+                                                <div class="modal-form-group">
+                                                    <label class="modal-label">Nome</label>
+                                                    <input type="text" id="quick-rev-name" required
+                                                        class="input-sand full-width" placeholder="Ex: Maria Silva">
                                                 </div>
-                                                <div class="form-group mb-5">
-                                                    <input type="file" id="service-bg-file" accept="image/*"
-                                                        class="font-xs">
+                                                <div class="modal-form-group">
+                                                    <label class="modal-label">Título/Role (opcional)</label>
+                                                    <input type="text" id="quick-rev-role" class="input-sand full-width"
+                                                        placeholder="Ex: Cliente de Leitura de Aura">
                                                 </div>
-                                                <button type="button" id="service-config-btn"
-                                                    onclick="window.handleServiceConfigSubmit(event)"
-                                                    class="btn btn-sm btn-primary full-width">Guardar Fundo</button>
+                                                <div class="modal-form-group">
+                                                    <label class="modal-label">Depoimento</label>
+                                                    <textarea id="quick-rev-text" required rows="4"
+                                                        class="input-sand full-width admin-textarea"
+                                                        placeholder="Escreva o testemunho aqui..."></textarea>
+                                                </div>
+
+                                                <div class="flex-end-gap-10 mt-20">
+                                                    <button type="button" class="btn btn-outline small"
+                                                        onclick="window.closeQuickTestimonialModal()">Cancelar</button>
+                                                    <button type="submit" class="cta-button primary small">Guardar &
+                                                        Associar</button>
+                                                </div>
                                             </form>
                                         </div>
-                                    </details>
+                                    </div>
                                 </div>
                             </div>
-                        </form>
+
+                            <!-- ACTIONS -->
+                            <div class="admin-action-bar">
+                                <button type="button" id="svc-submit-btn" onclick="window.handleServiceSubmit(event)"
+                                    class="cta-button primary min-w-200">Publicar Serviço</button>
+                                <button type="button" id="svc-cancel-btn" class="btn btn-outline hidden"
+                                    onclick="window.resetServiceForm()">Cancelar Edição</button>
+                                <div class="flex-grow"></div>
+
+                                <!-- Background Config moved here as utility -->
+                                <details class="admin-card-inner hidden">
+                                    <summary class="font-xs cursor-pointer">Configurar Fundo da Secção</summary>
+                                    <div class="p-10 border-top-light mt-10">
+                                        <form id="service-config-form"
+                                            onsubmit="event.preventDefault(); window.handleServiceConfigSubmit();">
+                                            <div class="form-group mb-5">
+                                                <input type="text" id="service-bg-url" placeholder="URL da Imagem..."
+                                                    class="admin-input-select font-xs">
+                                            </div>
+                                            <div class="form-group mb-5">
+                                                <input type="file" id="service-bg-file" accept="image/*"
+                                                    class="font-xs">
+                                            </div>
+                                            <button type="button" id="service-config-btn"
+                                                onclick="window.handleServiceConfigSubmit(event)"
+                                                class="btn btn-sm btn-primary full-width">Guardar Fundo</button>
+                                        </form>
+                                    </div>
+                                </details>
+                            </div>
                     </div>
+                    </form>
+                </div>
                 </div>
             </details>
 
@@ -777,8 +836,8 @@
                             </div>
                         </div>
 
-                        <div class="form-actions mt-20">
-                            <button type="submit" id="header-save-btn" class="btn btn-primary full-width">Guardar
+                        <div class="flex-center-between mt-20">
+                            <button type="submit" id="header-save-btn" class="cta-button primary full-width">Guardar
                                 Cabeçalho</button>
                         </div>
                     </form>
@@ -841,57 +900,115 @@
                                 Meditação/Recurso</h3>
                             <form id="meditation-form" class="auth-form">
                                 <input type="hidden" id="med-id">
+
+                                <!-- SECTION 1: Presentation Card (Dashboard) -->
+                                <h4 class="font-serif admin-section-header">
+                                    1. Cartão de Apresentação (Dashboard)</h4>
+
                                 <div class="form-group">
-                                    <label>Título</label>
-                                    <input type="text" id="med-title" required
-                                        placeholder="Ex: Meditação de Enraizamento">
+                                    <label>Nome do Tema (Título do Cartão)</label>
+                                    <input type="text" id="med-card-title" required placeholder="Ex: Enraizamento">
+                                    <small class="hint-text">Aparece na capa do cartão.</small>
                                 </div>
 
                                 <div class="form-group">
-                                    <label>Tema</label>
-                                    <select id="med-theme" required class="admin-input-select">
-                                        <option value="enraizamento">Enraizamento</option>
-                                        <option value="limpeza">Limpeza Energética</option>
-                                        <option value="protecao">Proteção</option>
-                                        <option value="intuicao">Intuição</option>
-                                        <option value="chakras">Chakras</option>
-                                    </select>
+                                    <label>Texto de Apresentação</label>
+                                    <textarea id="med-card-text" rows="2"
+                                        placeholder="Ex: Uma prática para voltar à terra..."></textarea>
                                 </div>
 
-                                <div class="form-group">
-                                    <label>Tipo de Conteúdo</label>
-                                    <select id="med-type" required class="admin-input-select">
-                                        <option value="audio">Áudio (Link MP3/SoundCloud)</option>
-                                        <option value="video">Vídeo (YouTube/Vimeo)</option>
-                                    </select>
+                                <div class="grid-2-col-gap-15">
+                                    <div class="form-group">
+                                        <label>Tipo de Fundo</label>
+                                        <select id="med-card-bg-type" onchange="toggleMedBgType()">
+                                            <option value="image">Imagem</option>
+                                            <option value="color">Cor Sólida</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Opacidade do Fundo (0.0 - 1.0)</label>
+                                        <input type="number" id="med-card-opacity" step="0.1" min="0.0" max="1.0"
+                                            value="0.6">
+                                    </div>
                                 </div>
 
-                                <div class="form-group">
-                                    <label>Link do Recurso (URL ou Iframe)</label>
-                                    <input type="text" id="med-url" required
-                                        placeholder="https://youtube.com/... ou <iframe...>">
-                                    <small class="admin-help-text">YouTube, Vimeo ou link direto para ficheiro
-                                        áudio.</small>
-                                </div>
-
-                                <div class="form-group">
-                                    <label>Imagem de Capa (Opcional)</label>
+                                <!-- Background Options (Toggled via JS) -->
+                                <div id="med-bg-image-group" class="form-group">
+                                    <label>Imagem de Fundo (Capa)</label>
                                     <input type="file" id="med-image" accept="image/*">
-                                    <input type="hidden" id="med-image-url">
+                                    <input type="text" id="med-image-url" placeholder="ou URL da imagem"
+                                        class="input-helper-text">
+                                </div>
+
+                                <div id="med-bg-color-group" class="form-group admin-color-group">
+                                    <label>Cor de Fundo</label>
+                                    <div class="flex-gap-5">
+                                        <input type="color" id="med-card-bg-color" value="#80864f"
+                                            class="color-preview-box">
+                                        <input type="text" id="med-card-bg-color-hex" value="#80864f"
+                                            class="color-hex-input">
+                                    </div>
+                                </div>
+
+                                <!-- SECTION 2: Detail Content -->
+                                <h4 class="font-serif admin-section-header mt-20">
+                                    2. Conteúdo / Detalhe (Página Interior)</h4>
+
+                                <div class="grid-2-col-gap-15">
+                                    <div class="form-group">
+                                        <label>Título da Página (H1)</label>
+                                        <input type="text" id="med-page-title" placeholder="Ex: Enraizamento Profundo">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Subtítulo da Página</label>
+                                        <input type="text" id="med-page-subtitle"
+                                            placeholder="Ex: Uma viagem ao centro da terra">
+                                    </div>
                                 </div>
 
                                 <div class="form-group">
-                                    <label>Descrição Opcional</label>
-                                    <textarea id="med-desc" rows="2" placeholder="Breve descrição..."
-                                        class="admin-textarea"></textarea>
+                                    <label>Título do Recurso (Interno/Lista)</label>
+                                    <input type="text" id="med-title" required placeholder="Ex: Meditação Guiada #1">
                                 </div>
 
-                                <div class="flex-gap-10">
+                                <div class="grid-2-col-gap-15">
+                                    <div class="form-group">
+                                        <label>Estilo Visual (Tema)</label>
+                                        <select id="med-theme">
+                                            <option value="enraizamento">Verde (Enraizamento)</option>
+                                            <option value="limpeza">Azul (Limpeza)</option>
+                                            <option value="protecao">Roxo (Proteção)</option>
+                                            <option value="intuicao">Laranja (Intuição)</option>
+                                            <option value="chakras">Violeta (Chakras)</option>
+                                            <option value="innerdance">Escuro (Innerdance)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Tipo de Recurso</label>
+                                        <select id="med-type">
+                                            <option value="audio">Áudio</option>
+                                            <option value="video">Vídeo</option>
+                                            <option value="pdf">PDF / Texto</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>URL do Recurso (MP3, YouTube, PDF)</label>
+                                    <input type="text" id="med-url" required placeholder="https://...">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Descrição Completa</label>
+                                    <textarea id="med-desc" class="admin-textarea" rows="4"></textarea>
+                                </div>
+
+                                <div class="form-actions mt-20">
                                     <button type="submit" id="med-submit-btn"
-                                        class="cta-button primary full-width">Publicar
-                                        Recurso</button>
-                                    <button type="button" id="med-cancel-btn" class="btn btn-outline hidden"
-                                        onclick="window.resetMeditationForm()">Cancelar</button>
+                                        class="cta-button primary full-width">Publicar Recurso</button>
+                                    <button type="button" id="med-cancel-btn"
+                                        class="btn-outline full-width mt-10 hidden"
+                                        onclick="resetMeditationForm()">Cancelar Edição</button>
                                 </div>
                             </form>
                         </div>
@@ -899,9 +1016,10 @@
                         <!-- Existing Meditations List -->
                         <div class="admin-list-container">
                             <h3 class="font-serif mb-15">Recursos Ativos</h3>
-                            <div id="admin-meditations-list">
-                                <!-- Populated by JS -->
-                                <p class="text-muted">A carregar lista...</p>
+                            <!-- Carousel Container -->
+                            <!-- Grouped List Container -->
+                            <div id="admin-meditations-list" class="mt-20">
+                                <p class="text-muted text-center p-20">A carregar lista...</p>
                             </div>
                         </div>
                     </div>
@@ -1093,73 +1211,28 @@
         <section class="content-section">
             <h2 class="section-title text-center-primary"></h2>
 
+            <!-- Carousel Container (Themes / Meditations View) -->
             <div class="carousel-wrapper relative">
-                <button class="carousel-nav prev" aria-label="Anterior"><i data-lucide="chevron-left"></i></button>
+                <button class="carousel-nav prev" id="themes-prev-btn" aria-label="Anterior"><i
+                        data-lucide="chevron-left"></i></button>
 
-                <div class="carousel-container">
-                    <!-- Card 1: Grounding -->
-                    <a href="theme.html#enraizamento" class="carousel-card">
-                        <div class="carousel-image bg-green-light relative">
-                            <i data-lucide="anchor" size="32" color="#2e7d32"></i>
-                            <!-- Place for image if needed: <img src="..." class="card-bg-img"> -->
-                        </div>
-                        <div class="carousel-content">
-                            <h3>Enraizamento</h3>
-                            <p>Conexão com a Terra e estabilidade.</p>
-                        </div>
-                    </a>
-
-                    <!-- Card 2: Cleaning -->
-                    <a href="theme.html#limpeza" class="carousel-card">
-                        <div class="carousel-image bg-blue-light relative">
-                            <i data-lucide="droplets" size="32" color="#1565c0"></i>
-                        </div>
-                        <div class="carousel-content">
-                            <h3>Limpeza Energética</h3>
-                            <p>Purificação do campo áurico.</p>
-                        </div>
-                    </a>
-
-                    <!-- Card 3: Protection -->
-                    <a href="theme.html#protecao" class="carousel-card">
-                        <div class="carousel-image bg-purple-light relative">
-                            <i data-lucide="shield" size="32" color="#7b1fa2"></i>
-                        </div>
-                        <div class="carousel-content">
-                            <h3>Proteção</h3>
-                            <p>Escudos e limites energéticos.</p>
-                        </div>
-                    </a>
-
-                    <!-- Card 4: Intuition -->
-                    <a href="theme.html#intuicao" class="carousel-card">
-                        <div class="carousel-image bg-orange-light relative">
-                            <i data-lucide="eye" size="32" color="#ef6c00"></i>
-                        </div>
-                        <div class="carousel-content">
-                            <h3>Intuição</h3>
-                            <p>Despertar a visão interior.</p>
-                        </div>
-                    </a>
-
-                    <!-- Card 5: Chakras -->
-                    <a href="theme.html#chakras" class="carousel-card">
-                        <div class="carousel-image bg-deep-purple-light relative">
-                            <i data-lucide="aperture" size="32" color="#8e24aa"></i>
-                        </div>
-                        <div class="carousel-content">
-                            <h3>Meditações - Chakras</h3>
-                            <p>Equilíbrio dos 7 centros de energia.</p>
-                        </div>
-                    </a>
+                <div class="carousel-container" id="themes-carousel-container">
+                    <!-- Dynamic Content Loads Here -->
+                    <div class="carousel-loader carousel-loader-content">
+                        <i data-lucide="loader-2" class="animate-spin text-white mb-2"></i>
+                        <p class="text-white">A carregar...</p>
+                    </div>
                 </div>
 
-                <button class="carousel-nav next" aria-label="Seguinte"><i data-lucide="chevron-right"></i></button>
+                <button class="carousel-nav next" id="themes-next-btn" aria-label="Seguinte"><i
+                        data-lucide="chevron-right"></i></button>
             </div>
         </section>
     </main>
 
-    <script src="main.js"></script>
+    <script src="carousel.js"></script>
+    <script src="sidebar.js"></script>
+    <script src="cms.js?v=2"></script>
     <script>
         // Initialize Icons
         lucide.createIcons();
@@ -1193,19 +1266,27 @@
             if (mobileNameDisplay) mobileNameDisplay.textContent = nameDisplay.textContent;
             observer.observe(nameDisplay, { childList: true, characterData: true, subtree: true });
         }
-        // Carousel Navigation
-        const carousel = document.querySelector('.carousel-container');
-        const prevBtn = document.querySelector('.carousel-nav.prev');
-        const nextBtn = document.querySelector('.carousel-nav.next');
+        // UNIFIED DASHBOARD CAROUSEL ENGINE
 
-        if (carousel && prevBtn && nextBtn) {
-            prevBtn.addEventListener('click', () => {
-                carousel.scrollBy({ left: -300, behavior: 'smooth' });
+
+        // --- Instantiate Carousels ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Meditations Management Carousel
+            new DashboardCarousel({
+                containerId: 'meditations-carousel-container',
+                prevBtnId: 'meditations-prev-btn',
+                nextBtnId: 'meditations-next-btn',
+                collectionName: 'meditations'
             });
-            nextBtn.addEventListener('click', () => {
-                carousel.scrollBy({ left: 300, behavior: 'smooth' });
+
+            // 2. Themes/View Carousel
+            new DashboardCarousel({
+                containerId: 'themes-carousel-container',
+                prevBtnId: 'themes-prev-btn',
+                nextBtnId: 'themes-next-btn',
+                collectionName: 'meditations' // Using same data for now
             });
-        }
+        });
     </script>
 
     <!-- DRAG AND DROP LOGIC FOR DASHBOARD CARDS -->

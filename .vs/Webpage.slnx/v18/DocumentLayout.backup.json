@@ -3,12 +3,24 @@
   "WorkspaceRootPath": "C:\\Users\\Carlos\\Antigravity\\Webpage\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Carlos\\Antigravity\\Webpage\\style.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:style.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Carlos\\Antigravity\\Webpage\\theme-enraizamento.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:theme-enraizamento.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Carlos\\Antigravity\\Webpage\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Carlos\\Antigravity\\Webpage\\service-template.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:service-template.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Carlos\\Antigravity\\Webpage\\backup_2026_01_21\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:backup_2026_01_21\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Carlos\\Antigravity\\Webpage\\backup_2026_01_21\\dashboard.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:backup_2026_01_21\\dashboard.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Carlos\\Antigravity\\Webpage\\backup_2026_01_21\\about.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:backup_2026_01_21\\about.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Carlos\\Antigravity\\Webpage\\login.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -21,6 +33,14 @@
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Carlos\\Antigravity\\Webpage\\cms.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:cms.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Carlos\\Antigravity\\Webpage\\style.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:style.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Carlos\\Antigravity\\Webpage\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Carlos\\Antigravity\\Webpage\\firebase-config.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
@@ -38,7 +58,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
@@ -46,59 +66,124 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "theme-enraizamento.html",
+              "DocumentMoniker": "C:\\Users\\Carlos\\Antigravity\\Webpage\\theme-enraizamento.html",
+              "RelativeDocumentMoniker": "theme-enraizamento.html",
+              "ToolTip": "C:\\Users\\Carlos\\Antigravity\\Webpage\\theme-enraizamento.html*",
+              "RelativeToolTip": "theme-enraizamento.html*",
+              "ViewState": "AgIAAIEAAAAAAAAAAAAAAIsAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-02-03T17:01:44.985Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "service-template.html",
+              "DocumentMoniker": "C:\\Users\\Carlos\\Antigravity\\Webpage\\service-template.html",
+              "RelativeDocumentMoniker": "service-template.html",
+              "ToolTip": "C:\\Users\\Carlos\\Antigravity\\Webpage\\service-template.html*",
+              "RelativeToolTip": "service-template.html*",
+              "ViewState": "AgIAAIcAAAAAAAAAAAAAAIkAAABcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-02-03T17:00:59.977Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "index.html",
+              "DocumentMoniker": "C:\\Users\\Carlos\\Antigravity\\Webpage\\backup_2026_01_21\\index.html",
+              "RelativeDocumentMoniker": "backup_2026_01_21\\index.html",
+              "ToolTip": "C:\\Users\\Carlos\\Antigravity\\Webpage\\backup_2026_01_21\\index.html",
+              "RelativeToolTip": "backup_2026_01_21\\index.html",
+              "ViewState": "AgIAAAoBAAAAAAAAAAAAAA0BAABOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-02-03T17:00:22.406Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 3,
+              "Title": "dashboard.html",
+              "DocumentMoniker": "C:\\Users\\Carlos\\Antigravity\\Webpage\\backup_2026_01_21\\dashboard.html",
+              "RelativeDocumentMoniker": "backup_2026_01_21\\dashboard.html",
+              "ToolTip": "C:\\Users\\Carlos\\Antigravity\\Webpage\\backup_2026_01_21\\dashboard.html",
+              "RelativeToolTip": "backup_2026_01_21\\dashboard.html",
+              "ViewState": "AgIAAO8CAAAAAAAAAAAAAPUCAABYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-02-03T16:59:39.291Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "about.html",
+              "DocumentMoniker": "C:\\Users\\Carlos\\Antigravity\\Webpage\\backup_2026_01_21\\about.html",
+              "RelativeDocumentMoniker": "backup_2026_01_21\\about.html",
+              "ToolTip": "C:\\Users\\Carlos\\Antigravity\\Webpage\\backup_2026_01_21\\about.html",
+              "RelativeToolTip": "backup_2026_01_21\\about.html",
+              "ViewState": "AgIAAHgAAAAAAAAAAAAhwIwAAABtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-02-03T16:59:03.479Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
               "Title": "dashboard.html",
               "DocumentMoniker": "C:\\Users\\Carlos\\Antigravity\\Webpage\\dashboard.html",
               "RelativeDocumentMoniker": "dashboard.html",
-              "ToolTip": "C:\\Users\\Carlos\\Antigravity\\Webpage\\dashboard.html*",
-              "RelativeToolTip": "dashboard.html*",
-              "ViewState": "AgIAADkEAAAAAAAAAAAowEoEAABWAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\Carlos\\Antigravity\\Webpage\\dashboard.html",
+              "RelativeToolTip": "dashboard.html",
+              "ViewState": "AgIAAJwDAAAAAAAAAAAAAKIDAABUAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2026-01-24T18:10:11.944Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 7,
               "Title": "cms.js",
               "DocumentMoniker": "C:\\Users\\Carlos\\Antigravity\\Webpage\\cms.js",
               "RelativeDocumentMoniker": "cms.js",
               "ToolTip": "C:\\Users\\Carlos\\Antigravity\\Webpage\\cms.js",
               "RelativeToolTip": "cms.js",
-              "ViewState": "AgIAAJACAAAAAAAAAAAMwKMCAABAAAAAAAAAAA==",
+              "ViewState": "AgIAAJACAAAAAAAAAAAMwKMCAAAaAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2026-01-21T15:39:47.819Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 8,
               "Title": "style.css",
               "DocumentMoniker": "C:\\Users\\Carlos\\Antigravity\\Webpage\\style.css",
               "RelativeDocumentMoniker": "style.css",
               "ToolTip": "C:\\Users\\Carlos\\Antigravity\\Webpage\\style.css",
               "RelativeToolTip": "style.css",
-              "ViewState": "AgIAALoEAAAAAAAAAAAAAMcEAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAJMBAAAAAAAAAAAhwMYBAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
               "WhenOpened": "2026-01-21T15:18:27.048Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 5,
               "Title": "login.html",
               "DocumentMoniker": "C:\\Users\\Carlos\\Antigravity\\Webpage\\login.html",
               "RelativeDocumentMoniker": "login.html",
               "ToolTip": "C:\\Users\\Carlos\\Antigravity\\Webpage\\login.html",
               "RelativeToolTip": "login.html",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAjAAAAAAAAAA==",
+              "ViewState": "AgIAACUAAAAAAAAAAAAhwDkAAABCAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2025-12-28T10:36:36.765Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 11,
               "Title": "init-firebase.js",
               "DocumentMoniker": "C:\\Users\\Carlos\\Antigravity\\Webpage\\init-firebase.js",
               "RelativeDocumentMoniker": "init-firebase.js",
@@ -110,7 +195,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 10,
               "Title": "firebase-config.js",
               "DocumentMoniker": "C:\\Users\\Carlos\\Antigravity\\Webpage\\firebase-config.js",
               "RelativeDocumentMoniker": "firebase-config.js",
@@ -122,7 +207,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 9,
               "Title": "index.html",
               "DocumentMoniker": "C:\\Users\\Carlos\\Antigravity\\Webpage\\index.html",
               "RelativeDocumentMoniker": "index.html",
@@ -130,8 +215,7 @@
               "RelativeToolTip": "index.html",
               "ViewState": "AgIAAF0AAAAAAAAAAAAAAEsAAAAGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2025-12-28T10:35:31.427Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-28T10:35:31.427Z"
             }
           ]
         }
