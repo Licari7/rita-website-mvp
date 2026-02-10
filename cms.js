@@ -526,32 +526,78 @@ async function loadReviews() {
     listContainer.innerHTML = '<p>A carregar...</p>';
 
     try {
-        const querySnapshot = await window.db.collection("testimonials").orderBy("created_at", "desc").get();
+        // Fix: Fetch ALL (remove orderBy to avoid missing index or filtering out docs without created_at)
+        const querySnapshot = await window.db.collection("testimonials").get();
 
         if (querySnapshot.empty) {
             listContainer.innerHTML = '<p>Sem testemunhos.</p>';
             return;
         }
 
-        let html = '<ul class="admin-event-list">';
-        querySnapshot.forEach((doc) => {
+        // Convert to Array and Sort manually (Newest First)
+        // Handle cases where created_at might be missing
+        const reviews = [];
+        querySnapshot.forEach(doc => {
             const data = doc.data();
-            window.reviewsCache[doc.id] = data; // Cache for edit
+            reviews.push({ id: doc.id, ...data });
+            window.reviewsCache[doc.id] = data; // Cache
+        });
 
+        // Sort: Role (A-Z) -> Date (Newest First)
+        reviews.sort((a, b) => {
+            const roleA = (a.role || "").toLowerCase();
+            const roleB = (b.role || "").toLowerCase();
+
+            // 1. Priority to items WITH role
+            if (roleA && !roleB) return -1;
+            if (!roleA && roleB) return 1;
+
+            // 2. Alphabetical Sort by Role
+            if (roleA !== roleB) {
+                return roleA.localeCompare(roleB);
+            }
+
+            // 3. Fallback: Date (Newest First)
+            const dateA = a.created_at ? (a.created_at.seconds || 0) : 0;
+            const dateB = b.created_at ? (b.created_at.seconds || 0) : 0;
+            return dateB - dateA;
+        });
+
+        // Update Header Count
+        const header = listContainer.parentElement.querySelector('h3');
+        if (header) {
+            header.innerText = `Testemunhos Ativos (${reviews.length})`;
+        }
+
+        let html = '<div class="admin-reviews-grid">';
+        reviews.forEach((data) => {
             html += `
-                <li class="admin-event-item">
-                    <div class="event-info">
-                        <strong>${data.name}</strong>: "${data.text.substring(0, 30)}..."
+                <div class="admin-review-card">
+                    <div class="admin-review-header">
+                        <div class="admin-review-title-group">
+                            <span class="admin-review-name">${data.name}</span>
+                            ${data.role ? `<span class="admin-review-role-separator">-</span><span class="admin-review-role">${data.role}</span>` : ''}
+                        </div>
+                        <div class="admin-review-actions">
+                             <button class="btn-icon-sm" onclick="window.editReview('${data.id}')" title="Editar">
+                                <i data-lucide="pen"></i>
+                             </button>
+                             <button class="btn-icon-sm delete" onclick="window.deleteReview('${data.id}')" title="Apagar">
+                                <i data-lucide="trash"></i>
+                             </button>
+                        </div>
                     </div>
-                    <div style="flex-shrink:0;">
-                       <button class="btn-outline" style="padding:2px 6px; font-size:0.8rem; margin-right:5px;" onclick="window.editReview('${doc.id}')">Editar</button>
-                       <button class="btn-delete" onclick="window.deleteReview('${doc.id}')">Apagar</button>
-                    </div>
-                </li>
+                    <p class="admin-review-text">${data.text.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').replace(/^["'\s]+|["'\s]+$/g, '').trim()}</p>
+                </div>
             `;
         });
-        html += '</ul>';
+        html += '</div>';
         listContainer.innerHTML = html;
+
+        // Re-init Icons
+        if (window.lucide) {
+            lucide.createIcons();
+        }
 
     } catch (error) {
         console.error("Error loading reviews:", error);

@@ -693,7 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const snapshot = await window.db.collection('testimonials')
                 .orderBy('created_at', 'desc')
-                .limit(30) // Fetch more to allow for filtering
+                .limit(100) // Fetch up to 100 (effectively all for now)
                 .get();
 
             if (snapshot.empty) {
@@ -709,8 +709,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Filter out Service-Specific Testimonials
                 if (data.type === 'service') return;
 
-                // Manual Limit (since we fetched more to filter)
-                if (count >= 10) return;
+                // Manual Limit REMOVED to show all
                 count++;
 
                 cardsHtml += `
