@@ -257,67 +257,78 @@
                 const lowerUrl = (data.url || '').trim().toLowerCase();
                 const isVideo = lowerUrl.includes('youtube') || lowerUrl.includes('youtu.be') || lowerUrl.includes('vimeo');
                 const isEmbed = lowerUrl.includes('spotify') || lowerUrl.includes('soundcloud') || lowerUrl.includes('anchor.fm') || lowerUrl.includes('drive.google.com');
+                const isFirebase = lowerUrl.includes('firebasestorage') || lowerUrl.includes('googleapis.com');
+                // Check if it looks like an audio file or has audio metadata
+                const isAudioFile = lowerUrl.endsWith('.mp3') || lowerUrl.endsWith('.wav') || lowerUrl.includes('.mp3?') || lowerUrl.includes('alt=media') || data.type === 'audio';
 
-                if (data.type === 'video' || isVideo || isEmbed) {
-                    let embedUrl = data.url;
+                console.log("Debug Player:", { url: lowerUrl, type: data.type, isVideo, isEmbed, isFirebase, isAudioFile });
 
-                    // YouTube Formatting
-                    if (embedUrl.includes('youtube.com/watch?v=')) {
-                        const videoId = embedUrl.split('v=')[1].split('&')[0];
-                        embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
-                    } else if (embedUrl.includes('youtu.be/')) {
-                        const videoId = embedUrl.split('youtu.be/')[1];
-                        embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
-                    } else if (embedUrl.includes('youtube.com/embed/')) {
-                        embedUrl = embedUrl.replace('youtube.com', 'youtube-nocookie.com');
-                    }
+                // Only render if URL exists
+                if (lowerUrl.length > 5) {
+                    // FORCE NATIVE PLAYER for Firebase or Audio Files
+                    const shouldShowIframe = (data.type === 'video' || isVideo || isEmbed) && !isFirebase && !isAudioFile;
 
-                    // Spotify Formatting (Auto-Embed)
-                    try {
-                        if (embedUrl.includes('open.spotify.com') && !embedUrl.includes('/embed/')) {
-                            let urlObj = new URL(embedUrl);
-                            const path = urlObj.pathname;
-                            if (path.startsWith('/playlist') || path.startsWith('/track') || path.startsWith('/album')) {
-                                embedUrl = `https://open.spotify.com/embed${path}${urlObj.search}`;
+                    if (shouldShowIframe) {
+                        let embedUrl = data.url;
+
+                        // YouTube Formatting
+                        if (embedUrl.includes('youtube.com/watch?v=')) {
+                            const videoId = embedUrl.split('v=')[1].split('&')[0];
+                            embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
+                        } else if (embedUrl.includes('youtu.be/')) {
+                            const videoId = embedUrl.split('youtu.be/')[1];
+                            embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
+                        } else if (embedUrl.includes('youtube.com/embed/')) {
+                            embedUrl = embedUrl.replace('youtube.com', 'youtube-nocookie.com');
+                        }
+
+                        // Spotify Formatting (Auto-Embed)
+                        try {
+                            if (embedUrl.includes('open.spotify.com') && !embedUrl.includes('/embed/')) {
+                                let urlObj = new URL(embedUrl);
+                                const path = urlObj.pathname;
+                                if (path.startsWith('/playlist') || path.startsWith('/track') || path.startsWith('/album')) {
+                                    embedUrl = `https://open.spotify.com/embed${path}${urlObj.search}`;
+                                }
+                            }
+                        } catch (e) { console.error("Spotify Error", e); }
+
+                        // Google Drive Formatting
+                        if (embedUrl.includes('drive.google.com') && embedUrl.includes('/file/d/')) {
+                            const match = embedUrl.match(/\/file\/d\/([^/]+)/);
+                            if (match && match[1]) {
+                                embedUrl = `https://drive.google.com/file/d/${match[1]}/preview`;
                             }
                         }
-                    } catch (e) { console.error("Spotify Error", e); }
 
-                    // Google Drive Formatting
-                    if (embedUrl.includes('drive.google.com') && embedUrl.includes('/file/d/')) {
-                        const match = embedUrl.match(/\/file\/d\/([^/]+)/);
-                        if (match && match[1]) {
-                            embedUrl = `https://drive.google.com/file/d/${match[1]}/preview`;
-                        }
-                    }
+                        const isAudioEmbed = isEmbed && !isVideo;
 
-                    const isAudioEmbed = isEmbed && !isVideo;
-
-                    if (isAudioEmbed) {
-                        playerHtml = `
+                        if (isAudioEmbed) {
+                            playerHtml = `
                         <div class="med-player-container">
                             <iframe src="${embedUrl}" style="width:100%; height:152px; border:none; border-radius:12px;" sandbox="allow-forms allow-scripts allow-same-origin allow-presentation" allow="encrypted-media;" loading="lazy"></iframe>
                         </div>`;
-                    } else {
-                        // Video
-                        playerHtml = `
+                        } else {
+                            // Video
+                            playerHtml = `
                         <div class="med-player-container">
                             <div class="video-wrapper">
                                 <iframe src="${embedUrl}" frameborder="0" sandbox="allow-forms allow-scripts allow-same-origin allow-presentation" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
                             </div>
                         </div>`;
-                    }
+                        }
 
-                } else {
-                    // Native Audio
-                    playerHtml = `
+                    } else {
+                        // Native Audio
+                        playerHtml = `
                     <div class="med-player-container">
                         <audio controls controlsList="nodownload" oncontextmenu="return false;" style="width: 100%;">
                             <source src="${data.url}" type="audio/mpeg">
                             O teu navegador não suporta o elemento de áudio.
                         </audio>
                     </div>`;
-                }
+                    }
+                } // End URL check
 
                 const iconName = data.type === 'video' ? 'video' : 'music';
                 let imageHtml = '';
@@ -373,8 +384,7 @@
         <div class="container text-center">
             <p class="logo-text" id="footer-title"></p>
             <div class="footer-links">
-                <a href="privacidade.html">Privacidade</a>
-                <a href="termos.html">Termos</a>
+                <a href="termos.html">Termos e Privacidade</a>
             </div>
             <p class="copyright" id="footer-copyright"></p>
             <p class="footer-credits" id="footer-credit"></p>

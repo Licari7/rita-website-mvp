@@ -3846,3 +3846,99 @@ body.auth-page {
     background-color: #ccc;
     border-radius: 4px;
 }
+
+/* Fix for Outline Button Visibility */
+.btn-outline {
+    display: inline-block;
+    padding: 10px 20px;
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary) !important;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* Legal Pages */
+.legal-section {
+    padding: 60px 0;
+    min-height: 60vh;
+}
+
+.legal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3rem;
+    color: var(--color-primary);
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.legal-content {
+    max-width: 800px;
+    margin: 0 auto;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #333;
+}
+
+.legal-content h1,
+.legal-content h2 {
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--color-primary);
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
+.legal-content ul {
+    padding-left: 20px;
+    margin-bottom: 20px;
+}
+
+.legal-content li {
+    margin-bottom: 10px;
+}
+
+/* --- Utilities for Inline Fixes --- */
+.resource-display {
+    border: 1px solid #ddd;
+}
+
+.flex-between-center {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.text-break-all {
+    word-break: break-all;
+}
+
+.btn-remove-sm {
+    color: red !important;
+    font-size: 0.8rem !important;
+}
+
+.progress-track {
+    background: #ddd;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    background: var(--color-primary);
+    width: 0%;
+    height: 100%;
+    transition: width 0.2s;
+}
+
+.legal-divider {
+    margin: 40px 0;
+    border: 0;
+    border-top: 1px solid #ccc;
+}
+
+.legal-content strong {
+    font-weight: 600;
+}

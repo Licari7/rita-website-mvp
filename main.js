@@ -543,8 +543,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.lucide) lucide.createIcons();
 
             // Setup Infinite Scroll Logic
-            const totalWidth = container.scrollWidth;
-            const setWidth = totalWidth / 3;
+            // Exact width calculation for smooth infinite scroll
+            const singleSetCount = snapshot.size;
+            const firstCard = container.querySelector('.premium-card');
+            const cardWidth = firstCard ? firstCard.offsetWidth : 350;
+            const gap = 30; // Standard CSS gap
+            // Calculate exact width of one set of cards (including gaps)
+            const setWidth = singleSetCount * (cardWidth + gap);
 
             // Start in the Middle Set
             if (container.scrollLeft === 0) {

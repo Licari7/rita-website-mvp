@@ -28,6 +28,7 @@ window.verifyUserStatus = async (email) => {
 // Helper: Convert File to Base64 (No Compression)
 
 // Helper: Upload File to Firebase Storage
+// Helper: Upload File to Firebase Storage (Generic)
 const uploadImageToStorage = async (file, path) => {
     if (!file) return null;
     try {
@@ -38,6 +39,43 @@ const uploadImageToStorage = async (file, path) => {
     } catch (error) {
         console.error("Storage Upload Error:", error);
         throw error;
+    }
+};
+
+// Helper: Upload with Progress
+const uploadFileWithProgress = (file, path, onProgress) => {
+    return new Promise((resolve, reject) => {
+        const storageRef = window.storage.ref();
+        const fileRef = storageRef.child(path);
+        const uploadTask = fileRef.put(file);
+
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                onProgress(progress);
+            },
+            (error) => {
+                console.error("Upload error:", error);
+                reject(error);
+            },
+            async () => {
+                const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                resolve(downloadURL);
+            }
+        );
+    });
+};
+
+// Clear Resource Logic
+window.clearMeditationResource = function () {
+    if (confirm("Tem a certeza que deseja remover este ficheiro/link?\n\nNota: Isto apenas remove a ligação no site. O ficheiro original permanece no armazenamento de backup.")) {
+        document.getElementById('med-url').value = "";
+        document.getElementById('med-audio-file').value = "";
+        document.getElementById('current-resource-display').classList.add('hidden');
+
+        // Hide progress bar if visible
+        const pContainer = document.getElementById('audio-upload-progress');
+        if (pContainer) pContainer.classList.add('hidden');
     }
 };
 
@@ -676,8 +714,6 @@ function initTinyMCE(initialContent = '', targetId = 'my-tinymce-editor', force 
 
     if (window.tinymce) {
         console.log("Initializing new editor...");
-        // window.tinymceInstanceInit = true; // This global flag is too broad now
-
         tinymce.init({
             selector: '#' + targetId,
             height: 500,
@@ -1483,6 +1519,43 @@ async function handleMeditationSubmit(e) {
             imageUrl = await uploadImageToStorage(imageFile, path);
         }
 
+        // Audio File Processing (New Feature with Progress)
+        const audioFile = document.getElementById('med-audio-file').files[0];
+        if (audioFile) {
+            btn.innerText = "A enviar áudio...";
+
+            // Show Progress UI
+            const progressContainer = document.getElementById('audio-upload-progress');
+            const progressBar = document.getElementById('audio-progress-bar');
+            const progressText = document.getElementById('audio-progress-text');
+
+            if (progressContainer) progressContainer.classList.remove('hidden');
+
+            const path = `meditations_audio/${Date.now()}_${audioFile.name}`;
+
+            try {
+                const audioUrl = await uploadFileWithProgress(audioFile, path, (percent) => {
+                    const p = Math.round(percent);
+                    if (progressBar) progressBar.style.width = p + '%';
+                    if (progressText) progressText.innerText = `A carregar... ${p}%`;
+                });
+
+                if (audioUrl) {
+                    url = audioUrl;
+                    if (progressText) progressText.innerText = "Upload concluído! ✅";
+                    setTimeout(() => {
+                        if (progressContainer) progressContainer.classList.add('hidden');
+                    }, 2000);
+                }
+            } catch (err) {
+                if (progressText) progressText.innerText = "Erro no upload ❌";
+                alert("Erro no upload do áudio: " + err.message);
+                // Don't throw, let it continue saving regular data if user wants? 
+                // But probably should stop.
+                throw err;
+            }
+        }
+
         const desc = (window.tinymce && tinymce.get('med-desc')) ? tinymce.get('med-desc').getContent() : document.getElementById('med-desc').value;
 
         const data = {
@@ -1668,6 +1741,39 @@ window.editMeditation = (id) => {
     document.getElementById('med-submit-btn').innerText = "Atualizar Recurso";
     document.getElementById('med-cancel-btn').classList.remove('hidden');
 
+    // Resource Filename Display Logic
+    const resDisplay = document.getElementById('current-resource-display');
+    const resFilename = document.getElementById('current-filename');
+    const currentUrl = data.url || "";
+
+    if (resDisplay && resFilename && currentUrl && currentUrl.length > 5) {
+        resDisplay.classList.remove('hidden');
+
+        // Try to extract readable name
+        let readableName = "Link Externo";
+        try {
+            if (currentUrl.includes('firebasestorage')) {
+                // Extract after last slash and before ?
+                let path = decodeURIComponent(currentUrl.split('?')[0]);
+                readableName = path.substring(path.lastIndexOf('/') + 1);
+                // Remove timestamp prefix if present (123456789_)
+                if (readableName.match(/^\d+_/)) {
+                    readableName = readableName.replace(/^\d+_/, '');
+                }
+            } else if (currentUrl.includes('drive.google')) {
+                readableName = "Google Drive Link";
+            } else if (currentUrl.includes('youtu')) {
+                readableName = "Vídeo YouTube";
+            } else {
+                readableName = currentUrl.substring(0, 30) + "...";
+            }
+        } catch (e) { readableName = "Link ativo"; }
+
+        resFilename.innerText = readableName;
+    } else if (resDisplay) {
+        resDisplay.classList.add('hidden');
+    }
+
     // Scroll to form
     const form = document.getElementById('meditation-form');
     if (form) form.scrollIntoView({ behavior: 'smooth' });
@@ -1678,6 +1784,7 @@ window.resetMeditationForm = () => {
     if (form) form.reset();
     document.getElementById('med-id').value = "";
     document.getElementById('med-image-url').value = "";
+    document.getElementById('med-audio-file').value = ""; // Clear audio input
 
     // clear tinymce
     if (window.tinymce && tinymce.get('med-desc')) tinymce.get('med-desc').setContent('');
@@ -1753,41 +1860,20 @@ async function loadSiteContent() {
                 if (document.getElementById('home-about-image-url')) document.getElementById('home-about-image-url').value = data.home_about.image_url || '';
             }
 
-            // Populate Footer Form
-            if (data.footer) {
-                if (document.getElementById('footer-title-input')) document.getElementById('footer-title-input').value = data.footer.title || '';
-                if (document.getElementById('footer-copyright-input')) document.getElementById('footer-copyright-input').value = data.footer.copyright || '';
-                if (document.getElementById('footer-dev-input')) document.getElementById('footer-dev-input').value = data.footer.dev_credit || '';
+            const footerTitle = document.getElementById('footer-title');
+            const footerCopyright = document.getElementById('footer-copyright');
+            const footerCredit = document.getElementById('footer-credit');
 
-                // Footer Colors
-                const fBg = data.footer.bg_color || '#80864f';
-                const fText = data.footer.text_color || '#ffffff';
+            if (footerTitle && data.footer.title !== undefined) footerTitle.innerHTML = data.footer.title;
+            if (footerCopyright && data.footer.copyright !== undefined) footerCopyright.innerHTML = data.footer.copyright;
+            if (footerCredit && data.footer.dev_credit !== undefined) footerCredit.innerHTML = data.footer.dev_credit;
 
-                if (document.getElementById('footer-bg-color')) {
-                    document.getElementById('footer-bg-color').value = fBg;
-                    document.getElementById('footer-bg-hex').value = fBg;
-                }
-                if (document.getElementById('footer-text-color')) {
-                    document.getElementById('footer-text-color').value = fText;
-                    document.getElementById('footer-text-hex').value = fText;
-                }
+            // Update Footer Styles dynamically
+            document.documentElement.style.setProperty('--color-footer-bg', fBg);
+            document.documentElement.style.setProperty('--color-footer-text', fText);
 
-                // FIX: Update actual Footer DOM elements dynamically (for Dashboard view)
-                const footerTitle = document.getElementById('footer-title');
-                const footerCopyright = document.getElementById('footer-copyright');
-                const footerCredit = document.getElementById('footer-credit');
-
-                if (footerTitle && data.footer.title !== undefined) footerTitle.innerHTML = data.footer.title;
-                if (footerCopyright && data.footer.copyright !== undefined) footerCopyright.innerHTML = data.footer.copyright;
-                if (footerCredit && data.footer.dev_credit !== undefined) footerCredit.innerHTML = data.footer.dev_credit;
-
-                // Update Footer Styles dynamically
-                document.documentElement.style.setProperty('--color-footer-bg', fBg);
-                document.documentElement.style.setProperty('--color-footer-text', fText);
-
-                // FIX: Sync to LocalStorage so main.js has fresh data immediately
-                localStorage.setItem('site_footer', JSON.stringify(data.footer));
-            }
+            // FIX: Sync to LocalStorage so main.js has fresh data immediately
+            localStorage.setItem('site_footer', JSON.stringify(data.footer));
 
             // Populate Contact Form
             if (data.contact) {
@@ -2390,47 +2476,280 @@ document.addEventListener('DOMContentLoaded', () => {
     const aboutForm = document.getElementById('about-content-form');
     if (aboutForm) aboutForm.addEventListener('submit', handleAboutSubmit);
 
-    const homeAboutForm = document.getElementById('home-about-form');
-    if (homeAboutForm) homeAboutForm.addEventListener('submit', handleHomeAboutSubmit);
-
-    // Footer Listener
     const footerForm = document.getElementById('footer-form');
-    if (footerForm) {
-        footerForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            handleFooterSubmit();
-        });
-    }
+    if (footerForm) footerForm.addEventListener('submit', (e) => { e.preventDefault(); handleFooterSubmit(); });
 
-    // Contact Listener
     const contactForm = document.getElementById('contact-form');
-    if (contactForm) {
-        contactForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            handleContactSubmit();
-        });
+    if (contactForm) contactForm.addEventListener('submit', (e) => { e.preventDefault(); handleContactSubmit(); });
+
+    const legalForm = document.getElementById('legal-form');
+    if (legalForm) legalForm.addEventListener('submit', (e) => { e.preventDefault(); handleLegalSubmit(); });
+
+    // Load Data
+    loadHomeContent();
+    loadAboutContent();
+    loadHeaderSettings();
+    loadThemeSettings(); // Load Theme Settings on Init
+    loadFooterContent(); // Load Footer
+    loadContactContent(); // Load Contacts
+    loadLegalContent();   // Load Legal
+});
+
+// --- Legal Content Management ---
+
+async function loadLegalContent() {
+    try {
+        const doc = await window.db.collection('site_content').doc('legal').get();
+        let content = "";
+
+        if (doc.exists && doc.data().html_content) {
+            content = doc.data().html_content;
+        } else {
+            // Seed with default content if empty
+            content = `
+                <h2>Cláusula de Aceitação e Consentimento</h2>
+                <p>Ao utilizar este website, o utilizador declara que leu, compreendeu e aceitou os presentes Termos de Uso, a Política de Privacidade, a Política de Proteção de Dados e a Política de Cookies.</p>
+                <p>Ao disponibilizar os seus dados pessoais através deste site, o utilizador <strong>autoriza expressamente a sua recolha, tratamento, utilização e armazenamento</strong>, nos termos definidos nos documentos acima referidos.</p>
+                <p>A Floresce Terapias reserva-se o direito de <strong>alterar, atualizar ou modificar</strong> estes documentos a qualquer momento, sem necessidade de aviso prévio, sendo da responsabilidade do utilizador a sua consulta regular para se manter informado.</p>
+                <p>As presentes políticas aplicam-se a <strong>todos os dados pessoais recolhidos através deste website</strong>, bem como aos dados recolhidos no âmbito das atividades, sessões, eventos e serviços promovidos pela FT.</p>
+
+                <h2>Identificação do Titular</h2>
+                <p>O domínio do presente website é propriedade de Rita Barata, titular do 256142483, com domicílio fiscal em Lisboa, Portugal.</p>
+                <p>Para efeitos legais, todas as referências a “Floresce Terapias” ou “FT” dizem respeito à entidade acima identificada.</p>
+
+                <h2>1. Âmbito</h2>
+                <p>Este website tem como finalidade disponibilizar informação sobre serviços, práticas, atividades e eventos promovidos pela FT, bem como permitir o contacto e a marcação de sessões.</p>
+                <p>Ao aceder e utilizar este website, o utilizador concorda com os presentes Termos de Uso.</p>
+
+                <h2>2. Condições de Utilização</h2>
+                <p>Ao utilizar este site, o utilizador compromete-se a:</p>
+                <ul>
+                    <li>Utilizar a plataforma apenas para fins legais e legítimos;</li>
+                    <li>Não praticar qualquer ação que comprometa a segurança, integridade ou funcionamento do site;</li>
+                    <li>Não tentar aceder a áreas restritas, sistemas, dados ou informações que não lhe estejam destinados;</li>
+                    <li>Não modificar, copiar, interferir, danificar ou utilizar indevidamente os conteúdos da plataforma;</li>
+                    <li>Não utilizar o site de forma que viole direitos de terceiros ou a legislação em vigor.</li>
+                </ul>
+
+                <h2>3. Registo e Acesso (quando aplicável)</h2>
+                <p>Caso existam áreas de acesso restrito, o utilizador compromete-se a fornecer informações verdadeiras, atuais e completas.</p>
+                <p>O utilizador é responsável pela confidencialidade dos seus dados de acesso (email, palavra-passe ou outros meios de autenticação), bem como por toda a atividade realizada com as suas credenciais.</p>
+                <p>A FT reserva-se o direito de suspender ou encerrar o acesso à plataforma sempre que exista uso indevido, violação destes termos ou utilização abusiva do site.</p>
+
+                <h2>4. Serviços</h2>
+                <p>Os serviços disponibilizados pela FT incluem práticas holísticas e criativas, terapias e atividades de desenvolvimento pessoal, em contexto individual ou de grupo, presencialmente ou online.</p>
+                <p>Estes serviços <strong>não substituem acompanhamento médico, psicológico ou psiquiátrico</strong>, nem diagnósticos clínicos. As decisões relacionadas com saúde devem ser sempre tomadas com profissionais de saúde qualificados.</p>
+
+                <h2>5. Responsabilidade</h2>
+                <p>A FT compromete-se a exercer as suas práticas com ética, respeito, confidencialidade e cuidado.</p>
+                <p>O utilizador reconhece que os processos terapêuticos são individuais e subjetivos, não sendo possível garantir resultados específicos.</p>
+                <p>A FT não se responsabiliza por decisões pessoais, profissionais, médicas, financeiras ou legais tomadas com base nas sessões, práticas ou conteúdos do site.</p>
+
+                <h2>6. Propriedade Intelectual</h2>
+                <p>Todo o conteúdo deste site (textos, imagens, identidade visual, logótipos, conteúdos escritos e multimédia) é propriedade da FT, salvo indicação em contrário.</p>
+                <p>É proibida a reprodução, cópia, distribuição ou utilização sem autorização prévia.</p>
+
+                <hr style="margin: 40px 0; border: 0; border-top: 1px solid #ccc;">
+
+                <h2>1. Recolha de Dados</h2>
+                <p>A FT recolhe apenas os dados pessoais estritamente necessários para:</p>
+                <ul>
+                    <li>Contacto com o utilizador;</li>
+                    <li>Marcação de sessões;</li>
+                    <li>Resposta a pedidos de informação;</li>
+                    <li>Gestão de inscrições em eventos ou atividades;</li>
+                    <li>Gestão de serviços;</li>
+                    <li>Organização de sessões e eventos;</li>
+                    <li>Acompanhamento administrativo das atividades.</li>
+                </ul>
+                <p>Os dados podem incluir nome, email, contacto telefónico e outras informações fornecidas voluntariamente.</p>
+                <p>Os dados <strong>não são vendidos, cedidos ou partilhados com terceiros</strong>, exceto quando legalmente obrigatório.</p>
+
+                <h2>2. Finalidade dos Dados</h2>
+                <p>Os dados recolhidos são utilizados exclusivamente para:</p>
+                <ul>
+                    <li>Comunicação com o utilizador;</li>
+                </ul>
+
+                <h2>3. Confidencialidade</h2>
+                <p>Toda a informação partilhada no contexto das sessões é tratada com confidencialidade, ética e respeito pela privacidade do utilizador, dentro dos limites legais aplicáveis.</p>
+
+                <h2>Proteção de Dados</h2>
+                <p>A FT compromete-se a adotar medidas técnicas e organizativas adequadas para garantir a segurança, proteção e integridade dos dados pessoais dos utilizadores.</p>
+                <p>Os dados são armazenados apenas pelo tempo necessário às finalidades para as quais foram recolhidos.</p>
+
+                <h2>Direitos do Utilizador</h2>
+                <p>O utilizador tem o direito de:</p>
+                <ul>
+                    <li>Aceder aos seus dados pessoais;</li>
+                    <li>Solicitar a retificação ou atualização;</li>
+                    <li>Solicitar a eliminação dos dados;</li>
+                    <li>Limitar ou opor-se ao tratamento;</li>
+                    <li>Retirar o consentimento a qualquer momento.</li>
+                </ul>
+                <p>Os pedidos devem ser feitos através dos contactos disponíveis no website.</p>
+
+                <h1>Política de Cookies</h1>
+                <p>Este site pode utilizar cookies essenciais para o seu funcionamento e para melhorar a experiência do utilizador.</p>
+                <p>Os cookies permitem:</p>
+                <ul>
+                    <li>Garantir funcionalidades básicas do site;</li>
+                    <li>Melhorar desempenho e navegação;</li>
+                    <li>Compreender padrões de utilização da plataforma.</li>
+                </ul>
+                <p>O utilizador pode configurar o seu navegador para recusar cookies ou alertar para a sua utilização, podendo isso afetar o correto funcionamento do site.</p>
+
+                <h1>Contactos</h1>
+                <p>Para qualquer questão relacionada com:</p>
+                <ul>
+                    <li>Termos de Uso</li>
+                    <li>Política de Privacidade</li>
+                    <li>Proteção de Dados</li>
+                    <li>Cookies</li>
+                </ul>
+                <p>O utilizador pode contactar a FT através do e-mail <a href="mailto:floresceterapias@gmail.com">floresceterapias@gmail.com</a> ou <a href="mailto:barata.rita@outlook.com">barata.rita@outlook.com</a>.</p>
+                <p><em>Esta política de privacidade foi atualizada a 13 de fevereiro de 2026.</em></p>
+            `;
+        }
+
+        if (window.tinymce && tinymce.get('legal-editor')) {
+            tinymce.get('legal-editor').setContent(content);
+        } else {
+            document.getElementById('legal-editor').value = content;
+        }
+
+    } catch (e) {
+        console.error("Error loading legal content:", e);
+    }
+}
+
+async function handleLegalSubmit() {
+    const btn = document.querySelector('#legal-form button');
+    const originalText = btn ? btn.textContent : 'Guardar';
+    if (btn) btn.textContent = "A guardar...";
+
+    let content = "";
+    if (window.tinymce && tinymce.get('legal-editor')) {
+        content = tinymce.get('legal-editor').getContent();
+    } else {
+        content = document.getElementById('legal-editor').value;
     }
 
-    // Header Listeners
-    const headerForm = document.getElementById('header-form');
-    if (headerForm) headerForm.addEventListener('submit', handleHeaderSubmit);
+    try {
+        await window.db.collection('site_content').doc('legal').set({
+            html_content: content,
+            updated_at: new Date().toISOString()
+        }, { merge: true });
 
-    // Theme Listeners
-    const themeForm = document.getElementById('theme-form');
-    if (themeForm) themeForm.addEventListener('submit', handleThemeSubmit);
+        alert("Termos e Privacidade atualizados com sucesso!");
+    } catch (error) {
+        console.error("Error saving Legal content:", error);
+        alert("Erro ao guardar conteúdo legal.");
+    } finally {
+        if (btn) btn.textContent = originalText;
+    }
+}
 
-    const themeResetBtn = document.getElementById('theme-reset-btn');
-    if (themeResetBtn) themeResetBtn.addEventListener('click', resetThemeSettings);
+async function loadFooterContent() {
+    try {
+        const doc = await window.db.collection('site_content').doc('main').get();
+        let data = {};
 
-    loadSiteContent();
-    loadThemeSettings();
-    loadHeaderSettings();
-    setupHexListeners();
+        if (doc.exists && doc.data().footer) {
+            data = doc.data().footer;
+        } else {
+            // Fallback to LocalStorage
+            const local = localStorage.getItem('site_footer');
+            if (local) {
+                console.log("CMS: Loading footer from LocalStorage fallback.");
+                data = JSON.parse(local);
+            }
+        }
 
-    // Init Admin Panels
-    if (window.loadServices) window.loadServices();
-    if (window.loadMembers) window.loadMembers();
-});
+        // Defaults if still empty
+        if (!data.title) data.title = "Floresce Terapias";
+        if (!data.copyright) data.copyright = "© " + new Date().getFullYear() + " Floresce Terapias. Todos os direitos reservados.";
+        if (data.dev_credit === undefined) data.dev_credit = "Developed by Antigravity"; // Use undefined check so empty string is valid
+
+        // Populate Inputs
+        if (document.getElementById('footer-title-input')) document.getElementById('footer-title-input').value = data.title || '';
+        if (document.getElementById('footer-copyright-input')) document.getElementById('footer-copyright-input').value = data.copyright || '';
+        if (document.getElementById('footer-dev-input')) document.getElementById('footer-dev-input').value = data.dev_credit || '';
+
+        if (data.bg_color) document.getElementById('footer-bg-hex').value = data.bg_color;
+        if (data.text_color) document.getElementById('footer-text-hex').value = data.text_color;
+
+        // Also update color pickers
+        if (data.bg_color && document.getElementById('footer-bg-color')) document.getElementById('footer-bg-color').value = data.bg_color;
+        if (data.text_color && document.getElementById('footer-text-color')) document.getElementById('footer-text-color').value = data.text_color;
+
+        // Update Preview Elements
+        if (document.getElementById('footer-title')) document.getElementById('footer-title').innerHTML = data.title;
+        if (document.getElementById('footer-copyright')) document.getElementById('footer-copyright').innerHTML = data.copyright;
+        if (document.getElementById('footer-credit')) document.getElementById('footer-credit').innerHTML = data.dev_credit;
+
+    } catch (e) {
+        console.error("Error loading footer content:", e);
+    }
+}
+
+async function loadContactContent() {
+    try {
+        const doc = await window.db.collection('site_content').doc('main').get();
+        if (doc.exists) {
+            const data = doc.data().contact || {};
+            if (document.getElementById('contact-title-input')) document.getElementById('contact-title-input').value = data.title || '';
+            if (document.getElementById('contact-subtitle-input')) document.getElementById('contact-subtitle-input').value = data.subtitle || '';
+            if (document.getElementById('contact-email-input')) document.getElementById('contact-email-input').value = data.email || '';
+            if (document.getElementById('contact-phone-input')) document.getElementById('contact-phone-input').value = data.phone || '';
+            if (document.getElementById('contact-instagram-input')) document.getElementById('contact-instagram-input').value = data.instagram || '';
+        }
+    } catch (e) {
+        console.error("Error loading contact content:", e);
+    }
+}
+
+const homeAboutForm = document.getElementById('home-about-form');
+if (homeAboutForm) homeAboutForm.addEventListener('submit', handleHomeAboutSubmit);
+
+// Footer Listener
+const footerForm = document.getElementById('footer-form');
+if (footerForm) {
+    footerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        handleFooterSubmit();
+    });
+}
+
+// Contact Listener
+const contactForm = document.getElementById('contact-form');
+if (contactForm) {
+    contactForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        handleContactSubmit();
+    });
+}
+
+// Header Listeners
+const headerForm = document.getElementById('header-form');
+if (headerForm) headerForm.addEventListener('submit', handleHeaderSubmit);
+
+// Theme Listeners
+const themeForm = document.getElementById('theme-form');
+if (themeForm) themeForm.addEventListener('submit', handleThemeSubmit);
+
+const themeResetBtn = document.getElementById('theme-reset-btn');
+if (themeResetBtn) themeResetBtn.addEventListener('click', resetThemeSettings);
+
+loadSiteContent();
+loadThemeSettings();
+loadHeaderSettings();
+loadFooterContent();
+setupHexListeners();
+
+// Init Admin Panels
+if (window.loadServices) window.loadServices();
+if (window.loadMembers) window.loadMembers();
 // --- Member Management Logic ---
 
 window.membersCache = {};

@@ -995,7 +995,40 @@
 
                                 <div class="form-group">
                                     <label>URL do Recurso (MP3, YouTube, PDF)</label>
-                                    <input type="text" id="med-url" required placeholder="https://...">
+                                    <input type="text" id="med-url" placeholder="https://...">
+
+                                    <div id="current-resource-display"
+                                        class="hidden p-10 bg-white border-radius-8 mb-10 resource-display">
+                                        <div class="flex-between-center">
+                                            <div>
+                                                <small class="text-muted block font-xs">Ficheiro/Link Atual:</small>
+                                                <strong id="current-filename"
+                                                    class="font-sm text-primary text-break-all">-</strong>
+                                            </div>
+                                            <button type="button" class="btn-text btn-remove-sm"
+                                                onclick="clearMeditationResource()">REMOVER ❌</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-10 p-10 bg-gray-light border-radius-8 border-light">
+                                        <label class="font-xs text-muted mb-5 block">Ou carregue um ficheiro de Áudio
+                                            (MP3/WAV)</label>
+                                        <input type="file" id="med-audio-file" accept="audio/*"
+                                            class="font-xs full-width">
+
+                                        <!-- Progress Bar -->
+                                        <div id="audio-upload-progress" class="hidden mt-10">
+                                            <div class="progress-bar-container progress-track">
+                                                <div id="audio-progress-bar" class="progress-fill">
+                                                </div>
+                                            </div>
+                                            <p id="audio-progress-text" class="font-xs text-center mt-5 text-muted">A
+                                                carregar... 0%</p>
+                                        </div>
+
+                                        <small class="font-xs text-muted block mt-2">Isto irá gerar um link e preencher
+                                            o campo acima automaticamente.</small>
+                                    </div>
                                 </div>
 
                                 <div class="form-group">
@@ -1106,6 +1139,24 @@
                             <input type="text" id="contact-instagram-input" placeholder="Ex: @floresceterapias">
                         </div>
                         <button type="submit" class="cta-button primary full-width">Guardar Contactos</button>
+                    </form>
+                </div>
+            </details>
+
+            <!-- 10. LEGAL CONTENT MANAGEMENT -->
+            <details class="admin-card draggable-card" id="card-legal" draggable="true">
+                <summary class="admin-card-header">
+                    <span><i data-lucide="scale" class="admin-icon"></i> Gestão de Termos e Privacidade</span>
+                </summary>
+                <div class="admin-card-body">
+                    <form id="legal-form" class="auth-form">
+                        <div class="form-group">
+                            <label>Conteúdo (Termos, Privacidade, Cookies)</label>
+                            <textarea id="legal-editor" rows="20" class="admin-textarea"></textarea>
+                            <p class="text-sm text-muted mt-5">Use este editor para formatar o texto legal do site.</p>
+                        </div>
+                        <button type="submit" class="cta-button primary full-width">Guardar Termos e
+                            Privacidade</button>
                     </form>
                 </div>
             </details>
@@ -1395,7 +1446,7 @@
     <script src="init-firebase.js?v=2"></script>
 
     <!-- CMS Logic -->
-    <script src="cms.js?v=7.1.0"></script>
+    <script src="cms.js?v=7.2.0"></script>
     <script>
         // Initialize CMS
         if (window.initCMS) {
@@ -1625,8 +1676,7 @@
             <div class="footer-content">
                 <p class="logo-text" id="footer-title"></p>
                 <div class="footer-links">
-                    <a href="privacidade.html">Privacidade</a>
-                    <a href="termos.html">Termos</a>
+                    <a href="termos.html">Termos e Privacidade</a>
                 </div>
                 <p class="copyright" id="footer-copyright"></p>
                 <p class="developer-credit" id="footer-credit"></p>
