@@ -158,8 +158,17 @@ class DashboardCarousel {
     // --- 2. Navigation ---
     getCardWidth() {
         const card = this.carousel.querySelector('.carousel-card');
-        // Default to 330 if not found or not rendered (width 0)
-        return (card && card.offsetWidth > 0) ? card.offsetWidth + 30 : 330;
+        if (!card || card.offsetWidth === 0) return 330; // Fallback
+
+        // Dynamic Gap
+        let gap = 30; // Default
+        const style = window.getComputedStyle(this.carousel);
+        const gapStr = style.columnGap || style.gap;
+        if (gapStr && gapStr !== 'normal') {
+            gap = parseFloat(gapStr);
+        }
+
+        return card.offsetWidth + gap;
     }
 
     moveNext() {
@@ -288,15 +297,22 @@ class DashboardCarousel {
         if (!this.enableLoop) return;
         if (this.isDown) return;
         const scrollLeft = this.carousel.scrollLeft;
-        const scrollWidth = this.carousel.scrollWidth;
-        const setWidth = scrollWidth / 3; // roughly one set
 
-        // Thresholds
+        // Precise Set Calculation
+        const cardCount = this.carousel.querySelectorAll('.carousel-card:not(.clone)').length;
+        if (cardCount === 0) return;
+
+        const cardWidth = this.getCardWidth(); // Includes gap
+        const setWidth = cardCount * cardWidth;
+
+        const maxScroll = this.carousel.scrollWidth - this.carousel.clientWidth;
+
+        // Thresholds (Teleport)
         if (scrollLeft <= 50) {
             this.carousel.style.scrollBehavior = 'auto';
             this.carousel.scrollLeft = setWidth + scrollLeft;
             requestAnimationFrame(() => this.carousel.style.scrollBehavior = '');
-        } else if (scrollLeft >= (scrollWidth - this.carousel.clientWidth - 50)) {
+        } else if (scrollLeft >= (maxScroll - 50)) {
             this.carousel.style.scrollBehavior = 'auto';
             this.carousel.scrollLeft = scrollLeft - setWidth;
             requestAnimationFrame(() => this.carousel.style.scrollBehavior = '');

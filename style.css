@@ -4032,6 +4032,28 @@ body.auth-page {
     flex-wrap: wrap;
 }
 
+/* =========================================
+   Universal Carousel Container
+   ========================================= */
+.carousel-container {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    gap: 30px;
+    padding-bottom: 20px;
+    /* Space for scrollbar or shadow */
+    width: 100%;
+    /* Hide Scrollbar */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.carousel-container::-webkit-scrollbar {
+    display: none;
+}
+
 /* Mobile Responsiveness for Services */
 @media (max-width: 768px) {
     .service-detail-header {
