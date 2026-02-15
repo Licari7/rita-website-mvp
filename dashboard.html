@@ -1526,8 +1526,8 @@
             document.querySelector('.carousel-wrapper').classList.add('hidden');
             document.getElementById('meditations-grid-view').classList.remove('hidden');
 
-            // 2. Set Title
-            document.getElementById('grid-view-title').innerText = group.title;
+            // 2. Set Title (Element removed, skipping)
+            // document.getElementById('grid-view-title').innerText = group.title;
             // Also update main dashboard title as requested
             const mainTitle = document.getElementById('main-dashboard-title');
             if (mainTitle) mainTitle.innerText = group.title;
