@@ -146,7 +146,7 @@
 
     <header class="theme-header">
         <h1 class="section-title" id="theme-title">A carregar...</h1>
-        <p>Recursos exclusivos para a tua jornada.</p>
+        <p id="theme-subtitle"></p>
     </header>
 
     <main class="container">
@@ -230,7 +230,7 @@
                 document.title = `${pageTitle.replace(/<[^>]*>?/gm, '')} | Floresce Terapias`;
 
                 // Add Subtitle to Header
-                const headerP = document.querySelector('.theme-header p');
+                const headerP = document.getElementById('theme-subtitle');
                 if (headerP) headerP.innerHTML = pageSubtitle;
 
                 // 2. UPDATE VISUALS (Background Color based on 'Theme' tag)
@@ -247,7 +247,7 @@
                 document.querySelector('.theme-header').style.backgroundColor = bgHex;
                 // Ensure text contrast if dark bg
                 document.querySelector('.theme-header').style.color = '#fff';
-                document.querySelector('.theme-header p').style.color = 'rgba(255,255,255, 0.9)';
+                if (headerP) headerP.style.color = 'rgba(255,255,255, 0.9)';
 
 
                 // 3. RENDER CONTENT
