@@ -210,7 +210,7 @@
     <!-- Main Content -->
     <main class="container section-padding">
         <header class="section-header text-center mb-40">
-            <h1 class="section-title">As Minhas Meditações</h1>
+            <h1 id="main-dashboard-title" class="section-title">As Minhas Meditações</h1>
             <!-- Removed welcome message from here -->
             <!-- <p>Acede aqui aos teus recursos e meditações.</p> -->
             <button id="admin-toggle-btn" class="cta-button admin-toggle-btn">
@@ -1495,6 +1495,9 @@
 
             // 2. Set Title
             document.getElementById('grid-view-title').innerText = group.title;
+            // Also update main dashboard title as requested
+            const mainTitle = document.getElementById('main-dashboard-title');
+            if (mainTitle) mainTitle.innerText = group.title;
 
             // 3. Render Grid Items
             const gridContent = document.getElementById('meditations-grid-content');
@@ -1543,6 +1546,9 @@
         window.closeGroupView = () => {
             document.querySelector('.carousel-wrapper').classList.remove('hidden');
             document.getElementById('meditations-grid-view').classList.add('hidden');
+            // Revert main title
+            const mainTitle = document.getElementById('main-dashboard-title');
+            if (mainTitle) mainTitle.innerText = 'As Minhas Meditações';
         };
 
     </script>
