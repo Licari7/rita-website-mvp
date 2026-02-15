@@ -20,56 +20,7 @@
         rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body {
-            background-color: #DAC2B2;
-        }
-
-        .service-detail-header {
-            background: transparent;
-            /* Allow body color to show or keep alt? User said "just body", but usually header matches. Let's assume transparent or same color. */
-            /* safer to just set body and see, but typically 'just body' implies the whole page canvas */
-            /* Actually, if I just set body, and header has a diff color, it might look odd. 
-               But 'change just the body' might mean 'don't change the text colors etc'.
-               I'll stick to body. */
-        }
-
-        .service-detail-header {
-            background: var(--bg-color-alt);
-            padding: 200px 20px 30px;
-            text-align: center;
-        }
-
-        .service-detail-content {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0px 20px 60px;
-            font-size: 1.1rem;
-            line-height: 1.8;
-            color: var(--text-color);
-        }
-
-        .testimonials-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            margin-top: 40px;
-        }
-
-        .testimonial-card-highlight {
-            background: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            font-style: italic;
-        }
-
-        .cta-actions {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin-top: 60px;
-            flex-wrap: wrap;
-        }
+        /* Styles moved to style.css */
     </style>
 </head>
 

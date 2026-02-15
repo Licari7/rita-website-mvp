@@ -3987,3 +3987,82 @@ body.auth-page {
     justify-content: center;
     text-align: center;
 }
+
+/* =========================================
+   Service Detail Styles (Moved from Inline)
+   ========================================= */
+.service-detail-header {
+    background: var(--bg-color-alt);
+    padding: 150px 20px 60px;
+    text-align: center;
+}
+
+.service-detail-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 60px 20px;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--color-text-main);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 40px;
+}
+
+.testimonial-card-highlight {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    font-style: italic;
+    color: #666;
+}
+
+.cta-actions {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 60px;
+    flex-wrap: wrap;
+}
+
+/* Mobile Responsiveness for Services */
+@media (max-width: 768px) {
+    .service-detail-header {
+        padding: 100px 20px 40px;
+    }
+
+    .service-detail-content {
+        padding: 40px 20px;
+        font-size: 1rem;
+    }
+
+    .testimonials-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Ensure internal paragraph text breaks if needed */
+    .service-detail-content p {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .cta-actions {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .cta-actions .btn,
+    .cta-actions .btn-outline {
+        width: 100%;
+        text-align: center;
+        display: block;
+    }
+}
