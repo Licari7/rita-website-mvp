@@ -1,12 +1,15 @@
 // No imports needed - using global window.db and window.auth from init-firebase.js (Compat SDK)
 
 // Admin Emails
-const ADMIN_EMAILS = [
-    "floresceterapias@gmail.com",
-    "barata.rita@outlook.com",
-    "baratacarlos65@gmail.com",
-    "carlos.barata@example.com"
-];
+// Admin Emails
+if (typeof ADMIN_EMAILS === 'undefined') {
+    var ADMIN_EMAILS = [
+        "floresceterapias@gmail.com",
+        "barata.rita@outlook.com",
+        "baratacarlos65@gmail.com",
+        "carlos.barata@example.com"
+    ];
+}
 
 // Helper: Verify Status (Global for Dashboard.html)
 window.verifyUserStatus = async (email) => {
@@ -1893,8 +1896,9 @@ async function loadSiteContent() {
             if (footerCredit && data.footer.dev_credit !== undefined) footerCredit.innerHTML = data.footer.dev_credit;
 
             // Update Footer Styles dynamically
-            document.documentElement.style.setProperty('--color-footer-bg', fBg);
-            document.documentElement.style.setProperty('--color-footer-text', fText);
+            // Update Footer Styles dynamically
+            if (data.footer.bg_color) document.documentElement.style.setProperty('--color-footer-bg', data.footer.bg_color);
+            if (data.footer.text_color) document.documentElement.style.setProperty('--color-footer-text', data.footer.text_color);
 
             // FIX: Sync to LocalStorage so main.js has fresh data immediately
             localStorage.setItem('site_footer', JSON.stringify(data.footer));
@@ -2510,12 +2514,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (legalForm) legalForm.addEventListener('submit', (e) => { e.preventDefault(); handleLegalSubmit(); });
 
     // Load Data
-    loadHomeContent();
-    loadAboutContent();
+    loadSiteContent(); // Covers Home, About, Footer, Contact
     loadHeaderSettings();
     loadThemeSettings(); // Load Theme Settings on Init
-    loadFooterContent(); // Load Footer
-    loadContactContent(); // Load Contacts
     loadLegalContent();   // Load Legal
 });
 
