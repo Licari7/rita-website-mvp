@@ -2503,20 +2503,67 @@ async function resetThemeSettings() {
 // Attach listeners
 document.addEventListener('DOMContentLoaded', () => {
     // ... existing existing listeners logic if any ...
-    const homeForm = document.getElementById('home-content-form');
-    if (homeForm) homeForm.addEventListener('submit', handleHomeSubmit);
 
-    const aboutForm = document.getElementById('about-content-form');
-    if (aboutForm) aboutForm.addEventListener('submit', handleAboutSubmit);
+    // NEW: Save Global Card Text (from Meditations Panel)
+    window.saveCardTextOnly = async () => {
+        const btn = document.getElementById('save-card-text-btn');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        btn.textContent = "A guardar...";
+        btn.disabled = true;
 
-    const footerForm = document.getElementById('footer-form');
-    if (footerForm) footerForm.addEventListener('submit', (e) => { e.preventDefault(); handleFooterSubmit(); });
+        try {
+            const cardText = document.getElementById('theme-card-text').value;
 
-    const contactForm = document.getElementById('contact-form');
-    if (contactForm) contactForm.addEventListener('submit', (e) => { e.preventDefault(); handleContactSubmit(); });
+            // 1. Get current theme to avoid overwriting other fields if they aren't loaded or are in another panel
+            // However, since we load everything in loadThemeSettings, we can construct the object or specific update.
+            // Safer to do a specific update or merge.
+            // Since we store it in 'theme' object, let's use merge.
 
-    const legalForm = document.getElementById('legal-form');
-    if (legalForm) legalForm.addEventListener('submit', (e) => { e.preventDefault(); handleLegalSubmit(); });
+            const updateData = {
+                theme: {
+                    card_text: cardText
+                }
+            };
+
+            // FIRESTORE MERGE (Deep merge might differ depending on library, but usually sets/overwrites field)
+            // To be safe with nested fields without overwriting the whole 'theme' map if we only send one key:
+            // Firestore 'set' with margin:true merges top level fields. Nested maps might be replaced if not dot-notated.
+            // Let's use dot notation for update if possible, or read-modify-write.
+            // SIMPLEST: Read current theme from LocalStorage (fastest) or DB, update field, save back.
+
+            let currentTheme = {};
+            try {
+                const doc = await window.db.collection('site_content').doc('main').get();
+                if (doc.exists && doc.data().theme) {
+                    currentTheme = doc.data().theme;
+                }
+            } catch (e) {
+                console.log("Error reading current theme for update", e);
+            }
+
+            // Update just the text
+            currentTheme.card_text = cardText;
+
+            // Save back entire theme object to ensure consistency
+            await window.db.collection('site_content').doc('main').set({
+                theme: currentTheme
+            }, { merge: true });
+
+            // Update LocalStorage
+            localStorage.setItem('site_theme', JSON.stringify(currentTheme));
+
+            alert("Texto global dos cartões atualizado!");
+
+        } catch (error) {
+            console.error("Error saving card text:", error);
+            alert("Erro ao guardar texto.");
+        } finally {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
+    };
+
 
     // Load Data
     loadSiteContent(); // Covers Home, About, Footer, Contact
