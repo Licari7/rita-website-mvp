@@ -2169,11 +2169,14 @@ const DEFAULT_THEME = {
 async function loadThemeSettings() {
     try {
         const doc = await window.db.collection('site_content').doc('main').get();
+        let data = {}; // Default empty
         if (doc.exists) {
-            const data = doc.data().theme || {};
+            data = doc.data().theme || {};
 
             // Set inputs to saved values or defaults
+            // Legacy/Global fallback (kept for safety or migration)
             if (document.getElementById('theme-card-text')) document.getElementById('theme-card-text').value = data.card_text || '';
+
             if (document.getElementById('theme-bg')) document.getElementById('theme-bg').value = data.bg_color || DEFAULT_THEME.bg_color;
             if (document.getElementById('theme-text')) document.getElementById('theme-text').value = data.text_color || DEFAULT_THEME.text_color;
             if (document.getElementById('theme-primary')) document.getElementById('theme-primary').value = data.primary_color || DEFAULT_THEME.primary_color;
@@ -2181,6 +2184,48 @@ async function loadThemeSettings() {
             if (document.getElementById('theme-secondary-1')) document.getElementById('theme-secondary-1').value = data.secondary_beige || DEFAULT_THEME.secondary_beige;
             if (document.getElementById('theme-secondary-2')) document.getElementById('theme-secondary-2').value = data.secondary_blue || DEFAULT_THEME.secondary_blue;
             if (document.getElementById('theme-footer')) document.getElementById('theme-footer').value = data.footer_bg || DEFAULT_THEME.footer_bg;
+
+            // NEW: Dynamic Theme Texts
+            const container = document.getElementById('theme-card-texts-container');
+            if (container) {
+                container.innerHTML = '<p class="font-xs text-muted">A carregar temas...</p>';
+
+                // We need to know specific themes to generate inputs.
+                // Using meditations collection to find all unique themes.
+                const medSnapshot = await window.db.collection('meditations').get();
+                const themes = new Set();
+                medSnapshot.forEach(doc => {
+                    const m = doc.data();
+                    const t = m.card_title || m.title || 'Sem Título'; // Grouping key matches loadMeditations
+                    themes.add(t);
+                });
+
+                const savedTexts = data.card_texts || {};
+                let html = '';
+
+                if (themes.size === 0) {
+                    html = '<p class="font-xs text-muted">Nenhum tema encontrado (adicione meditações primeiro).</p>';
+                } else {
+                    const sortedThemes = Array.from(themes).sort();
+                    sortedThemes.forEach(themeName => {
+                        // Safe ID for attributes
+                        const safeKey = themeName; // We use the name as key in the map
+                        const val = savedTexts[safeKey] || ''; // Saved value or empty
+
+                        html += `
+                            <div class="cms-item compact" style="padding: 10px; border: 1px solid #eee; border-radius: 4px;">
+                                <label class="block-mb-5 font-xs font-weight-600" style="color: var(--color-primary)">${themeName}</label>
+                                <input type="text" 
+                                    class="form-input font-xs" 
+                                    placeholder="Ex: Explorar..." 
+                                    value="${val}" 
+                                    data-theme-key="${safeKey}">
+                            </div>
+                        `;
+                    });
+                }
+                container.innerHTML = html;
+            }
 
             // Update HEX inputs
             updateHexInputs();
@@ -2504,34 +2549,29 @@ async function resetThemeSettings() {
 document.addEventListener('DOMContentLoaded', () => {
     // ... existing existing listeners logic if any ...
 
-    // NEW: Save Global Card Text (from Meditations Panel)
-    window.saveCardTextOnly = async () => {
-        const btn = document.getElementById('save-card-text-btn');
+    // NEW: Save Theme Specific Card Texts (from Meditations Panel)
+    window.saveThemeCardTexts = async () => {
+        const btn = document.getElementById('save-card-texts-btn');
         if (!btn) return;
         const originalText = btn.textContent;
         btn.textContent = "A guardar...";
         btn.disabled = true;
 
         try {
-            const cardText = document.getElementById('theme-card-text').value;
+            // 1. Gather all inputs
+            const container = document.getElementById('theme-card-texts-container');
+            const inputs = container.querySelectorAll('input[data-theme-key]');
+            const cardTexts = {};
 
-            // 1. Get current theme to avoid overwriting other fields if they aren't loaded or are in another panel
-            // However, since we load everything in loadThemeSettings, we can construct the object or specific update.
-            // Safer to do a specific update or merge.
-            // Since we store it in 'theme' object, let's use merge.
-
-            const updateData = {
-                theme: {
-                    card_text: cardText
+            inputs.forEach(input => {
+                const key = input.getAttribute('data-theme-key');
+                const val = input.value.trim();
+                if (key) {
+                    cardTexts[key] = val;
                 }
-            };
+            });
 
-            // FIRESTORE MERGE (Deep merge might differ depending on library, but usually sets/overwrites field)
-            // To be safe with nested fields without overwriting the whole 'theme' map if we only send one key:
-            // Firestore 'set' with margin:true merges top level fields. Nested maps might be replaced if not dot-notated.
-            // Let's use dot notation for update if possible, or read-modify-write.
-            // SIMPLEST: Read current theme from LocalStorage (fastest) or DB, update field, save back.
-
+            // 2. Get current theme to merge
             let currentTheme = {};
             try {
                 const doc = await window.db.collection('site_content').doc('main').get();
@@ -2542,22 +2582,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("Error reading current theme for update", e);
             }
 
-            // Update just the text
-            currentTheme.card_text = cardText;
+            // 3. Update the map (card_texts)
+            // We replace the whole map or merge? Let's replace the map with current state of inputs.
+            currentTheme.card_texts = cardTexts;
 
-            // Save back entire theme object to ensure consistency
+            // 4. Save
             await window.db.collection('site_content').doc('main').set({
                 theme: currentTheme
             }, { merge: true });
 
-            // Update LocalStorage
+            // 5. Update LocalStorage
             localStorage.setItem('site_theme', JSON.stringify(currentTheme));
 
-            alert("Texto global dos cartões atualizado!");
+            alert("Textos dos cartões atualizados!");
 
         } catch (error) {
-            console.error("Error saving card text:", error);
-            alert("Erro ao guardar texto.");
+            console.error("Error saving card texts:", error);
+            alert("Erro ao guardar textos.");
         } finally {
             btn.textContent = originalText;
             btn.disabled = false;
