@@ -1430,6 +1430,7 @@
                     prevBtnId: 'themes-prev-btn',
                     nextBtnId: 'themes-next-btn',
                     data: groupArray, // Pass pre-processed groups
+                    enableLoop: false, // User requested static view for few items
                     renderCard: (group) => {
                         // Custom Card Renderer for Groups
                         const count = group.items.length;
@@ -1460,14 +1461,12 @@
                         // We use .replace for quotes to avoid syntax errors in string injection
                         const safeTitle = group.title.replace(/'/g, "\\'");
 
+                        // CLEANED UI: No Icon or Text Overlay in Image
                         return `
                                 <div class="carousel-card cursor-pointer" onclick="openGroupView('${safeTitle}')">
                                     <div class="carousel-image relative" style="${bgStyle}">
                                         <div style="${overlayStyle}"></div>
-                                        <div style="position:relative; z-index:2; text-align:center;">
-                                            <i data-lucide="${iconName}" size="32" color="#ffffff"></i>
-                                            <span class="block text-white font-xs mt-5 opacity-80">${count} ${resourceLabel}</span>
-                                        </div>
+                                        <!-- Removed Icon and Text Overlay as requested -->
                                     </div>
                                     <div class="carousel-content">
                                         <h3>${group.title}</h3>

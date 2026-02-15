@@ -6,6 +6,9 @@ class DashboardCarousel {
         this.collectionName = config.collectionName || 'meditations';
         this.autoScrollDelay = config.autoScrollDelay || 3000;
 
+        // New: Loop Control (Default true for backward compatibility)
+        this.enableLoop = (config.enableLoop !== undefined) ? config.enableLoop : true;
+
         // New: Allow custom renderer and pre-loaded data
         this.renderCard = config.renderCard || null;
         this.data = config.data || null;
@@ -36,10 +39,16 @@ class DashboardCarousel {
         if (this.dataLoaded) {
             this.setupNavigation();
             this.setupDrag();
-            this.setupClones();
-            this.startAutoScroll();
-            // Setup teleport scroll listener
-            this.carousel.addEventListener('scroll', () => this.handleTeleport());
+            if (this.enableLoop) {
+                this.setupClones();
+                this.startAutoScroll();
+                // Setup teleport scroll listener
+                this.carousel.addEventListener('scroll', () => this.handleTeleport());
+            } else {
+                // If loop disabled, we might still want auto-scroll? 
+                // Usually "pause" implies no auto-scroll either if it fits.
+                // Let's assume enableLoop also controls auto-scroll for now, or check content width.
+            }
         }
     }
 
@@ -195,7 +204,7 @@ class DashboardCarousel {
             this.carousel.style.scrollSnapType = 'x mandatory';
             // Delay reset dragging flag
             setTimeout(() => { this.isDragging = false; }, 50);
-            this.startAutoScroll();
+            if (this.enableLoop) this.startAutoScroll();
         };
 
         const move = (e) => {
@@ -223,6 +232,7 @@ class DashboardCarousel {
 
     // --- 4. Auto Scroll ---
     startAutoScroll() {
+        if (!this.enableLoop) return;
         clearInterval(this.autoScrollInterval);
         this.autoScrollInterval = setInterval(() => {
             if (this.isDown || document.hidden) return;
@@ -233,12 +243,14 @@ class DashboardCarousel {
     }
 
     resetAutoScroll() {
+        if (!this.enableLoop) return;
         clearInterval(this.autoScrollInterval);
         this.startAutoScroll();
     }
 
     // --- 5. Infinite Loop (Clones) ---
     setupClones() {
+        if (!this.enableLoop) return;
         if (this.clonesSetup) return; // Prevent double setup
         // Only if we have multiple items
         if (this.carousel.querySelectorAll('.carousel-card:not(.clone)').length < 2) return;
@@ -273,6 +285,7 @@ class DashboardCarousel {
     }
 
     handleTeleport() {
+        if (!this.enableLoop) return;
         if (this.isDown) return;
         const scrollLeft = this.carousel.scrollLeft;
         const scrollWidth = this.carousel.scrollWidth;
