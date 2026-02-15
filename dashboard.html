@@ -1243,6 +1243,13 @@
                         </div>
 
                         <div class="form-group mb-20">
+                            <label class="block-mb-8">Texto dos Cartões (Dashboard)</label>
+                            <input type="text" id="theme-card-text" placeholder="Ex: Explorar coleção..."
+                                class="form-input">
+                            <span class="admin-help-text-inline">Texto exibido nos cartões de cada tema.</span>
+                        </div>
+
+                        <div class="form-group mb-20">
                             <label class="block-mb-8">Fundo do Rodapé</label>
                             <div class="flex-align-center-gap-10">
                                 <input type="color" id="theme-footer" value="#F7F2E0" class="color-preview-box-large">
@@ -1461,6 +1468,15 @@
                         // We use .replace for quotes to avoid syntax errors in string injection
                         const safeTitle = group.title.replace(/'/g, "\\'");
 
+                        // Card Text Logic
+                        let cardText = "Explorar coleção...";
+                        try {
+                            const savedTheme = JSON.parse(localStorage.getItem('site_theme')) || {};
+                            if (savedTheme.card_text && savedTheme.card_text.trim() !== "") {
+                                cardText = savedTheme.card_text;
+                            }
+                        } catch (e) { }
+
                         // CLEANED UI: No Icon or Text Overlay in Image
                         return `
                                 <div class="carousel-card cursor-pointer" onclick="openGroupView('${safeTitle}')">
@@ -1470,7 +1486,7 @@
                                     </div>
                                     <div class="carousel-content">
                                         <h3>${group.title}</h3>
-                                        <p class="font-xs text-muted">Explorar coleção...</p>
+                                        <p class="font-xs text-muted">${cardText}</p>
                                     </div>
                                 </div>
                             `;

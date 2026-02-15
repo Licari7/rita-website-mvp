@@ -2173,6 +2173,7 @@ async function loadThemeSettings() {
             const data = doc.data().theme || {};
 
             // Set inputs to saved values or defaults
+            if (document.getElementById('theme-card-text')) document.getElementById('theme-card-text').value = data.card_text || '';
             if (document.getElementById('theme-bg')) document.getElementById('theme-bg').value = data.bg_color || DEFAULT_THEME.bg_color;
             if (document.getElementById('theme-text')) document.getElementById('theme-text').value = data.text_color || DEFAULT_THEME.text_color;
             if (document.getElementById('theme-primary')) document.getElementById('theme-primary').value = data.primary_color || DEFAULT_THEME.primary_color;
@@ -2423,7 +2424,9 @@ async function handleThemeSubmit(e) {
             header_bg: document.getElementById('theme-header').value,
             secondary_beige: document.getElementById('theme-secondary-1').value,
             secondary_blue: document.getElementById('theme-secondary-2').value,
-            footer_bg: document.getElementById('theme-footer').value
+            secondary_blue: document.getElementById('theme-secondary-2').value,
+            footer_bg: document.getElementById('theme-footer').value,
+            card_text: document.getElementById('theme-card-text').value
         };
 
         // 1. Save to Cloud
@@ -2474,7 +2477,9 @@ async function resetThemeSettings() {
         if (document.getElementById('theme-header')) document.getElementById('theme-header').value = DEFAULT_THEME.header_bg;
         if (document.getElementById('theme-secondary-1')) document.getElementById('theme-secondary-1').value = DEFAULT_THEME.secondary_beige;
         if (document.getElementById('theme-secondary-2')) document.getElementById('theme-secondary-2').value = DEFAULT_THEME.secondary_blue;
+        if (document.getElementById('theme-secondary-2')) document.getElementById('theme-secondary-2').value = DEFAULT_THEME.secondary_blue;
         if (document.getElementById('theme-footer')) document.getElementById('theme-footer').value = DEFAULT_THEME.footer_bg;
+        if (document.getElementById('theme-card-text')) document.getElementById('theme-card-text').value = '';
 
         updateHexInputs(); // Update the text inputs too
 
