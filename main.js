@@ -209,24 +209,26 @@ document.addEventListener('DOMContentLoaded', () => {
         contactForm.addEventListener('submit', (e) => {
             e.preventDefault();
 
-            // In a real scenario, this would send data to a backend
-            const formData = new FormData(contactForm);
-            const name = formData.get('name');
-            const type = formData.get('type');
-
             const btn = contactForm.querySelector('button[type="submit"]');
             const originalText = btn.textContent;
 
             btn.textContent = 'Enviando...';
             btn.disabled = true;
 
-            // Simulate API call
-            setTimeout(() => {
-                alert(`Obrigado, ${name}! Recebemos a sua mensagem sobre "${type}". Entraremos em contacto brevemente.`);
-                contactForm.reset();
-                btn.textContent = originalText;
-                btn.disabled = false;
-            }, 1000);
+            // EmailJS Send
+            // serviceID, templateID, formElement
+            emailjs.sendForm('service_8726bv6', 'template_kb6e02m', contactForm)
+                .then(() => {
+                    alert('Obrigado! A sua mensagem foi enviada com sucesso.');
+                    contactForm.reset();
+                }, (err) => {
+                    console.error('EmailJS Error:', err);
+                    alert('Ocorreu um erro ao enviar a mensagem. Por favor, tente novamente ou contacte-nos pelo WhatsApp.');
+                })
+                .finally(() => {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                });
         });
     }
 

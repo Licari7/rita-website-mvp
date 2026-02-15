@@ -120,7 +120,6 @@
     <!-- Dynamic Terms Content -->
     <section class="section legal-section">
         <div class="container">
-            <h1 class="legal-title">Termos e Privacidade</h1>
             <div id="legal-content-container" class="legal-content">
                 <h2>Cláusula de Aceitação e Consentimento</h2>
                 <p>Ao utilizar este website, o utilizador declara que leu, compreendeu e aceitou os presentes Termos de
@@ -276,7 +275,7 @@
     <!-- Firebase SDK (Required for client-side fetching if not using cms.js) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="firebase-config.js"></script>
+    <script src="init-firebase.js"></script>
 
     <script src="main.js?v=7.1.0"></script>
     <script src="sidebar.js"></script>
@@ -292,14 +291,24 @@
             const db = firebase.firestore();
 
             try {
+                console.log("Attempting to fetch legal content...");
                 const doc = await db.collection('site_content').doc('legal').get();
-                if (doc.exists && doc.data().html_content) {
-                    document.getElementById('legal-content-container').innerHTML = doc.data().html_content;
+                console.log("Doc fetch result:", doc);
+
+                if (doc.exists) {
+                    console.log("Document exists. Data:", doc.data());
+                    if (doc.data().html_content) {
+                        console.log("HTML content found, updating DOM.");
+                        document.getElementById('legal-content-container').innerHTML = doc.data().html_content;
+                    } else {
+                        console.warn("Document exists but 'html_content' field is missing or empty.");
+                    }
+                } else {
+                    console.warn("Document 'site_content/legal' does not exist in Firestore.");
                 }
-                // If not exist, do nothing (keep static content)
             } catch (error) {
                 console.error("Error loading legal content:", error);
-                document.getElementById('legal-content-container').innerHTML = "<p>Erro ao carregar conteúdo.</p>";
+                document.getElementById('legal-content-container').innerHTML = "<p>Erro ao carregar conteúdo: " + error.message + "</p>";
             }
         });
     </script>

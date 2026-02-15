@@ -233,6 +233,30 @@ window.initCMS = function () {
     if (typeof window.loadTestimonialsSelector === 'function') {
         window.loadTestimonialsSelector(new Set());
     }
+
+    // Initialize Legal Content Editor (TinyMCE) & Form
+    const legalCard = document.getElementById('card-legal');
+    if (legalCard) {
+        legalCard.addEventListener('toggle', (e) => {
+            if (legalCard.open) {
+                // Load Content First
+                loadLegalContent().then(() => {
+                    // Initialize TinyMCE if not already done
+                    if (window.tinymce && !tinymce.get('legal-editor')) {
+                        initTinyMCE(document.getElementById('legal-editor').value, 'legal-editor');
+                    }
+                });
+            }
+        });
+    }
+
+    const legalForm = document.getElementById('legal-form');
+    if (legalForm) {
+        legalForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            handleLegalSubmit();
+        });
+    }
 };
 
 // --- HTML Generator Helpers ---
