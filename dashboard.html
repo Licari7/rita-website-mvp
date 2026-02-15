@@ -1327,18 +1327,225 @@
         // UNIFIED DASHBOARD CAROUSEL ENGINE
 
 
-        // --- Instantiate Carousels ---
-        document.addEventListener('DOMContentLoaded', () => {
 
+        // --- RESOURCE GROUPING LOGIC ---
 
-            // 2. Themes/View Carousel
-            new DashboardCarousel({
-                containerId: 'themes-carousel-container',
-                prevBtnId: 'themes-prev-btn',
-                nextBtnId: 'themes-next-btn',
-                collectionName: 'meditations' // Using same data for now
-            });
+        // 1. Grid View Element (Injected dynamically or we can add to DOM)
+        // Let's create the Grid Container programmatically or find a place for it.
+        // We'll insert it right after the carousel wrapper.
+        const carouselSection = document.querySelector('.carousel-wrapper');
+
+        const gridContainer = document.createElement('div');
+        gridContainer.id = 'meditations-grid-view';
+        gridContainer.className = 'hidden';
+        gridContainer.innerHTML = `
+                <div class="flex-between-center mb-20">
+                    <button class="btn-text" onclick="closeGroupView()">
+                        <i data-lucide="arrow-left"></i> Voltar aos Temas
+                    </button>
+                    <h3 id="grid-view-title" class="font-serif text-primary margin-0">Tema</h3>
+                </div>
+                <div id="meditations-grid-content" class="meditations-grid-layout">
+                    <!-- Grid Items Injected Here -->
+                </div>
+            `;
+        if (carouselSection) {
+            carouselSection.parentNode.insertBefore(gridContainer, carouselSection.nextSibling);
+        }
+
+        // Global State for Meditations
+        let allMeditations = [];
+        let groupedMeditations = {};
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadAndGroupMeditations();
         });
+
+        async function loadAndGroupMeditations() {
+            const loader = document.querySelector('.carousel-loader-content');
+
+            try {
+                // Wait for DB
+                let retries = 0;
+                while (!window.db && retries < 20) {
+                    await new Promise(r => setTimeout(r, 200));
+                    retries++;
+                }
+
+                if (!window.db) {
+                    console.error("DB not found");
+                    if (loader) loader.innerHTML = '<p class="text-red">Erro de conexão.</p>';
+                    return;
+                }
+
+                // Fetch All meditations (filtering active in memory if needed or just sorting)
+                const snapshot = await window.db.collection('meditations')
+                    .orderBy('created_at', 'desc')
+                    .get();
+
+                if (snapshot.empty) {
+                    if (loader) loader.innerHTML = '<p>Sem conteúdos disponíveis.</p>';
+                    return;
+                }
+
+                // Process Data
+                allMeditations = [];
+                groupedMeditations = {};
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const item = { id: doc.id, ...data };
+                    allMeditations.push(item);
+
+                    // Group by Title (Theme Name)
+                    // Use 'card_title' as the grouping key as requested
+                    const groupName = item.card_title || 'Outros';
+
+                    if (!groupedMeditations[groupName]) {
+                        groupedMeditations[groupName] = {
+                            title: groupName,
+                            items: [],
+                            // Use the image/color of the first item as the group representative
+                            image_url: item.image_url,
+                            card_bg_type: item.card_bg_type,
+                            card_bg_color: item.card_bg_color,
+                            card_opacity: item.card_opacity,
+                            theme: item.theme
+                        };
+                    }
+                    groupedMeditations[groupName].items.push(item);
+                });
+
+                // Convert to Array for Carousel
+                const groupArray = Object.values(groupedMeditations);
+
+                // clear loader
+                const container = document.getElementById('themes-carousel-container');
+                if (container) container.innerHTML = '';
+
+                // Instantiate Carousel with GROUP Data
+                new DashboardCarousel({
+                    containerId: 'themes-carousel-container',
+                    prevBtnId: 'themes-prev-btn',
+                    nextBtnId: 'themes-next-btn',
+                    data: groupArray, // Pass pre-processed groups
+                    renderCard: (group) => {
+                        // Custom Card Renderer for Groups
+                        const count = group.items.length;
+                        const resourceLabel = count === 1 ? 'recurso' : 'recursos';
+
+                        // Style Logic (Reused from generic, but applied to Group)
+                        let bgStyle;
+                        if (group.card_bg_type === 'color') {
+                            bgStyle = `background-color: ${group.card_bg_color || '#80864f'};`;
+                        } else {
+                            const img = group.image_url || 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=400&q=80';
+                            bgStyle = `background-image: url('${img}'); background-size: cover; background-position: center;`;
+                        }
+
+                        let opVal = (group.card_opacity !== undefined && group.card_opacity !== null) ? group.card_opacity : 0.3;
+                        if (typeof opVal === 'string') opVal = opVal.replace(',', '.');
+                        const overlayStyle = `background-color: rgba(0,0,0, ${opVal}); position: absolute; top:0; left:0; width:100%; height:100%; z-index:1; border-radius: 12px 12px 0 0;`;
+
+                        // Icon mapping
+                        let iconName = 'folder-open'; // Default for group
+                        if (group.theme === 'enraizamento') iconName = 'anchor';
+                        if (group.theme === 'limpeza') iconName = 'droplets';
+                        if (group.theme === 'protecao') iconName = 'shield';
+                        if (group.theme === 'intuicao') iconName = 'eye';
+                        if (group.theme === 'chakras') iconName = 'aperture';
+
+                        // OnClick: Call openGroupView with the group title (key)
+                        // We use .replace for quotes to avoid syntax errors in string injection
+                        const safeTitle = group.title.replace(/'/g, "\\'");
+
+                        return `
+                                <div class="carousel-card cursor-pointer" onclick="openGroupView('${safeTitle}')">
+                                    <div class="carousel-image relative" style="${bgStyle}">
+                                        <div style="${overlayStyle}"></div>
+                                        <div style="position:relative; z-index:2; text-align:center;">
+                                            <i data-lucide="${iconName}" size="32" color="#ffffff"></i>
+                                            <span class="block text-white font-xs mt-5 opacity-80">${count} ${resourceLabel}</span>
+                                        </div>
+                                    </div>
+                                    <div class="carousel-content">
+                                        <h3>${group.title}</h3>
+                                        <p class="font-xs text-muted">Explorar coleção...</p>
+                                    </div>
+                                </div>
+                            `;
+                    }
+                });
+                if (window.lucide) lucide.createIcons();
+
+            } catch (e) {
+                console.error("Error grouping meditations:", e);
+                if (loader) loader.innerHTML = '<p class="text-red">Erro ao carregar recursos.</p>';
+            }
+        }
+
+        // Window functions for interactivity
+        window.openGroupView = (groupTitle) => {
+            const group = groupedMeditations[groupTitle];
+            if (!group) return;
+
+            // 1. Switch Views
+            document.querySelector('.carousel-wrapper').classList.add('hidden');
+            document.getElementById('meditations-grid-view').classList.remove('hidden');
+
+            // 2. Set Title
+            document.getElementById('grid-view-title').innerText = group.title;
+
+            // 3. Render Grid Items
+            const gridContent = document.getElementById('meditations-grid-content');
+            let html = '';
+
+            group.items.forEach(item => {
+                // Item Card Logic (300x300 style)
+                // We can reuse similar styling or make a more detailed card
+
+                let bgStyle;
+                if (item.card_bg_type === 'color') {
+                    bgStyle = `background-color: ${item.card_bg_color || '#80864f'};`;
+                } else {
+                    const img = item.image_url || 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=400&q=80';
+                    bgStyle = `background-image: url('${img}'); background-size: cover; background-position: center;`;
+                }
+
+                let opVal = (item.card_opacity !== undefined) ? item.card_opacity : 0.3;
+                const overlayStyle = `background-color: rgba(0,0,0, ${opVal}); position: absolute; top:0; left:0; width:100%; height:100%; z-index:1; border-radius: 8px;`;
+
+                // Icon
+                let iconName = 'headphones';
+                if (item.type === 'video') iconName = 'video';
+                if (item.type === 'pdf') iconName = 'file-text';
+
+                html += `
+                    <div class="meditation-grid-card">
+                        <a href="theme.html?id=${item.id}" class="block full-height text-decoration-none">
+                            <div class="grid-card-image relative" style="${bgStyle}">
+                                <div style="${overlayStyle}"></div>
+                                <i data-lucide="${iconName}" size="24" color="#ffffff" style="position:relative; z-index:2;"></i>
+                            </div>
+                            <div class="grid-card-content">
+                                <h4 class="font-serif margin-0 truncate-2-lines">${item.title}</h4>
+                                <p class="font-xs text-muted margin-0 mt-5">${item.type ? item.type.toUpperCase() : 'ÁUDIO'}</p>
+                            </div>
+                        </a>
+                    </div>
+                    `;
+            });
+
+            gridContent.innerHTML = html;
+            if (window.lucide) lucide.createIcons();
+        };
+
+        window.closeGroupView = () => {
+            document.querySelector('.carousel-wrapper').classList.remove('hidden');
+            document.getElementById('meditations-grid-view').classList.add('hidden');
+        };
+
     </script>
 
     <!-- DRAG AND DROP LOGIC FOR DASHBOARD CARDS -->
