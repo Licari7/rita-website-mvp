@@ -19,7 +19,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <script src="init-firebase.js?v=3.1.0"></script>
     <script src="cms.js?v=7.2.1"></script>
-    <script src="cms-services.js?v=2.3.0"></script>
+    <script src="cms-services.js?v=1.0.0"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
     <style>
@@ -150,116 +150,6 @@
             to {
                 opacity: 1;
                 transform: translateY(0);
-            }
-        }
-
-        /* 3-Column CMS Layout */
-        .admin-grid-3-col {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 20px;
-            align-items: start;
-        }
-
-        @media (max-width: 1024px) {
-            .admin-grid-3-col {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .admin-col-card {
-            background: #fff;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-
-        .admin-col-header {
-            font-family: var(--font-serif);
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--color-primary);
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-
-        .preview-box-group {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .preview-box-item {
-            flex: 1;
-            background: #f9f9f9;
-            padding: 10px;
-            border-radius: 6px;
-            text-align: center;
-        }
-
-        .cta-toggle-group {
-            background: #f9f9f9;
-            padding: 10px;
-            border-radius: 6px;
-            margin-top: 10px;
-            border: 1px solid #eee;
-        }
-
-        /* Dashboard specific container override for wider layout */
-        .dashboard-page .container {
-            max-width: 1400px;
-        }
-
-        .cms-version-tag {
-            font-size: 10px;
-            color: #888;
-            margin-left: 10px;
-        }
-
-        .testimonial-scroll-area {
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .text-nowrap {
-            white-space: nowrap;
-        }
-
-        @media (max-width: 1200px) {
-            .admin-grid-3-col {
-                grid-template-columns: 1fr 1fr;
-                /* 2 cols */
-            }
-
-            .admin-col-card:nth-child(3) {
-                grid-column: span 2;
-                /* Section 2 takes full width below */
-            }
-        }
-
-        @media (max-width: 768px) {
-            .admin-grid-3-col {
-                grid-template-columns: 1fr;
-                /* Stack */
-            }
-
-            .admin-col-card:nth-child(3) {
-                grid-column: auto;
-            }
-        }
-
-        .admin-grid-2-col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            align-items: start;
-        }
-
-        @media (max-width: 1024px) {
-            .admin-grid-2-col {
-                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -594,403 +484,384 @@
                 </summary>
                 <div class="admin-card-body">
                     <div class="admin-panel-content" id="panel-services">
-                        <!-- Removed duplicate outer form -->
+                        <form id="service-form" class="auth-form full-width-max">
+                            <input type="hidden" id="svc-id">
 
-                        <!-- RE-DESIGNED LAYOUT: SINGLE COLUMN, CENTERED -->
+                            <!-- RE-DESIGNED LAYOUT: SINGLE COLUMN, CENTERED -->
 
-                        <!-- 1. HEADER & NEW BTN -->
-                        <div class="flex-column-center mb-20 width-100">
-                            <button type="button" onclick="window.resetServiceForm()" class="cta-button outline small">+
-                                Novo Serviço</button>
-                        </div>
-
-                        <!-- General Section Config (Background) -->
-                        <div class="width-100 flex-center mb-20">
-                            <details class="admin-card-inner width-100 max-w-400">
-                                <summary class="font-xs cursor-pointer text-center text-muted">Configurar Imagem
-                                    de Fundo (Geral)</summary>
-                                <div class="p-10 border-light mt-5 bg-gray-light border-radius-8">
-                                    <form id="service-config-form"
-                                        onsubmit="event.preventDefault(); window.handleServiceConfigSubmit();">
-                                        <div class="form-group mb-10">
-                                            <label class="font-xs text-muted mb-2 block">Título da Secção</label>
-                                            <input type="text" id="service-section-title"
-                                                placeholder="Sessões Individuais" class="admin-input-select font-xs">
-                                        </div>
-
-                                        <div class="form-group mb-10 border-bottom-light pb-10">
-                                            <div class="flex-align-center-gap-10 mb-5">
-                                                <input type="checkbox" id="service-title-highlight-enabled"
-                                                    class="w-auto">
-                                                <label for="service-title-highlight-enabled"
-                                                    class="font-xs text-muted margin-0 cursor-pointer">Destaque
-                                                    de Fundo?</label>
-                                            </div>
-                                            <div class="flex-align-center-gap-5">
-                                                <label class="font-xs text-muted margin-0">Cor:</label>
-                                                <input type="color" id="service-title-highlight-color" value="#f7f2e0"
-                                                    class="input-color-sm">
-                                            </div>
-
-                                            <div class="flex-column gap-5 mt-10 border-top-light pt-5">
-                                                <div class="flex-between-center">
-                                                    <label class="font-xs text-muted margin-0">Opacidade:</label>
-                                                    <span id="service-title-opacity-val"
-                                                        class="font-xs text-muted">100%</span>
-                                                </div>
-                                                <input type="range" id="service-title-highlight-opacity" min="0" max="1"
-                                                    step="0.1" value="1" class="input-range-full"
-                                                    oninput="document.getElementById('service-title-opacity-val').innerText = Math.round(this.value * 100) + '%'">
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group mb-5">
-                                            <label class="font-xs text-muted mb-2 block">Imagem de Fundo
-                                                (Geral)</label>
-                                            <input type="text" id="service-bg-url" placeholder="URL da Imagem..."
-                                                class="admin-input-select font-xs">
-                                        </div>
-                                        <div class="form-group mb-5">
-                                            <input type="file" id="service-bg-file" accept="image/*" class="font-xs">
-                                        </div>
-                                        <button type="button" id="service-config-btn"
-                                            onclick="window.handleServiceConfigSubmit(event)"
-                                            class="btn btn-sm btn-primary full-width">Guardar Fundo</button>
-                                    </form>
-                                </div>
-                            </details>
-                        </div>
-
-                        <!-- 2. ACTIVE SERVICES LIST (HORIZONTAL) -->
-                        <div class="width-100 mb-30 text-center">
-                            <h4 class="font-serif mb-10 text-muted margin-0">Serviços Ativos</h4>
-                            <!-- Container for Horizontal List -->
-                            <div id="admin-services-list" class="admin-service-list-horizontal">
-                                <!-- JS populates here -->
+                            <!-- 1. HEADER & NEW BTN -->
+                            <div class="flex-column-center mb-20 width-100">
+                                <button type="button" onclick="window.resetServiceForm()"
+                                    class="cta-button outline small">+ Novo Serviço</button>
                             </div>
-                        </div>
 
-                        <!-- 3. EDITOR FORM (BELOW LIST) -->
-                        <div class="admin-panel-content width-100 border-top-light pt-20">
-                            <h3 class="font-serif mb-15 text-center">Dados do Serviço</h3>
-                            <form id="service-form" onsubmit="event.preventDefault();">
-                                <input type="hidden" id="svc-id">
-
-                                <div>
-                                    <!-- ROW 1: GENERAL INFO & TESTIMONIALS (2 COLUMNS) -->
-                                    <div class="admin-grid-2-col mb-20">
-                                        <!-- COLUMN 1: GENERAL INFO -->
-                                        <div class="admin-col-card">
-                                            <div class="admin-col-header flex-between-center">
-                                                <span>Informação Geral</span>
-                                                <button type="button" class="cta-button primary small"
-                                                    onclick="window.handleServiceSubmit(event)">Atualizar
-                                                    Serviço</button>
+                            <!-- General Section Config (Background) -->
+                            <div class="width-100 flex-center mb-20">
+                                <details class="admin-card-inner width-100 max-w-400">
+                                    <summary class="font-xs cursor-pointer text-center text-muted">Configurar Imagem
+                                        de Fundo (Geral)</summary>
+                                    <div class="p-10 border-light mt-5 bg-gray-light border-radius-8">
+                                        <form id="service-config-form"
+                                            onsubmit="event.preventDefault(); window.handleServiceConfigSubmit();">
+                                            <div class="form-group mb-10">
+                                                <label class="font-xs text-muted mb-2 block">Título da Secção</label>
+                                                <input type="text" id="service-section-title"
+                                                    placeholder="Sessões Individuais"
+                                                    class="admin-input-select font-xs">
                                             </div>
 
-                                            <div class="form-group mb-15">
-                                                <label class="block-mb-5 font-sm font-weight-600">Nome do
-                                                    Serviço</label>
-                                                <input type="text" id="svc-title" class="admin-input full-width"
-                                                    placeholder="Ex: Leitura de Aura">
-                                            </div>
+                                            <div class="form-group mb-10 border-bottom-light pb-10">
+                                                <div class="flex-align-center-gap-10 mb-5">
+                                                    <input type="checkbox" id="service-title-highlight-enabled"
+                                                        class="w-auto">
+                                                    <label for="service-title-highlight-enabled"
+                                                        class="font-xs text-muted margin-0 cursor-pointer">Destaque
+                                                        de Fundo?</label>
+                                                </div>
+                                                <div class="flex-align-center-gap-5">
+                                                    <label class="font-xs text-muted margin-0">Cor:</label>
+                                                    <input type="color" id="service-title-highlight-color"
+                                                        value="#f7f2e0" class="input-color-sm">
+                                                </div>
 
-                                            <div class="form-group mb-15">
-                                                <label class="block-mb-5 font-sm">Benefícios (separar por
-                                                    vírgula)</label>
-                                                <input type="text" id="svc-benefits"
-                                                    class="admin-input full-width font-xs"
-                                                    placeholder="Ex: Clareza, Paz, Cura...">
-                                            </div>
-
-                                            <div class="form-group mb-15">
-                                                <label class="block-mb-5 font-sm">Descrição Curta (Cartão)</label>
-                                                <textarea id="svc-desc"
-                                                    class="admin-textarea input-sand full-width font-xs" rows="3"
-                                                    placeholder="Resumo breve..."></textarea>
-                                            </div>
-
-                                            <div class="form-group mb-15">
-                                                <label class="block-mb-5 font-sm">Imagem do Cabeçalho
-                                                    (Lista)</label>
-                                                <div class="grid-2-col-gap-10">
-                                                    <div class="flex-align-center gap-5">
-                                                        <input type="text" id="svc-image" placeholder="URL..."
-                                                            class="admin-input-select font-xs flex-grow-1">
-                                                        <!-- Fixed 'Remover Ficheiro' text/button -->
-                                                        <button type="button"
-                                                            class="btn-text-danger font-xs text-nowrap"
-                                                            onclick="document.getElementById('svc-image').value=''; document.getElementById('svc-image-file').value='';"
-                                                            title="Remover ficheiro">
-                                                            Remover Ficheiro
-                                                        </button>
+                                                <div class="flex-column gap-5 mt-10 border-top-light pt-5">
+                                                    <div class="flex-between-center">
+                                                        <label class="font-xs text-muted margin-0">Opacidade:</label>
+                                                        <span id="service-title-opacity-val"
+                                                            class="font-xs text-muted">100%</span>
                                                     </div>
-                                                    <input type="file" id="svc-image-file" accept="image/*"
-                                                        class="font-xs">
+                                                    <input type="range" id="service-title-highlight-opacity" min="0"
+                                                        max="1" step="0.1" value="1" class="input-range-full"
+                                                        oninput="document.getElementById('service-title-opacity-val').innerText = Math.round(this.value * 100) + '%'">
                                                 </div>
                                             </div>
+
+                                            <div class="form-group mb-5">
+                                                <label class="font-xs text-muted mb-2 block">Imagem de Fundo
+                                                    (Geral)</label>
+                                                <input type="text" id="service-bg-url" placeholder="URL da Imagem..."
+                                                    class="admin-input-select font-xs">
+                                            </div>
+                                            <div class="form-group mb-5">
+                                                <input type="file" id="service-bg-file" accept="image/*"
+                                                    class="font-xs">
+                                            </div>
+                                            <button type="button" id="service-config-btn"
+                                                onclick="window.handleServiceConfigSubmit(event)"
+                                                class="btn btn-sm btn-primary full-width">Guardar Fundo</button>
+                                        </form>
+                                    </div>
+                                </details>
+                            </div>
+
+                            <!-- 2. ACTIVE SERVICES LIST (HORIZONTAL) -->
+                            <div class="width-100 mb-30 text-center">
+                                <h4 class="font-serif mb-10 text-muted margin-0">Serviços Ativos</h4>
+                                <!-- Container for Horizontal List -->
+                                <div id="admin-services-list" class="admin-service-list-horizontal">
+                                    <!-- JS populates here -->
+                                </div>
+                            </div>
+
+                            <!-- 3. EDITOR FORM (BELOW LIST) -->
+                            <div class="admin-panel-content width-100 border-top-light pt-20">
+                                <h3 class="font-serif mb-15 text-center">Dados do Serviço</h3>
+                                <form id="service-form"
+                                    onsubmit="event.preventDefault(); window.handleServiceSubmit(event);">
+
+                                    <!-- ROW 1: Title & Benefits -->
+                                    <div class="grid-2-col-gap-20 mb-15">
+                                        <input type="hidden" id="svc-id">
+                                        <div class="form-group">
+                                            <label>Nome do Serviço</label>
+                                            <input type="text" id="svc-title" required placeholder="Ex: Leitura de Aura"
+                                                class="input-sand">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Benefícios (Separar por vírgula)</label>
+                                            <input type="text" id="svc-benefits" placeholder="Ex: Presencial, Online"
+                                                class="input-sand">
+                                        </div>
+                                    </div>
+
+                                    <!-- ROW 2: Short Desc (Left) vs Configs (Right) -->
+                                    <div class="grid-2-col-gap-20 mb-15">
+
+                                        <!-- LEFT: Short Description -->
+                                        <div class="form-group h-100">
+                                            <label>Descrição Curta (Cartão)</label>
+                                            <textarea id="svc-desc" required placeholder="Resumo breve..."
+                                                class="admin-textarea input-sand full-height admin-textarea-large"></textarea>
                                         </div>
 
-                                        <!-- COLUMN 2: TESTIMONIALS -->
-                                        <div class="admin-col-card">
-                                            <div class="admin-col-header flex-between-center">
-                                                <span class="flex-align-center gap-5">
-                                                    Testemunhos
-                                                    <span class="font-xs font-weight-normal text-muted">(Total:
-                                                        <span id="svc-testimonials-total">0</span>)</span>
-                                                </span>
-                                                <button type="button" class="cta-button primary small"
-                                                    onclick="window.handleServiceSubmit(event)">Atualizar</button>
+                                        <!-- RIGHT: Images & Colors Stack -->
+                                        <div class="flex-column gap-15">
+
+                                            <!-- Image URL -->
+                                            <div class="form-group mb-0">
+                                                <label>Imagem de Cabeçalho (URL)</label>
+                                                <input type="text" id="svc-image" placeholder="https://..."
+                                                    class="admin-input-select input-sand">
                                             </div>
 
-                                            <div class="form-group mb-15">
-                                                <div class="flex-between-center mb-5">
-                                                    <label class="font-sm font-weight-600 flex-align-center gap-5">
-                                                        Selecionar
-                                                        <span
-                                                            class="font-xs font-weight-normal text-muted">(Selecionados:
-                                                            <span id="svc-testimonials-selected-count">0</span>)</span>
-                                                    </label>
-                                                    <div class="flex-align-center gap-5">
-                                                        <input type="color" id="svc-testi-bg-color" value="#ffffff"
-                                                            style="width: 50px; height: 40px; padding: 0; border: 1px solid #ccc; cursor: pointer; border-radius: 4px;"
-                                                            title="Cor de Fundo da Secção">
-                                                    </div>
+                                            <!-- Image Upload -->
+                                            <div class="form-group mb-0">
+                                                <label>Ou Upload Imagem</label>
+                                                <input type="file" id="svc-image-file" accept="image/*"
+                                                    class="input-sand input-file-full">
+                                            </div>
+
+                                            <div class="form-group mb-0 border-light p-10 border-radius-8 bg-white">
+                                                <div class="flex-between-center mb-10">
+                                                    <label class="margin-0 font-sm">Personalização</label>
                                                     <button type="button" class="btn-text-primary font-xs"
-                                                        onclick="window.openQuickTestimonialModal()">
-                                                        <i data-lucide="plus-circle" class="icon-14"></i> Novo
+                                                        onclick="document.getElementById('svc-colors-config').classList.toggle('hidden')">
+                                                        <i data-lucide="palette" class="icon-14"></i> Configurar
+                                                        Cores
                                                     </button>
                                                 </div>
-                                                <div id="loading-testimonials-selector" class="font-xs text-muted">A
-                                                    carregar...</div>
-                                                <div id="svc-testimonials-selector"
-                                                    class="testimonial-selector-grid testimonial-scroll-area">
-                                                    <!-- Checkboxes injected here -->
+
+                                                <div id="svc-colors-config" class="hidden">
+
+                                                    <!-- Advanced Colors (New 3-Section System) -->
+                                                    <details class="sub-accordion mb-15">
+                                                        <summary
+                                                            class="font-serif font-weight-600 cursor-pointer p-10 bg-gray-light">
+                                                            <span><i data-lucide="palette" class="icon-sm"></i> Cores
+                                                                das Secções</span>
+                                                        </summary>
+                                                        <div class="p-10 mt-10 grid-2-col-gap-15">
+
+                                                            <!-- Section 1 -->
+                                                            <div class="form-group full-width">
+                                                                <label class="font-bold border-bottom-light mb-5">Secção
+                                                                    1 (Topo)</label>
+                                                                <div class="grid-2-col-gap-10">
+                                                                    <div>
+                                                                        <label>Fundo</label>
+                                                                        <div class="flex-align-center-gap-5">
+                                                                            <input type="color" id="svc-sec1-bg"
+                                                                                value="#ffffff"
+                                                                                class="color-preview-box">
+                                                                            <input type="text" id="svc-sec1-bg-hex"
+                                                                                value="#ffffff"
+                                                                                class="color-hex-input-sm">
+                                                                        </div>
+                                                                    </div>
+                                                                    <div>
+                                                                        <label>Texto</label>
+                                                                        <div class="flex-align-center-gap-5">
+                                                                            <input type="color" id="svc-sec1-text"
+                                                                                value="#000000"
+                                                                                class="color-preview-box">
+                                                                            <input type="text" id="svc-sec1-text-hex"
+                                                                                value="#000000"
+                                                                                class="color-hex-input-sm">
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Section 2 -->
+                                                            <div class="form-group full-width">
+                                                                <label class="font-bold border-bottom-light mb-5">Secção
+                                                                    2 (Fundo)</label>
+                                                                <div class="grid-2-col-gap-10">
+                                                                    <div>
+                                                                        <label>Fundo</label>
+                                                                        <div class="flex-align-center-gap-5">
+                                                                            <input type="color" id="svc-sec2-bg"
+                                                                                value="#f7f2e0"
+                                                                                class="color-preview-box">
+                                                                            <input type="text" id="svc-sec2-bg-hex"
+                                                                                value="#f7f2e0"
+                                                                                class="color-hex-input-sm">
+                                                                        </div>
+                                                                    </div>
+                                                                    <div>
+                                                                        <label>Texto</label>
+                                                                        <div class="flex-align-center-gap-5">
+                                                                            <input type="color" id="svc-sec2-text"
+                                                                                value="#000000"
+                                                                                class="color-preview-box">
+                                                                            <input type="text" id="svc-sec2-text-hex"
+                                                                                value="#000000"
+                                                                                class="color-hex-input-sm">
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Testimonials Section -->
+                                                            <div class="form-group full-width">
+                                                                <label class="font-bold border-bottom-light mb-5">Secção
+                                                                    Testemunhos</label>
+                                                                <div class="grid-2-col-gap-10">
+                                                                    <div>
+                                                                        <label>Fundo</label>
+                                                                        <div class="flex-align-center-gap-5">
+                                                                            <input type="color" id="svc-testi-bg"
+                                                                                value="#80864f"
+                                                                                class="color-preview-box">
+                                                                            <input type="text" id="svc-testi-bg-hex"
+                                                                                value="#80864f"
+                                                                                class="color-hex-input-sm">
+                                                                        </div>
+                                                                    </div>
+                                                                    <div>
+                                                                        <label>Texto</label>
+                                                                        <div class="flex-align-center-gap-5">
+                                                                            <input type="color" id="svc-testi-text"
+                                                                                value="#ffffff"
+                                                                                class="color-preview-box">
+                                                                            <input type="text" id="svc-testi-text-hex"
+                                                                                value="#ffffff"
+                                                                                class="color-hex-input-sm">
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Card Colors (Legacy/Card View) -->
+                                                            <div class="form-group full-width mt-10">
+                                                                <label class="font-bold border-bottom-light mb-5">Cores
+                                                                    do Cartão (Página Inicial)</label>
+                                                                <div class="grid-2-col-gap-10">
+                                                                    <div>
+                                                                        <label>Fundo Topo</label>
+                                                                        <div class="flex-align-center-gap-5">
+                                                                            <input type="color" id="svc-top-bg-color"
+                                                                                value="#000000"
+                                                                                class="color-preview-box">
+                                                                            <input type="text" id="svc-top-bg-hex"
+                                                                                value="#000000"
+                                                                                class="color-hex-input-sm">
+                                                                        </div>
+                                                                    </div>
+                                                                    <div>
+                                                                        <label>Fundo Baixo</label>
+                                                                        <div class="flex-align-center-gap-5">
+                                                                            <input type="color" id="svc-bottom-bg-color"
+                                                                                value="#4F553D"
+                                                                                class="color-preview-box">
+                                                                            <input type="text" id="svc-bottom-bg-hex"
+                                                                                value="#4F553D"
+                                                                                class="color-hex-input-sm">
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="mt-5">
+                                                                    <label>Opacidade Topo: <span
+                                                                            id="opacity-val-top">50%</span></label>
+                                                                    <input type="range" id="svc-top-opacity" min="0"
+                                                                        max="1" step="0.1" value="0.5"
+                                                                        oninput="document.getElementById('opacity-val-top').textContent = Math.round(this.value * 100) + '%'">
+                                                                </div>
+                                                                <div class="mt-5">
+                                                                    <label>Opacidade Baixo: <span
+                                                                            id="opacity-val-bottom">100%</span></label>
+                                                                    <input type="range" id="svc-bottom-opacity" min="0"
+                                                                        max="1" step="0.1" value="1"
+                                                                        oninput="document.getElementById('opacity-val-bottom').textContent = Math.round(this.value * 100) + '%'">
+                                                                </div>
+                                                                <div class="mt-5">
+                                                                    <label>Texto Botões</label>
+                                                                    <div class="flex-align-center-gap-5">
+                                                                        <input type="color" id="svc-btn-text-color"
+                                                                            value="#ffffff" class="color-preview-box">
+                                                                        <input type="text" id="svc-btn-text-hex"
+                                                                            value="#ffffff" class="color-hex-input-sm">
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+                                                    </details>
+
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                            </div>
 
-                                    <!-- ROW 2: SECTIONS 1 & 2 (GRID) -->
-                                    <div class="admin-grid-2-col">
+                            <!-- BOTTOM SECTION: Full Body -->
+                            <div class="mt-20">
+                                <h3 class="font-serif mb-10">Descrição Completa (Página Detalhada)</h3>
+                                <div class="form-group">
+                                    <textarea id="svc-full-desc" class="admin-textarea input-sand property-editor"
+                                        rows="10" placeholder="Use HTML se desejar..."></textarea>
+                                </div>
 
-                                        <!-- COLUMN 2: SECTION 1 -->
-                                        <div class="admin-col-card">
-                                            <div class="admin-col-header flex-between-center">
-                                                <span>Secção 1 (Topo)</span>
-                                                <button type="button" class="cta-button primary small"
-                                                    onclick="window.handleServiceSubmit(event)">Atualizar</button>
-                                            </div>
-
-                                            <div class="form-group mb-15">
-                                                <label class="block-mb-5 font-sm">Título da Secção (H1)</label>
-                                                <input type="text" id="svc-sec1-title" class="admin-input full-width"
-                                                    placeholder="Título principal da página...">
-                                            </div>
-
-                                            <label class="block-mb-5 font-sm">Conteúdo (Cartão)</label>
-                                            <textarea id="svc-full-desc"
-                                                class="admin-textarea input-sand property-editor mb-15" rows="8"
-                                                placeholder="Descrição principal..."></textarea>
-
-                                            <!-- BACKGROUNDS CONFIG v3 -->
-                                            <div class="preview-box-group">
-                                                <div class="preview-box-item">
-                                                    <label class="font-xs block-mb-5 font-weight-600">Fundo da
-                                                        Secção</label>
-                                                    <div class="flex-align-center-gap-5 mb-5 justify-center">
-                                                        <!-- Hidden actual inputs, simplified UI -->
-                                                        <input type="color" id="svc-sec1-bg-color"
-                                                            class="color-preview-box">
-                                                        <span class="font-xs">Cor</span>
-                                                    </div>
-                                                    <div class="font-xs mb-5 text-muted">- OU -</div>
-                                                    <div class="flex-align-center gap-5 mb-5">
-                                                        <input type="text" id="svc-image-1" placeholder="URL Imagem"
-                                                            class="admin-input-select font-xs width-100">
-                                                    </div>
-                                                    <div class="flex-align-center gap-5">
-                                                        <input type="file" id="svc-image-1-file" accept="image/*"
-                                                            class="font-xs width-100">
-                                                        <button type="button"
-                                                            class="btn-text-danger font-xs text-nowrap"
-                                                            onclick="document.getElementById('svc-image-1').value=''; document.getElementById('svc-image-1-file').value='';"
-                                                            title="Remover ficheiro">
-                                                            Remover
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                                <div class="preview-box-item">
-                                                    <label class="font-xs block-mb-5 font-weight-600">Fundo do
-                                                        Cartão</label>
-                                                    <div class="flex-align-center-gap-5 mb-5 justify-center">
-                                                        <input type="color" id="svc-card1-bg-color"
-                                                            class="color-preview-box" value="#ffffff">
-                                                    </div>
-                                                    <label class="font-xs block-mb-5">Opacidade: <span
-                                                            id="op-val-card1">90%</span></label>
-                                                    <input type="range" id="svc-card1-opacity" min="0" max="1"
-                                                        step="0.1" value="0.9"
-                                                        oninput="document.getElementById('op-val-card1').textContent = Math.round(this.value * 100) + '%'"
-                                                        class="full-width">
-                                                </div>
-                                            </div>
-
-                                            <!-- CTA BUTTONS -->
-                                            <div class="cta-toggle-group">
-                                                <label class="block-mb-5 font-xs font-weight-600">Botões de
-                                                    Ação</label>
-                                                <div class="flex-align-center-gap-10 mb-5">
-                                                    <input type="checkbox" id="svc-sec1-cta-schedule">
-                                                    <label for="svc-sec1-cta-schedule"
-                                                        class="font-sm cursor-pointer mb-0">Mostrar
-                                                        "Agendar"</label>
-                                                </div>
-                                                <div class="flex-align-center-gap-10">
-                                                    <input type="checkbox" id="svc-sec1-cta-contact">
-                                                    <label for="svc-sec1-cta-contact"
-                                                        class="font-sm cursor-pointer mb-0">Mostrar "Entrar em
-                                                        contacto"</label>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- COLUMN 3: SECTION 2 -->
-                                        <div class="admin-col-card">
-                                            <div class="admin-col-header flex-between-center">
-                                                <span>Secção 2 (Detalhe)</span>
-                                                <button type="button" class="cta-button primary small"
-                                                    onclick="window.handleServiceSubmit(event)">Atualizar</button>
-                                            </div>
-
-                                            <label class="block-mb-5 font-sm">Conteúdo (Cartão)</label>
-                                            <textarea id="svc-full-desc-2"
-                                                class="admin-textarea input-sand property-editor mb-15" rows="12"
-                                                placeholder="Mais detalhes..."></textarea>
-
-                                            <!-- BACKGROUNDS CONFIG v3 -->
-                                            <div class="preview-box-group">
-                                                <div class="preview-box-item">
-                                                    <label class="font-xs block-mb-5 font-weight-600">Fundo da
-                                                        Secção</label>
-                                                    <div class="flex-align-center-gap-5 mb-5 justify-center">
-                                                        <input type="color" id="svc-sec2-bg-color"
-                                                            class="color-preview-box">
-                                                        <span class="font-xs">Cor</span>
-                                                    </div>
-                                                    <div class="font-xs mb-5 text-muted">- OU -</div>
-                                                    <div class="flex-align-center gap-5 mb-5">
-                                                        <input type="text" id="svc-image-2" placeholder="URL Imagem"
-                                                            class="admin-input-select font-xs width-100">
-                                                    </div>
-                                                    <div class="flex-align-center gap-5">
-                                                        <input type="file" id="svc-image-2-file" accept="image/*"
-                                                            class="font-xs width-100">
-                                                        <button type="button"
-                                                            class="btn-text-danger font-xs text-nowrap"
-                                                            onclick="document.getElementById('svc-image-2').value=''; document.getElementById('svc-image-2-file').value='';"
-                                                            title="Remover ficheiro">
-                                                            Remover
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                                <div class="preview-box-item">
-                                                    <label class="font-xs block-mb-5 font-weight-600">Fundo do
-                                                        Cartão</label>
-                                                    <div class="flex-align-center-gap-5 mb-5 justify-center">
-                                                        <input type="color" id="svc-card2-bg-color"
-                                                            class="color-preview-box" value="#ffffff">
-                                                    </div>
-                                                    <label class="font-xs block-mb-5">Opacidade: <span
-                                                            id="op-val-card2">90%</span></label>
-                                                    <input type="range" id="svc-card2-opacity" min="0" max="1"
-                                                        step="0.1" value="0.9"
-                                                        oninput="document.getElementById('op-val-card2').textContent = Math.round(this.value * 100) + '%'"
-                                                        class="full-width">
-                                                </div>
-                                            </div>
-
-                                            <!-- CTA BUTTONS -->
-                                            <div class="cta-toggle-group">
-                                                <label class="block-mb-5 font-xs font-weight-600">Botões de
-                                                    Ação</label>
-                                                <div class="flex-align-center-gap-10 mb-5">
-                                                    <input type="checkbox" id="svc-sec2-cta-schedule">
-                                                    <label for="svc-sec2-cta-schedule"
-                                                        class="font-sm cursor-pointer mb-0">Mostrar
-                                                        "Agendar"</label>
-                                                </div>
-                                                <div class="flex-align-center-gap-10 mb-10">
-                                                    <input type="checkbox" id="svc-sec2-cta-contact">
-                                                    <label for="svc-sec2-cta-contact"
-                                                        class="font-sm cursor-pointer mb-0">Mostrar "Entrar em
-                                                        contacto"</label>
-                                                </div>
-                                                <!-- VISIBILITY TOGGLE -->
-                                                <div class="flex-align-center-gap-10 border-top-light pt-10">
-                                                    <input type="checkbox" id="svc-sec2-visible" checked>
-                                                    <label for="svc-sec2-visible"
-                                                        class="font-sm cursor-pointer mb-0 font-weight-600 text-primary">
-                                                        Mostrar Seçção 2 (Visível)
-                                                    </label>
-                                                </div>
-                                            </div>
-
-                                        </div>
+                                <!-- Testimonials Selector -->
+                                <div class="form-group mb-20 mt-20">
+                                    <label class="block-mb-8 font-serif">Testemunhos Associados</label>
+                                    <div class="flex-between-center mb-10">
+                                        <p class="font-xs text-muted margin-0">Selecione os testemunhos que
+                                            devem
+                                            aparecer na página deste serviço.</p>
+                                        <button type="button" class="btn-text-primary font-xs"
+                                            onclick="window.openQuickTestimonialModal()">
+                                            <i data-lucide="plus-circle" class="icon-14"></i> Novo Testemunho
+                                        </button>
+                                    </div>
+                                    <div id="loading-testimonials-selector" class="font-xs text-muted">A
+                                        carregar
+                                        testemunhos...</div>
+                                    <div id="svc-testimonials-selector" class="testimonial-selector-grid">
+                                        <!-- Checkboxes injected here -->
                                     </div>
                                 </div>
-                            </form>
 
-                            <!-- QUICK TESTIMONIAL MODAL (Matches existing structure) -->
-                            <div id="quick-testimonial-modal" class="modal-overlay">
-                                <div class="modal-card">
-                                    <button type="button" class="modal-close-btn"
-                                        onclick="window.closeQuickTestimonialModal()"><i data-lucide="x"></i></button>
-                                    <div class="modal-header">
-                                        <h3 class="modal-title">Novo Testemunho Rápido</h3>
+                                <!-- Quick Testimonial Modal -->
+                                <div id="quick-testimonial-modal" class="modal-overlay">
+                                    <div class="modal-card">
+                                        <button type="button" class="modal-close-btn"
+                                            onclick="window.closeQuickTestimonialModal()">
+                                            <i data-lucide="x"></i>
+                                        </button>
+
+                                        <div class="modal-header">
+                                            <h3 class="modal-title">Novo Testemunho Rápido</h3>
+                                        </div>
+
+                                        <form id="quick-testimonial-form"
+                                            onsubmit="window.handleQuickTestimonialSubmit(event)">
+                                            <input type="hidden" id="quick-rev-id">
+                                            <div class="modal-form-group">
+                                                <label class="modal-label">Nome</label>
+                                                <input type="text" id="quick-rev-name" required
+                                                    class="input-sand full-width" placeholder="Ex: Maria Silva">
+                                            </div>
+                                            <div class="modal-form-group">
+                                                <label class="modal-label">Título/Role (opcional)</label>
+                                                <input type="text" id="quick-rev-role" class="input-sand full-width"
+                                                    placeholder="Ex: Cliente de Leitura de Aura">
+                                            </div>
+                                            <div class="modal-form-group">
+                                                <label class="modal-label">Depoimento</label>
+                                                <textarea id="quick-rev-text" required rows="4"
+                                                    class="input-sand full-width admin-textarea"
+                                                    placeholder="Escreva o testemunho aqui..."></textarea>
+                                            </div>
+
+                                            <div class="flex-end-gap-10 mt-20">
+                                                <button type="button" class="btn btn-outline small"
+                                                    onclick="window.closeQuickTestimonialModal()">Cancelar</button>
+                                                <button type="submit" class="cta-button primary small">Guardar &
+                                                    Associar</button>
+                                            </div>
+                                        </form>
                                     </div>
-                                    <form id="quick-testimonial-form"
-                                        onsubmit="window.handleQuickTestimonialSubmit(event)">
-                                        <input type="hidden" id="quick-rev-id">
-                                        <div class="modal-form-group">
-                                            <label class="modal-label">Nome</label>
-                                            <input type="text" id="quick-rev-name" required
-                                                class="input-sand full-width" placeholder="Ex: Maria Silva">
-                                        </div>
-                                        <div class="modal-form-group">
-                                            <label class="modal-label">Título/Role (opcional)</label>
-                                            <input type="text" id="quick-rev-role" class="input-sand full-width"
-                                                placeholder="Ex: Cliente de Leitura de Aura">
-                                        </div>
-                                        <div class="modal-form-group">
-                                            <label class="modal-label">Depoimento</label>
-                                            <textarea id="quick-rev-text" required rows="4"
-                                                class="input-sand full-width admin-textarea"
-                                                placeholder="Escreva o testemunho aqui..."></textarea>
-                                        </div>
-                                        <div class="flex-end-gap-10 mt-20">
-                                            <button type="button" class="btn btn-outline small"
-                                                onclick="window.closeQuickTestimonialModal()">Cancelar</button>
-                                            <button type="submit" class="cta-button primary small">Guardar &
-                                                Associar</button>
-                                        </div>
-                                    </form>
                                 </div>
                             </div>
-                        </div>
                     </div>
 
                     <!-- ACTIONS -->
                     <div class="admin-action-bar">
                         <button type="button" id="svc-submit-btn" onclick="window.handleServiceSubmit(event)"
-                            class="cta-button primary min-w-200"
-                            title="Cria o novo serviço com todas as informações preenchidas (Cartão Principal, Detalhes e Testemunhos)">Publicar
-                            Serviço</button>
+                            class="cta-button primary min-w-200">Publicar Serviço</button>
                         <button type="button" id="svc-cancel-btn" class="btn btn-outline hidden"
                             onclick="window.resetServiceForm()">Cancelar Edição</button>
-                        <span class="cms-version-tag">CMS v3.0.1</span>
                         <div class="flex-grow"></div>
 
                         <!-- Background Config moved here as utility -->
@@ -1909,7 +1780,7 @@
             function saveOrder() {
                 const currentOrder = [...container.querySelectorAll('.draggable-card')].map(card => card.id);
                 localStorage.setItem('dashboardOrder', JSON.stringify(currentOrder));
-
+                console.log("Dashboard order saved:", currentOrder);
             }
         });
     </script>
@@ -1927,7 +1798,7 @@
         window.openSection = function (sectionId) {
             // With accordion, we might want to just open the relevant detail
             // For now, this old function can just return or log
-
+            console.log("Opening section:", sectionId);
         }
     </script>
 
@@ -1948,7 +1819,7 @@
                     // If user is BLOCKED, SHOW MODAL
                     // 'pending' is now considered active for free access
                     if (data.status === 'blocked') {
-
+                        console.log("User status requires action:", data.status);
 
                         // Show Modal
                         const modal = document.getElementById('subscriptionModal');

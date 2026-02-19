@@ -88,74 +88,76 @@
     <!-- Mobile Menu Overlay -->
     <div class="mobile-menu"></div>
 
+    <!-- Header -->
+    <header class="service-detail-header">
+        <h1 class="section-title" id="about-title"></h1>
+    </header>
+
     <!-- Main Content -->
-    <main class="about-page-main">
+    <main class="service-detail-content wide">
 
         <!-- Section 1: Intro (Image Left, Text Right) -->
         <section id="about-intro" class="about-split-section">
-            <div class="container about-split-container">
-                <div class="about-image-container left">
-                    <!-- Image will be injected here -->
-                    <div id="author-img-display" class="about-split-img"></div>
+            <div class="about-image-container left">
+                <!-- Image will be injected here -->
+                <div id="author-img-display" class="about-split-img"></div>
+            </div>
+            <div class="about-text-content right">
+                <!-- Title Removed -->
+                <div id="about-text-intro-display">
+                    <p>A carregar...</p>
                 </div>
-                <div class="about-text-content right">
-                    <!-- Moved Title Inside Section -->
-                    <h1 class="section-title text-left-md" id="about-title" style="margin-bottom: 30px;"></h1>
 
-                    <div id="about-text-intro-display">
-                        <p>A carregar...</p>
-                    </div>
-
-                    <!-- Duplicated CTA Buttons (Intro Section) -->
-                    <div class="cta-actions" style="justify-content: flex-start; margin-top: 30px;">
-                        <a href="index.html#contact" class="btn btn-primary">Marcar Sessão</a>
-                        <a href="https://wa.me/351913515406" target="_blank" rel="noopener noreferrer"
-                            class="btn btn-primary cta-whatsapp-btn">
-                            <i data-lucide="message-circle" class="icon-sm"></i> Entra em contacto
-                        </a>
-                    </div>
+                <!-- Duplicated CTA Buttons (Intro Section) -->
+                <div class="cta-actions" style="justify-content: flex-start; margin-top: 30px;">
+                    <a href="index.html#contact" class="btn btn-primary">Marcar Sessão</a>
+                    <a href="https://wa.me/351913515406" target="_blank" rel="noopener noreferrer"
+                        class="btn btn-primary cta-whatsapp-btn">
+                        <i data-lucide="message-circle" class="icon-sm"></i> Entra em contacto
+                    </a>
                 </div>
             </div>
         </section>
 
         <!-- Section 2: Art (Text Left, Image Right) -->
         <section id="about-art" class="about-split-section">
-            <div class="container about-split-container">
-                <div class="about-text-content left">
-                    <div id="about-text-art-display">
-                        <p>A carregar...</p>
-                    </div>
-
-                    <!-- Moved Bottom CTAs Inside Section -->
-                    <div class="cta-actions" style="justify-content: flex-start; margin-top: 30px;">
-                        <a href="index.html#contact" class="btn btn-primary">Marcar Sessão</a>
-                        <a href="https://wa.me/351913515406" target="_blank" rel="noopener noreferrer"
-                            class="btn btn-primary cta-whatsapp-btn">
-                            <i data-lucide="message-circle" class="icon-sm"></i> Entra em contacto
-                        </a>
-                    </div>
+            <div class="about-text-content left">
+                <!-- Title Removed -->
+                <div id="about-text-art-display">
+                    <p>A carregar...</p>
                 </div>
-                <div class="about-image-container right">
-                    <div id="about-img-art-display" class="about-split-img">
-                        <img src="https://placehold.co/500x650/e0e0e0/999999?text=Arte+Floresce" alt="Arte Floresce"
-                            class="about-split-img">
-                    </div>
+
+
+            </div>
+            <div class="about-image-container right">
+                <div id="about-img-art-display" class="about-split-img">
+                    <img src="https://placehold.co/500x650/e0e0e0/999999?text=Arte+Floresce" alt="Arte Floresce"
+                        class="about-split-img">
                 </div>
             </div>
-
-            <!-- Footer (Moved Inside Art Section for Seamless Background) -->
-            <footer class="footer about-footer">
-                <div class="container text-center">
-                    <p class="logo-text" id="footer-title"></p>
-                    <div class="footer-links">
-                        <a href="termos.html">Termos e Privacidade</a>
-                    </div>
-                    <p class="copyright" id="footer-copyright"></p>
-                    <p class="developer-credit" id="footer-credit"></p>
-                </div>
-            </footer>
         </section>
+
+        <!-- CTA Buttons -->
+        <div class="cta-actions cta-actions-container">
+            <a href="index.html#contact" class="btn btn-primary">Marcar Sessão</a>
+            <a href="https://wa.me/351913515406" target="_blank" rel="noopener noreferrer"
+                class="btn btn-primary cta-whatsapp-btn">
+                <i data-lucide="message-circle" class="icon-sm"></i> Entra em contacto
+            </a>
+        </div>
     </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <p class="logo-text" id="footer-title"></p>
+            <div class="footer-links">
+                <a href="termos.html">Termos e Privacidade</a>
+            </div>
+            <p class="copyright" id="footer-copyright"></p>
+            <p class="developer-credit" id="footer-credit"></p>
+        </div>
+    </footer>
 
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>

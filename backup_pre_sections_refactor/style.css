@@ -90,8 +90,6 @@ html {
 
 html {
     scroll-behavior: smooth;
-    height: 100%;
-    /* Ensure full height */
 }
 
 body {
@@ -192,27 +190,15 @@ ul {
     box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.15);
     position: relative;
     z-index: 100;
-    width: 100%;
-    /* Force full width */
-}
-
-/* Ensure footer content is centered */
-.footer-content {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto !important;
-    padding: 0 20px;
 }
 
 .footer a,
 .footer p,
-.footer span {
+.footer span,
+.footer div {
     color: inherit !important;
     /* Allow inheritance but keep specificity high against other overrides if needed, or better: var(--color-footer-text) */
     color: var(--color-footer-text) !important;
-    margin: 0;
-    padding: 2px 0;
-    line-height: 1.4;
 }
 
 .btn-outline {
@@ -2484,22 +2470,7 @@ body.auth-page {
 /* Service Detail Utilities - to replace inline styles */
 .svc-testimonials-section-hidden {
     display: none;
-    margin-top: 0px;
-}
-
-.svc-image-full {
-    width: 100%;
-    max-width: 800px;
-    height: auto;
-    border-radius: 12px;
-    margin-top: 40px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-}
-
-.svc-text {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    margin-bottom: 20px;
+    margin-top: 80px;
 }
 
 .section-title.custom-primary {
@@ -4706,389 +4677,16 @@ body.auth-page {
 @media (max-width: 768px) {
     .cta-actions {
         flex-wrap: wrap;
-        flex-direction: column;
-        gap: 15px;
     }
 
-    .cta-actions .btn {
-        width: 100%;
-        text-align: center;
+    @media (max-width: 768px) {
+        .cta-actions {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .cta-actions .btn {
+            width: 100%;
+            text-align: center;
+        }
     }
-}
-
-/* --- About Page CMS Styles --- */
-.about-page-main {
-    width: 100%;
-    max-width: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    flex: 1 0 auto;
-    /* Robust grow */
-    min-height: 100vh;
-    /* Ensure it takes at least full screen */
-}
-
-.about-split-section {
-    width: 100%;
-    padding: 0;
-    /* Remove padding to ensure sections touch */
-}
-
-.about-split-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 60px;
-    padding: 80px 20px;
-    /* Content Padding */
-}
-
-.about-image-container,
-.about-text-content {
-    flex: 1;
-    width: 100%;
-}
-
-.about-split-img {
-    width: 100%;
-    height: auto;
-    border-radius: 12px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
-    object-fit: cover;
-    aspect-ratio: 4/5;
-}
-
-/* Mobile Responsive */
-@media (max-width: 900px) {
-    .about-split-container {
-        flex-direction: column !important;
-        gap: 40px;
-        text-align: center;
-        padding: 40px 20px;
-    }
-
-    .cta-actions {
-        justify-content: center !important;
-    }
-}
-
-/* CMS Variables Application */
-#about-intro {
-    background-color: var(--about-intro-bg, #ffffff);
-    color: var(--about-intro-text, #000000);
-    padding-top: 100px;
-    margin-bottom: 0 !important;
-    /* Ensure no gap after intro */
-}
-
-#about-art {
-    background-color: var(--about-art-bg, #f7f2e0);
-    color: var(--about-art-text, #000000);
-    margin-top: 0 !important;
-    /* Ensure no gap before art */
-    padding-bottom: 0 !important;
-    /* Remove padding so footer sits at bottom */
-    flex-grow: 1;
-    /* Stretch to fill remaining space */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-/* Ensure footer connects */
-/* Ensure footer connects */
-/* Ensure footer connects */
-.about-footer {
-    border-top: none !important;
-    box-shadow: none !important;
-    padding-top: 40px !important;
-    padding-bottom: 20px !important;
-    background: transparent !important;
-    color: inherit !important;
-    width: 100%;
-}
-
-.about-footer .container,
-.about-footer .footer-content {
-    text-align: center !important;
-    margin: 0 auto !important;
-    display: block !important;
-    /* Prevent flex interference */
-}
-
-.about-footer p,
-.about-footer a,
-.about-footer span {
-    color: inherit !important;
-    opacity: 0.8;
-}
-
-.about-footer a:hover {
-    opacity: 1;
-    text-decoration: underline;
-}
-
-/* Global gap fix for split sections */
-.about-split-section+.about-split-section {
-    margin-top: 0;
-}
-
-/* --- About Page V2 (Refactor) --- */
-
-.about-v2-body {
-    height: 100%;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-.about-v2-main {
-    flex: 1 0 auto;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    min-height: 100vh;
-}
-
-.about-v2-section {
-    width: 100%;
-    /* padding: 60px 0; */
-    padding: 0;
-    /* Reset internal padding */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    position: relative;
-    /* transition: background-color 0.3s ease; */
-}
-
-/* Section 1: Intro */
-#about-intro.about-v2-section {
-    background-color: var(--about-intro-bg, #ffffff);
-    color: var(--about-intro-text, #000000);
-    padding-top: 150px;
-}
-
-/* Section 2: Expanded Art with Footer */
-.about-v2-expanded {
-    flex-grow: 1;
-    background-color: var(--about-art-bg, #f7f2e0);
-    color: var(--about-art-text, #000000);
-    padding-bottom: 0 !important;
-    justify-content: space-between;
-}
-
-/* Specific Footer Override for V2 */
-.about-v2-expanded .about-footer {
-    color: var(--color-footer-text, #80864f) !important;
-    background-color: var(--color-footer-bg, #f7f2e0) !important;
-    /* Fixed: Allow footer BG color */
-    margin-top: 0 !important;
-    /* Reset margin since it is inside flex */
-}
-
-.about-v2-expanded .about-footer p,
-.about-v2-expanded .about-footer a,
-.about-v2-expanded .about-footer span {
-    color: inherit !important;
-    opacity: 1;
-}
-
-/* Grid Layout */
-.about-v2-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
-    align-items: center;
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 60px 20px;
-    /* Internal content padding */
-    flex-grow: 1;
-    /* Fill space inside the expanded section */
-}
-
-/* Images */
-.about-v2-img-wrapper {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-}
-
-.about-v2-img-wrapper img {
-    width: 100%;
-    height: auto;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    object-fit: cover;
-    max-height: 550px;
-}
-
-.about-Formatted-text p {
-    margin-bottom: 1rem;
-    line-height: 1.8;
-}
-
-/* Responsive */
-@media (max-width: 900px) {
-    .about-v2-grid {
-        grid-template-columns: 1fr;
-        gap: 3rem;
-        text-align: center;
-        padding: 40px 20px;
-    }
-
-    .about-v2-col-text h1,
-    .about-v2-col-text .cta-actions,
-    .about-v2-col-text h1.section-title.text-left-md {
-        justify-content: center !important;
-        text-align: center !important;
-    }
-
-    /* Reverse Mobile for Art Section (Image Top, Text Bottom is typical, or keep as is) */
-    /* User usually prefers Image -> Text flow on mobile */
-    /* Reverse Mobile for Art Section */
-    .reverse-mobile {
-        display: flex;
-        flex-direction: column-reverse;
-    }
-
-    .about-v2-expanded {
-        padding-top: 40px;
-    }
-}
-
-/* Closing @media (max-width: 900px) */
-
-/* --- Service Detail Hero Layout (Parallax Style) --- */
-
-/* Full-width Section with Background Image */
-.svc-hero-section {
-    position: relative;
-    width: 100%;
-    min-height: 85vh;
-    /* Occupy most of screen */
-    background-size: cover !important;
-    /* Force cover to prevent tiling */
-    background-position: center !important;
-    background-repeat: no-repeat !important;
-
-    /* Flexbox to center the overlay */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 80px 20px;
-
-    /* Parallax Effect (Desktop) */
-    background-attachment: fixed;
-}
-
-/* Overlay if no image - or purely for depth */
-.svc-hero-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    /* Darker overlay for better contrast */
-    background: rgba(0, 0, 0, 0.4);
-    z-index: 1;
-}
-
-/* The Content Box (Semi-transparent) */
-.svc-overlay-container {
-    position: relative;
-    z-index: 2;
-    /* ABOVE the ::before overlay */
-    width: 100%;
-    max-width: 800px;
-    /* Limit width */
-    margin: 0 auto;
-    /* Center horizontally */
-
-    /* Default style */
-    background-color: rgba(255, 255, 255, 0.95);
-    color: #333;
-
-    padding: 60px;
-    border-radius: 8px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-
-    /* Text */
-    text-align: center;
-    -webkit-backdrop-filter: blur(10px);
-    /* Safari support */
-    backdrop-filter: blur(10px);
-}
-
-/* Text styles within the overlay */
-.svc-overlay-container h1,
-.svc-overlay-container h2 {
-    font-family: 'Cormorant Garamond', serif;
-    margin-bottom: 1.5rem;
-    line-height: 1.2;
-}
-
-.svc-overlay-container p {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    margin-bottom: 1.5rem;
-}
-
-/* Mobile Adjustments */
-@media (max-width: 768px) {
-    .svc-hero-section {
-        padding: 60px 20px;
-        background-attachment: scroll;
-        /* Disable parallax on mobile */
-    }
-
-    .svc-overlay-container {
-        padding: 30px 20px;
-    }
-}
-
-/* Closing @media (max-width: 768px) */
-
-/* The Content Box (Semi-transparent) - Redefined for Desktop/General */
-.svc-overlay-container {
-    position: relative;
-    z-index: 2;
-    /* ABOVE the ::before overlay */
-    width: 100%;
-    max-width: 800px;
-    /* Limit width */
-    margin: 0 auto;
-    /* Center horizontally */
-
-    /* Default style - BG managed by JS now for strict opacity control */
-    color: #333;
-
-    padding: 60px;
-    border-radius: 8px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-
-    /* Text */
-    text-align: center;
-}
-
-/* --- Utilities for Service Detail (Replacing Inline Styles) --- */
-.visually-hidden-seo {
-    display: none;
-    /* Or use accessible hiding pattern if needed for SEO, but user had display:none */
-}
-
-.main-full-width {
-    padding: 0 !important;
-}
-
-.cta-actions-container {
-    padding: 40px 20px;
-    background: var(--bg-color);
-    text-align: center;
-    /* Generally standard for CTA containers */
-}

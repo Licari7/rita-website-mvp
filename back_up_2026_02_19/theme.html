@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tema | Floresce Terapias</title>
+    <script src="theme-loader.js"></script>
+    <link rel="stylesheet" href="style.css?v=7.1.5">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap"
+        rel="stylesheet">
+
+    <!-- Access Control & Firebase -->
+    <script src="access-control.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="init-firebase.js"></script>
+
+    <style>
+        .theme-header {
+            background: var(--bg-color-alt);
+            padding: 160px 20px 40px;
+            text-align: center;
+        }
+
+        .meditation-list {
+            max-width: 800px;
+            margin: 40px auto;
+            display: grid;
+            gap: 20px;
+        }
+
+        .meditation-item {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: 0.2s;
+        }
+
+        .med-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .med-icon-wrapper {
+            width: 40px;
+            height: 40px;
+            background: var(--color-primary);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .med-info h3 {
+            margin-bottom: 5px;
+            font-size: 1.2rem;
+            color: var(--color-text-main);
+        }
+
+        .med-info p {
+            font-size: 0.95rem;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* Players */
+        .med-player-container {
+            width: 100%;
+            margin-top: 10px;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            /* 16:9 */
+            height: 0;
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 4px;
+        }
+
+        audio {
+            width: 100%;
+            outline: none;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-always-solid">
+        <div class="container nav-content">
+            <div class="brand-container">
+                <a href="dashboard.html" class="logo-link" aria-label="Dashboard">
+                    <img id="header-logo-display" src="" alt="Logo" class="header-logo hidden">
+                </a>
+                <div class="brand-info">
+                    <a href="dashboard.html" class="logo">Floresce Terapias</a>
+                    <div class="header-socials">
+                        <a href="https://www.instagram.com/floresceterapias?igsh=MW90eXlmOG93em55ZA%3D%3D&utm_source=qr"
+                            target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i
+                                data-lucide="instagram"></i></a>
+                        <a href="https://wa.me/351913515406" target="_blank" rel="noopener noreferrer"
+                            aria-label="WhatsApp"><i data-lucide="message-circle"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full Nav Links (Desktop) -->
+            <ul class="nav-links">
+                <li><a href="index.html">Início</a></li>
+                <li><a href="dashboard.html">Voltar</a></li>
+            </ul>
+
+            <span id="header-welcome-msg" class="header-welcome-msg"></span>
+
+            <button class="menu-toggle" aria-label="Abrir menu">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu"></div>
+
+
+    <header class="theme-header">
+        <h1 class="section-title" id="theme-title">A carregar...</h1>
+        <p id="theme-subtitle"></p>
+    </header>
+
+    <main class="container">
+        <div class="meditation-list text-center" id="dynamic-meditations">
+            <p>A carregar recursos...</p>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        async function loadThemeContent() {
+            const params = new URLSearchParams(window.location.search);
+            let docId = params.get('id');
+
+            if (!docId) {
+                // Return to dashboard if accessed directly without ID
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            // Initial Loading State
+            document.getElementById('theme-title').innerText = "A carregar...";
+            document.title = "A carregar... | Floresce Terapias";
+
+            // Wait for DB (Firebase initialization)
+            const MAX_RETRIES = 50; // 5 seconds
+            let retries = 0;
+
+            const checkDb = () => {
+                if (window.db) {
+                    console.log("DB connection established, fetching:", docId);
+                    fetchMeditations(docId);
+                } else {
+                    retries++;
+                    if (retries > MAX_RETRIES) {
+                        const container = document.getElementById('dynamic-meditations');
+                        if (container) {
+                            container.innerHTML = `
+                                <div style="text-align:center; padding:20px; color:red; border:1px solid red; margin-top:20px;">
+                                    <h3 style="margin-bottom:10px;">Erro de Conexão</h3>
+                                    <p>Não foi possível conectar ao banco de dados.</p>
+                                    <p style="font-size:0.8rem;">O Firebase não inicializou a tempo.</p>
+                                    <button onclick="window.location.reload()" style="padding:10px 20px; margin-top:10px; cursor:pointer;">Tentar Novamente</button>
+                                </div>
+                            `;
+                        }
+                        return;
+                    }
+                    setTimeout(checkDb, 100);
+                }
+            };
+            checkDb();
+        }
+
+        async function fetchMeditations(docId) {
+            const container = document.getElementById('dynamic-meditations');
+            try {
+                // FETCH SINGLE DOCUMENT BY ID
+                const docRef = await window.db.collection('meditations').doc(docId).get();
+
+                if (!docRef.exists) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px; background: whitesmoke; border-radius: 8px;">
+                            <i data-lucide="file-warning" style="margin-bottom: 15px; color: #999;"></i>
+                            <p>Recurso não encontrado ou removido.</p>
+                            <a href="dashboard.html" class="cta-button outline small" style="margin-top:20px; display:inline-block;">Voltar</a>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                    return;
+                }
+
+                const data = docRef.data();
+
+                // 1. UPDATE PAGE HEADERS
+                const pageTitle = data.page_title || data.title;
+                const pageSubtitle = data.page_subtitle || '';
+
+                document.getElementById('theme-title').innerHTML = pageTitle;
+                document.title = `${pageTitle.replace(/<[^>]*>?/gm, '')} | Floresce Terapias`;
+
+                // Add Subtitle to Header
+                const headerP = document.getElementById('theme-subtitle');
+                if (headerP) headerP.innerHTML = pageSubtitle;
+
+                // 2. UPDATE VISUALS (Background Color based on 'Theme' tag)
+                // Map themes to colors (using CSS variables or hex)
+                const themeColors = {
+                    'enraizamento': '#80864f', // Green
+                    'limpeza': '#1565c0',      // Blue
+                    'protecao': '#7b1fa2',     // Purple
+                    'intuicao': '#ef6c00',     // Orange
+                    'chakras': '#8e24aa',      // Violet
+                    'innerdance': '#2c3e50'    // Dark
+                };
+                const bgHex = themeColors[data.theme] || '#80864f';
+                document.querySelector('.theme-header').style.backgroundColor = bgHex;
+                // Ensure text contrast if dark bg
+                document.querySelector('.theme-header').style.color = '#fff';
+                if (headerP) headerP.style.color = 'rgba(255,255,255, 0.9)';
+
+
+                // 3. RENDER CONTENT
+                let playerHtml = '';
+
+                // Auto-detect Playback Type (Same logic as before)
+                const lowerUrl = (data.url || '').trim().toLowerCase();
+                const isVideo = lowerUrl.includes('youtube') || lowerUrl.includes('youtu.be') || lowerUrl.includes('vimeo');
+                const isEmbed = lowerUrl.includes('spotify') || lowerUrl.includes('soundcloud') || lowerUrl.includes('anchor.fm') || lowerUrl.includes('drive.google.com');
+                const isFirebase = lowerUrl.includes('firebasestorage') || lowerUrl.includes('googleapis.com');
+                // Check if it looks like an audio file or has audio metadata
+                const isAudioFile = lowerUrl.endsWith('.mp3') || lowerUrl.endsWith('.wav') || lowerUrl.includes('.mp3?') || lowerUrl.includes('alt=media') || data.type === 'audio';
+
+                console.log("Debug Player:", { url: lowerUrl, type: data.type, isVideo, isEmbed, isFirebase, isAudioFile });
+
+                // Only render if URL exists
+                if (lowerUrl.length > 5) {
+                    // FORCE NATIVE PLAYER for Firebase or Audio Files
+                    const shouldShowIframe = (data.type === 'video' || isVideo || isEmbed) && !isFirebase && !isAudioFile;
+
+                    if (shouldShowIframe) {
+                        let embedUrl = data.url;
+
+                        // YouTube Formatting
+                        if (embedUrl.includes('youtube.com/watch?v=')) {
+                            const videoId = embedUrl.split('v=')[1].split('&')[0];
+                            embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
+                        } else if (embedUrl.includes('youtu.be/')) {
+                            const videoId = embedUrl.split('youtu.be/')[1];
+                            embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
+                        } else if (embedUrl.includes('youtube.com/embed/')) {
+                            embedUrl = embedUrl.replace('youtube.com', 'youtube-nocookie.com');
+                        }
+
+                        // Spotify Formatting (Auto-Embed)
+                        try {
+                            if (embedUrl.includes('open.spotify.com') && !embedUrl.includes('/embed/')) {
+                                let urlObj = new URL(embedUrl);
+                                const path = urlObj.pathname;
+                                if (path.startsWith('/playlist') || path.startsWith('/track') || path.startsWith('/album')) {
+                                    embedUrl = `https://open.spotify.com/embed${path}${urlObj.search}`;
+                                }
+                            }
+                        } catch (e) { console.error("Spotify Error", e); }
+
+                        // Google Drive Formatting
+                        if (embedUrl.includes('drive.google.com') && embedUrl.includes('/file/d/')) {
+                            const match = embedUrl.match(/\/file\/d\/([^/]+)/);
+                            if (match && match[1]) {
+                                embedUrl = `https://drive.google.com/file/d/${match[1]}/preview`;
+                            }
+                        }
+
+                        const isAudioEmbed = isEmbed && !isVideo;
+
+                        if (isAudioEmbed) {
+                            playerHtml = `
+                        <div class="med-player-container">
+                            <iframe src="${embedUrl}" style="width:100%; height:152px; border:none; border-radius:12px;" sandbox="allow-forms allow-scripts allow-same-origin allow-presentation" allow="encrypted-media;" loading="lazy"></iframe>
+                        </div>`;
+                        } else {
+                            // Video
+                            playerHtml = `
+                        <div class="med-player-container">
+                            <div class="video-wrapper">
+                                <iframe src="${embedUrl}" frameborder="0" sandbox="allow-forms allow-scripts allow-same-origin allow-presentation" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                            </div>
+                        </div>`;
+                        }
+
+                    } else {
+                        // Native Audio
+                        playerHtml = `
+                    <div class="med-player-container">
+                        <audio controls controlsList="nodownload" oncontextmenu="return false;" style="width: 100%;">
+                            <source src="${data.url}" type="audio/mpeg">
+                            O teu navegador não suporta o elemento de áudio.
+                        </audio>
+                    </div>`;
+                    }
+                } // End URL check
+
+                const iconName = data.type === 'video' ? 'video' : 'music';
+                let imageHtml = '';
+                if (data.image_url) {
+                    imageHtml = `<div style="margin-bottom:15px; border-radius:8px; overflow:hidden;"><img src="${data.image_url}" style="width:100%; max-height:400px; object-fit:cover;"></div>`;
+                }
+
+                // Render Single Item
+                // Note: We use 'meditation-item' class but in a single view context
+                container.innerHTML = `
+                <div class="meditation-item">
+                    <div class="med-header">
+                        <div class="med-icon-wrapper"><i data-lucide="${iconName}"></i></div>
+                        <div class="med-info">
+                            <h3>${data.title}</h3>
+                            ${data.description ? `<div style="color:#666; font-size:1rem; margin-top:5px;">${data.description}</div>` : ''}
+                        </div>
+                    </div>
+                    ${imageHtml}
+                    ${playerHtml}
+                    
+                    <!-- Back Button -->
+                    <div style="margin-top:20px;">
+                        <a href="dashboard.html" class="cta-button outline small">Voltar</a>
+                    </div>
+                </div>`;
+
+                lucide.createIcons();
+
+            } catch (error) {
+                console.error("Error loading meditation:", error);
+                container.innerHTML = '<p style="text-align:center; color:red;">Erro ao carregar recurso.</p>';
+            }
+        }
+
+        // Global Error Handler for Theme Page
+        window.addEventListener('error', function (e) {
+            console.error("Global Error in theme.html:", e.message);
+        });
+
+        try {
+            console.log("Starting Theme Page Script...");
+            loadThemeContent();
+        } catch (err) {
+            console.error("Critical Error launching theme content:", err);
+            document.body.innerHTML += `<p style="color:red; background:white; padding:20px;">CRITICAL ERROR: ${err.message}</p>`;
+        }
+    </script>
+
+    <script src="main.js?v=7.1.0"></script>
+    <script src="sidebar.js"></script>
+    <footer class="footer footer-margin-top">
+        <div class="container text-center">
+            <p class="logo-text" id="footer-title"></p>
+            <div class="footer-links">
+                <a href="termos.html">Termos e Privacidade</a>
+            </div>
+            <p class="copyright" id="footer-copyright"></p>
+            <p class="footer-credits" id="footer-credit"></p>
+        </div>
+    </footer>
+</body>
+
+</html>

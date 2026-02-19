@@ -11,8 +11,6 @@ if (typeof ADMIN_EMAILS === 'undefined') {
     ];
 }
 
-
-
 // Helper: Verify Status (Global for Dashboard.html)
 window.verifyUserStatus = async (email) => {
     if (!email) return false;
@@ -34,8 +32,6 @@ window.verifyUserStatus = async (email) => {
 
 // Helper: Upload File to Firebase Storage
 // Helper: Upload File to Firebase Storage (Generic)
-// Helper: Upload File to Firebase Storage (Generic)
-// Helper: Upload File to Firebase Storage (Generic)
 const uploadImageToStorage = async (file, path) => {
     if (!file) return null;
     try {
@@ -48,7 +44,6 @@ const uploadImageToStorage = async (file, path) => {
         throw error;
     }
 };
-window.uploadImageToStorage = uploadImageToStorage;
 
 // Helper: Upload with Progress
 const uploadFileWithProgress = (file, path, onProgress) => {
@@ -198,14 +193,7 @@ window.initCMS = function () {
 
     const serviceForm = document.getElementById('service-form');
     if (serviceForm) {
-        // Use window.handleServiceSubmit from cms-services.js
-        if (typeof window.handleServiceSubmit === 'function') {
-            serviceForm.addEventListener('submit', window.handleServiceSubmit);
-        } else {
-            console.warn("handleServiceSubmit not found - check loading order.");
-            // Fallback: try to find it on window after a short delay? 
-            // Better to rely on dashboard.html calling initCMS() AFTER scripts load.
-        }
+        serviceForm.addEventListener('submit', handleServiceSubmit);
     }
 
     const seedBtn = document.getElementById('seed-services-btn');
@@ -271,48 +259,6 @@ window.initCMS = function () {
             e.preventDefault();
             handleLegalSubmit();
         });
-    }
-
-    // Initialize Theme Form
-    const themeForm = document.getElementById('theme-form');
-    if (themeForm) {
-        themeForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            handleThemeSubmit(e);
-        });
-    }
-
-    // NEW: Header Form Listener (Restored)
-    const headerForm = document.getElementById('header-form');
-    if (headerForm) {
-        headerForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            handleHeaderSubmit(e);
-        });
-    }
-
-    // NEW: Footer Form Listener (Restored)
-    const footerForm = document.getElementById('footer-form');
-    if (footerForm) {
-        footerForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            handleFooterSubmit();
-        });
-    }
-
-
-
-    const contactForm = document.getElementById('contact-form');
-    if (contactForm) {
-        contactForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            handleContactSubmit();
-        });
-    }
-
-    const themeResetBtn = document.getElementById('theme-reset-btn');
-    if (themeResetBtn) {
-        themeResetBtn.addEventListener('click', resetThemeSettings);
     }
 };
 
@@ -1040,9 +986,146 @@ async function loadServices(retryCount = 0) {
     }
 }
 
-// --- Services Logic Moved to cms-services.js ---
-// loadServices and editService removed from here to avoid conflicts.
-// Please refer to cms-services.js for the active implementation.
+window.editService = async (id) => {
+    try {
+        // Switch to Services Panel
+        window.openSection('panel-services');
+
+        const doc = await window.db.collection("services").doc(id).get();
+        if (!doc.exists) {
+            alert("Serviço não encontrado.");
+            return;
+        }
+        const data = doc.data();
+
+        // Populate Form
+        console.log("Editing Service Data:", data);
+
+        // Populate Form
+        document.getElementById('svc-id').value = id; // FIX: Set hidden ID
+        const titleInput = document.getElementById('svc-title');
+
+        // Sanitize & Decode Title on Load
+        let cleanTitle = data.title || '';
+        cleanTitle = decodeHtmlEntities(cleanTitle);
+        cleanTitle = cleanTitle.replace(/<\/?(p|div|br|h[1-6])[^>]*>/gi, '').trim(); // Strip blocks only
+        if (titleInput) titleInput.value = cleanTitle;
+
+        const imgInput = document.getElementById('svc-image');
+        if (imgInput) imgInput.value = data.headerImage || '';
+
+        // Decode Description as well if needed
+        const descInput = document.getElementById('svc-desc');
+        if (descInput) {
+            let cleanDesc = data.description || '';
+            cleanDesc = decodeHtmlEntities(cleanDesc);
+            // Allow inline tags for description too
+            cleanDesc = cleanDesc.replace(/<\/?(p|div|h[1-6])[^>]*>/gi, '').trim();
+            descInput.value = cleanDesc;
+        }
+
+        // FIX: If TinyMCE somehow attached to Short Description, remove it!
+        if (window.tinymce && tinymce.get('svc-desc')) {
+            console.log("Removing unwanted TinyMCE from svc-desc");
+            tinymce.get('svc-desc').remove();
+        }
+
+        // Re-set value after potential removal (redundant but safe)
+        if (descInput) {
+            let cleanDesc = data.description || ''; // Re-initialize cleanDesc
+            cleanDesc = decodeHtmlEntities(cleanDesc);
+            cleanDesc = cleanDesc.replace(/<\/?(p|div|h[1-6])[^>]*>/gi, '').trim();
+            descInput.value = cleanDesc;
+        }
+
+
+        // Debug
+        // alert("DEBUG DATA:\nID: " + id + "\nTitle: " + data.title + "\nDesc: " + data.description + "\nImg: " + data.headerImage);
+
+
+
+        // Populate Full Description
+        document.getElementById('svc-full-desc').value = data.long_description || '';
+
+        // Sanitize Benefits on Load
+        let cleanBenefits = [];
+        if (data.benefits && Array.isArray(data.benefits)) {
+            cleanBenefits = data.benefits.map(b => {
+                let cb = decodeHtmlEntities(b); // Decode
+                cb = cb.replace(/<\/?(p|div|br|h[1-6])[^>]*>/gi, '').trim(); // Strip blocks only
+                return cb;
+            });
+        }
+        document.getElementById('svc-benefits').value = cleanBenefits.join(', ');
+
+        // Populate Testimonials
+        if (data.testimonial_ids) {
+            const selectedIds = new Set(data.testimonial_ids || []);
+            loadTestimonialsSelector(selectedIds);
+        } else {
+            loadTestimonialsSelector(new Set());
+        }
+
+        // Populate Colors
+        if (data.customColors) {
+            // New Scheme Mapping
+            const cc = data.customColors;
+            document.getElementById('svc-colors-config').classList.remove('hidden');
+
+            // Top Section
+            if (document.getElementById('svc-top-bg-color')) {
+                // Fallback to old 'headerOpacity' or default black if new field missing
+                document.getElementById('svc-top-bg-color').value = cc.topBg || '#000000';
+            }
+            if (document.getElementById('svc-top-opacity')) {
+                // Fallback to old 'headerOpacity'
+                const val = (cc.topOpacity !== undefined) ? cc.topOpacity : (cc.headerOpacity !== undefined ? cc.headerOpacity : 0.5);
+                document.getElementById('svc-top-opacity').value = val;
+                document.getElementById('opacity-val-top').innerText = Math.round(val * 100) + '%';
+            }
+
+            // Bottom Section
+            if (document.getElementById('svc-bottom-bg-color')) {
+                // Fallback to old 'bg'
+                document.getElementById('svc-bottom-bg-color').value = cc.bottomBg || cc.bg || '#4F553D';
+            }
+            if (document.getElementById('svc-bottom-opacity')) {
+                // Fallback to old 'bgOpacity'
+                const val = (cc.bottomOpacity !== undefined) ? cc.bottomOpacity : (cc.bgOpacity !== undefined ? cc.bgOpacity : 1);
+                document.getElementById('svc-bottom-opacity').value = val;
+                document.getElementById('opacity-val-bottom').innerText = Math.round(val * 100) + '%';
+            }
+
+            // Buttons
+            if (document.getElementById('svc-btn-text-color')) {
+                // Fallback to old 'text'
+                document.getElementById('svc-btn-text-color').value = cc.btnText || cc.text || '#ffffff';
+            }
+
+        } else {
+            // Defaults if no data
+            document.getElementById('svc-colors-config').classList.add('hidden');
+            resetColorInputs();
+        }
+
+        // document.getElementById('svc-theme').value = data.styleClass || '';
+        if (imgInput) imgInput.value = data.headerImage || '';
+        document.getElementById('svc-image-file').value = '';
+
+        // UI Changes
+        document.getElementById('svc-submit-btn').innerText = "Atualizar Serviço";
+        document.getElementById('svc-cancel-btn').style.display = 'inline-block';
+        document.getElementById('svc-cancel-btn').classList.remove('hidden');
+
+        // Scroll
+        document.getElementById('service-form').scrollIntoView({ behavior: 'smooth' });
+
+        console.log("Edit Mode Enabled for: ", id);
+
+    } catch (error) {
+        console.error("Error getting service:", error);
+    }
+};
 
 window.resetServiceForm = async () => {
     document.getElementById('service-form').reset();
@@ -1293,7 +1376,16 @@ window.deleteServiceTestimonial = async (id) => {
     }
 };
 
-// deleteService removed. See cms-services.js
+window.deleteService = async (id) => {
+    if (confirm("Apagar este serviço?")) {
+        try {
+            await window.db.collection("services").doc(id).delete();
+            loadServices();
+        } catch (error) {
+            alert("Erro: " + error.message);
+        }
+    }
+};
 
 // Seeding Function (Updated with Static Links)
 window.seedDefaultServices = async () => {
@@ -1786,15 +1878,6 @@ async function loadSiteContent() {
                 // Images
                 if (document.getElementById('about-image-url')) document.getElementById('about-image-url').value = data.about.image_url || '';
                 if (document.getElementById('about-image-art-url')) document.getElementById('about-image-art-url').value = data.about.image_art_url || '';
-
-                // Colors
-                if (document.getElementById('about-intro-bg')) document.getElementById('about-intro-bg').value = data.about.intro_bg || '#ffffff';
-                if (document.getElementById('about-art-bg')) document.getElementById('about-art-bg').value = data.about.art_bg || '#f7f2e0';
-
-                // Update hex inputs for visual feedback
-                if (document.getElementById('about-intro-bg-hex')) document.getElementById('about-intro-bg-hex').value = document.getElementById('about-intro-bg').value;
-                if (document.getElementById('about-art-bg-hex')) document.getElementById('about-art-bg-hex').value = document.getElementById('about-art-bg').value;
-
             }
 
             // Populate Home Summary Form
@@ -1878,45 +1961,7 @@ async function handleHomeSubmit(e) {
 
 
 
-        // Explicitly check value
-        const isHighlight = document.getElementById('home-text-highlight').checked;
-
         await window.db.collection('site_content').doc('main').set(data, { merge: true });
-
-        // --- SYNC: Auto-Enable Header Transparency if Highlight is ON ---
-        if (isHighlight === true) {
-            try {
-                // FORCE UPDATE regardless of current state to ensure consistency
-                const doc = await window.db.collection('site_content').doc('main').get();
-                let currentHeader = doc.exists ? (doc.data().header || {}) : {};
-
-                // Ensure defaults
-                const defaults = {
-                    bg_color: '#80864f',
-                    text_color: '#f7f2e0',
-                    font_size: 16,
-                    padding: 20
-                };
-                const newHeader = { ...defaults, ...currentHeader, transparent: true };
-
-                // 1. Save to DB
-                await window.db.collection('site_content').doc('main').set({
-                    header: newHeader
-                }, { merge: true });
-
-                // 2. Update Local & UI
-                localStorage.setItem('site_header', JSON.stringify(newHeader));
-                if (typeof applyHeaderSettings === 'function') applyHeaderSettings(newHeader);
-
-                // 3. Update Checkbox if visible
-                const hCheck = document.getElementById('header-transparent');
-                if (hCheck) hCheck.checked = true;
-
-            } catch (err) {
-                console.warn("Auto-header-sync failed:", err);
-            }
-        }
-
         alert("Conteúdo da Página Inicial atualizado!");
 
     } catch (error) {
@@ -1964,10 +2009,7 @@ async function handleAboutSubmit(e) {
                 text_intro: (window.tinymce && tinymce.get('about-text-intro')) ? tinymce.get('about-text-intro').getContent() : document.getElementById('about-text-intro').value,
                 text_art: (window.tinymce && tinymce.get('about-text-art')) ? tinymce.get('about-text-art').getContent() : document.getElementById('about-text-art').value,
                 image_url: imageUrl,
-                image_art_url: imageArtUrl,
-                // Colors
-                intro_bg: document.getElementById('about-intro-bg').value,
-                art_bg: document.getElementById('about-art-bg').value
+                image_art_url: imageArtUrl
             }
         };
 
@@ -2073,28 +2115,6 @@ window.handleFooterSubmit = async () => {
         document.documentElement.style.setProperty('--color-footer-text', textColor);
 
         alert("Rodapé atualizado com sucesso!");
-
-        // SYNC WITH THEME (Bidirectional)
-        try {
-            // Update Firestore SAFE WAY (Dot Notation)
-            const updatePayload = {};
-            updatePayload['theme.footer_bg'] = bgColor;
-            await window.db.collection('site_content').doc('main').update(updatePayload);
-
-            // Local Storage Sync (Preserve existing)
-            let currentTheme = JSON.parse(localStorage.getItem('site_theme'));
-            if (currentTheme) {
-                currentTheme.footer_bg = bgColor;
-                localStorage.setItem('site_theme', JSON.stringify(currentTheme));
-            }
-
-            // Update Input if visible
-            if (document.getElementById('theme-footer')) document.getElementById('theme-footer').value = bgColor;
-            if (document.getElementById('theme-footer-hex')) document.getElementById('theme-footer-hex').value = bgColor;
-
-        } catch (err) {
-            console.warn("Could not sync footer to theme:", err);
-        }
     } catch (error) {
         console.error("Error saving Footer content:", error);
         alert("Erro ao guardar rodapé.");
@@ -2239,20 +2259,7 @@ function setupHexListeners() {
         { color: 'theme-header', hex: 'theme-header-hex' },
         { color: 'theme-secondary-1', hex: 'theme-secondary-1-hex' },
         { color: 'theme-secondary-2', hex: 'theme-secondary-2-hex' },
-        { color: 'theme-footer', hex: 'theme-footer-hex' },
-        // About Page Colors
-        { color: 'about-intro-bg', hex: 'about-intro-bg-hex' },
-        // Text Color Removed
-        { color: 'about-art-bg', hex: 'about-art-bg-hex' },
-        // Text Color Removed
-        // Service Colors
-        { color: 'svc-sec2-bg', hex: 'svc-sec2-bg-hex' },
-        { color: 'svc-sec2-text', hex: 'svc-sec2-text-hex' },
-        { color: 'svc-testi-bg', hex: 'svc-testi-bg-hex' },
-        { color: 'svc-testi-text', hex: 'svc-testi-text-hex' },
-        { color: 'svc-top-bg-color', hex: 'svc-top-bg-hex' },
-        { color: 'svc-bottom-bg-color', hex: 'svc-bottom-bg-hex' },
-        { color: 'svc-btn-text-color', hex: 'svc-btn-text-hex' }
+        { color: 'theme-footer', hex: 'theme-footer-hex' }
     ];
 
     pairs.forEach(pair => {
@@ -2313,14 +2320,8 @@ async function loadHeaderSettings() {
             const header = { ...defaults, ...data };
 
             if (document.getElementById('header-transparent')) document.getElementById('header-transparent').checked = header.transparent;
-            if (document.getElementById('header-bg-color')) {
-                document.getElementById('header-bg-color').value = header.bg_color;
-                if (document.getElementById('header-bg-color-hex')) document.getElementById('header-bg-color-hex').value = header.bg_color;
-            }
-            if (document.getElementById('header-text-color')) {
-                document.getElementById('header-text-color').value = header.text_color;
-                if (document.getElementById('header-text-color-hex')) document.getElementById('header-text-color-hex').value = header.text_color;
-            }
+            if (document.getElementById('header-bg-color')) document.getElementById('header-bg-color').value = header.bg_color;
+            if (document.getElementById('header-text-color')) document.getElementById('header-text-color').value = header.text_color;
             if (document.getElementById('header-font-size')) document.getElementById('header-font-size').value = header.font_size;
             if (document.getElementById('header-padding')) document.getElementById('header-padding').value = header.padding;
 
@@ -2370,7 +2371,7 @@ async function handleHeaderSubmit(e) {
         if (logoInput.files && logoInput.files[0]) {
             btn.textContent = "A enviar logo..."; // Update status
             const logoFile = logoInput.files[0];
-            const path = `header_logo/${Date.now()}_${logoFile.name}`;
+            const path = `header_logo / ${Date.now()}_${logoFile.name} `;
 
             try {
                 logoUrl = await uploadImageToStorage(logoFile, path);
@@ -2409,32 +2410,6 @@ async function handleHeaderSubmit(e) {
         // 5. Success
         alert("Cabeçalho atualizado com sucesso!");
 
-        // 6. SYNC WITH THEME (Bidirectional)
-        try {
-            // Update Firestore SAFE WAY (Dot Notation)
-            const updatePayload = {};
-            updatePayload['theme.header_bg'] = headerSettings.bg_color;
-            await window.db.collection('site_content').doc('main').update(updatePayload);
-
-            // Local Storage Sync
-            let currentTheme = JSON.parse(localStorage.getItem('site_theme'));
-            if (currentTheme) {
-                currentTheme.header_bg = headerSettings.bg_color;
-                localStorage.setItem('site_theme', JSON.stringify(currentTheme));
-            }
-
-            // Update Input if visible
-            if (document.getElementById('theme-header')) {
-                document.getElementById('theme-header').value = headerSettings.bg_color;
-            }
-            if (document.getElementById('theme-header-hex')) {
-                document.getElementById('theme-header-hex').value = headerSettings.bg_color;
-            }
-
-        } catch (err) {
-            console.warn("Could not sync theme settings:", err);
-        }
-
     } catch (error) {
         console.error("Error saving header:", error);
         alert("Erro ao guardar cabeçalho: " + error.message);
@@ -2463,18 +2438,6 @@ function applyHeaderSettings(settings) {
         }
     }
 
-    // Update Dashboard Logo (Directly)
-    const dashboardLogo = document.getElementById('header-logo-display');
-    if (dashboardLogo) {
-        if (settings.logo_url) {
-            dashboardLogo.src = settings.logo_url;
-            dashboardLogo.classList.remove('hidden');
-            dashboardLogo.style.display = '';
-        } else {
-            dashboardLogo.classList.add('hidden');
-        }
-    }
-
     // We update global vars, but script.js handles the scroll logic
     // Let's store in localStorage for script.js to read on init
     localStorage.setItem('site_header', JSON.stringify(settings));
@@ -2499,36 +2462,34 @@ async function handleThemeSubmit(e) {
     btn.textContent = "A guardar...";
 
     try {
-        // 1. Get Existing Theme (to preserve Header/Footer BGs which are now managed separately)
-        const existingTheme = JSON.parse(localStorage.getItem('site_theme')) || {};
-
-        // 2. Build New Theme (Merging Generic Colors)
         const newTheme = {
-            ...existingTheme, // Keep existing props (like header_bg, footer_bg)
             bg_color: document.getElementById('theme-bg').value,
             text_color: document.getElementById('theme-text').value,
             primary_color: document.getElementById('theme-primary').value,
+            header_bg: document.getElementById('theme-header').value,
             secondary_beige: document.getElementById('theme-secondary-1').value,
-            secondary_blue: document.getElementById('theme-secondary-2').value
-            // header_bg and footer_bg are NOT updated here anymore
+            secondary_blue: document.getElementById('theme-secondary-2').value,
+            secondary_blue: document.getElementById('theme-secondary-2').value,
+            footer_bg: document.getElementById('theme-footer').value,
+            card_text: document.getElementById('theme-card-text').value
         };
 
-        // 3. Save to Firestore
+        // 1. Save to Cloud
         await window.db.collection('site_content').doc('main').set({
             theme: newTheme
         }, { merge: true });
 
-        // 4. Update Local Storage
+        // 2. Update Local Storage (Instant Load for next time)
         localStorage.setItem('site_theme', JSON.stringify(newTheme));
 
-        // 5. Apply
+        // 3. Apply now
         applyTheme(newTheme);
 
-        alert("Cores Gerais atualizadas com sucesso!");
+        alert("Tema atualizado com sucesso!");
 
     } catch (error) {
         console.error("Error saving theme:", error);
-        alert("Erro ao guardar tema: " + error.message);
+        alert("Erro ao guardar tema.");
     } finally {
         btn.textContent = originalText;
     }
@@ -2555,50 +2516,23 @@ async function resetThemeSettings() {
         localStorage.removeItem('site_header');
 
         // 3. Reset UI inputs (Theme)
-        if (document.getElementById('theme-bg')) {
-            document.getElementById('theme-bg').value = DEFAULT_THEME.bg_color;
-            if (document.getElementById('theme-bg-hex')) document.getElementById('theme-bg-hex').value = DEFAULT_THEME.bg_color;
-        }
-        if (document.getElementById('theme-text')) {
-            document.getElementById('theme-text').value = DEFAULT_THEME.text_color;
-            if (document.getElementById('theme-text-hex')) document.getElementById('theme-text-hex').value = DEFAULT_THEME.text_color;
-        }
-        if (document.getElementById('theme-primary')) {
-            document.getElementById('theme-primary').value = DEFAULT_THEME.primary_color;
-            if (document.getElementById('theme-primary-hex')) document.getElementById('theme-primary-hex').value = DEFAULT_THEME.primary_color;
-        }
-        if (document.getElementById('theme-secondary-1')) {
-            document.getElementById('theme-secondary-1').value = DEFAULT_THEME.secondary_beige;
-            if (document.getElementById('theme-secondary-1-hex')) document.getElementById('theme-secondary-1-hex').value = DEFAULT_THEME.secondary_beige;
-        }
-        if (document.getElementById('theme-secondary-2')) {
-            document.getElementById('theme-secondary-2').value = DEFAULT_THEME.secondary_blue;
-            if (document.getElementById('theme-secondary-2-hex')) document.getElementById('theme-secondary-2-hex').value = DEFAULT_THEME.secondary_blue;
-        }
+        if (document.getElementById('theme-bg')) document.getElementById('theme-bg').value = DEFAULT_THEME.bg_color;
+        if (document.getElementById('theme-text')) document.getElementById('theme-text').value = DEFAULT_THEME.text_color;
+        if (document.getElementById('theme-primary')) document.getElementById('theme-primary').value = DEFAULT_THEME.primary_color;
+        if (document.getElementById('theme-header')) document.getElementById('theme-header').value = DEFAULT_THEME.header_bg;
+        if (document.getElementById('theme-secondary-1')) document.getElementById('theme-secondary-1').value = DEFAULT_THEME.secondary_beige;
+        if (document.getElementById('theme-secondary-2')) document.getElementById('theme-secondary-2').value = DEFAULT_THEME.secondary_blue;
+        if (document.getElementById('theme-secondary-2')) document.getElementById('theme-secondary-2').value = DEFAULT_THEME.secondary_blue;
+        if (document.getElementById('theme-footer')) document.getElementById('theme-footer').value = DEFAULT_THEME.footer_bg;
+        if (document.getElementById('theme-card-text')) document.getElementById('theme-card-text').value = '';
 
-        // Header Inputs
+        updateHexInputs(); // Update the text inputs too
+
+        // Reset UI inputs (Header - if present on page)
         if (document.getElementById('header-transparent')) document.getElementById('header-transparent').checked = false;
-        if (document.getElementById('header-bg-color')) {
-            document.getElementById('header-bg-color').value = DEFAULT_THEME.header_bg;
-            if (document.getElementById('header-bg-color-hex')) document.getElementById('header-bg-color-hex').value = DEFAULT_THEME.header_bg;
-        }
-        if (document.getElementById('header-text-color')) {
-            document.getElementById('header-text-color').value = '#ffffff';
-            if (document.getElementById('header-text-color-hex')) document.getElementById('header-text-color-hex').value = '#ffffff';
-        }
+        if (document.getElementById('header-bg-color')) document.getElementById('header-bg-color').value = DEFAULT_THEME.header_bg;
         if (document.getElementById('header-font-size')) document.getElementById('header-font-size').value = 16;
         if (document.getElementById('header-padding')) document.getElementById('header-padding').value = 20;
-
-        // Footer Inputs
-        if (document.getElementById('footer-bg-color')) {
-            document.getElementById('footer-bg-color').value = DEFAULT_THEME.footer_bg;
-            if (document.getElementById('footer-bg-hex')) document.getElementById('footer-bg-hex').value = DEFAULT_THEME.footer_bg;
-        }
-        if (document.getElementById('footer-text-color')) {
-            document.getElementById('footer-text-color').value = DEFAULT_THEME.text_color; // Assuming text default
-            if (document.getElementById('footer-text-hex')) document.getElementById('footer-text-hex').value = DEFAULT_THEME.text_color;
-        }
-
 
         // 4. Apply Defaults
         applyTheme(DEFAULT_THEME);
@@ -2677,7 +2611,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadHeaderSettings();
     loadThemeSettings(); // Load Theme Settings on Init
     loadLegalContent();   // Load Legal
-    setupHexListeners(); // Initialize Color Sync
 });
 
 // --- Legal Content Management ---
@@ -2897,14 +2830,6 @@ async function loadContactContent() {
 const homeAboutForm = document.getElementById('home-about-form');
 if (homeAboutForm) homeAboutForm.addEventListener('submit', handleHomeAboutSubmit);
 
-// --- MISSING LISTENERS ADDED ---
-const homeContentForm = document.getElementById('home-content-form');
-if (homeContentForm) homeContentForm.addEventListener('submit', handleHomeSubmit);
-
-const aboutContentForm = document.getElementById('about-content-form');
-if (aboutContentForm) aboutContentForm.addEventListener('submit', handleAboutSubmit);
-// -------------------------------
-
 // Footer Listener
 const footerForm = document.getElementById('footer-form');
 if (footerForm) {
@@ -3086,5 +3011,353 @@ function decodeHtmlEntities(str) {
     return txt.value;
 }
 
-// --- Services Logic Moved to cms-services.js ---
+// --- Services Logic (Restored) ---
 
+window.servicesCache = {};
+
+window.loadServices = async function () {
+    const listContainer = document.getElementById('admin-services-list');
+    if (!listContainer) return;
+    listContainer.innerHTML = '<p>A carregar serviços...</p>';
+
+    try {
+        const querySnapshot = await window.db.collection("services").orderBy("order", "asc").get();
+        console.log("Services Snapshot Size:", querySnapshot.size);
+
+        if (querySnapshot.empty) {
+            listContainer.innerHTML = '<p>Sem serviços ativos.</p>';
+            return;
+        }
+
+        let html = '';
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            window.servicesCache[doc.id] = data; // Cache for editing
+
+            // Card Preview Logic - Image Fallback
+            // Match public site default gradient
+            const defaultGradient = 'linear-gradient(135deg, #4F553D 0%, #30332E 100%)';
+            const imgUrl = data.headerImage || data.image || data.img;
+            const bgImage = imgUrl ? `url('${imgUrl}')` : defaultGradient;
+
+            html += `
+            <div class="admin-service-card-mini" draggable="true" ondragstart="drag(event)" id="${doc.id}">
+                <div class="mini-card-image" style="background-image: ${bgImage};">
+                    <div class="mini-card-overlay">
+                        <span class="mini-card-title">${data.title}</span>
+                    </div>
+                </div>
+                <div class="mini-card-actions">
+                    <button class="btn-icon-action edit" onclick="window.editService('${doc.id}')" title="Editar">
+                        <i data-lucide="edit-2"></i>
+                    </button>
+                    <button class="btn-icon-action delete" onclick="window.deleteService('${doc.id}')" title="Apagar">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                </div>
+            </div>
+            `;
+        });
+
+        listContainer.innerHTML = html;
+        if (window.lucide) window.lucide.createIcons();
+
+    } catch (error) {
+        console.error("Error loading services:", error);
+        listContainer.innerHTML = '<p style="color:red">Erro ao carregar serviços.</p>';
+    }
+};
+
+window.handleServiceSubmit = async function (e) {
+    if (e) e.preventDefault();
+    const btn = document.getElementById('svc-submit-btn');
+    const originalText = btn.textContent;
+    btn.textContent = "A guardar...";
+    btn.disabled = true;
+
+    try {
+        const idInput = document.getElementById('svc-id');
+        const id = idInput ? idInput.value : '';
+
+        const title = document.getElementById('svc-title').value;
+        const benefitsStr = document.getElementById('svc-benefits').value;
+        const benefits = benefitsStr ? benefitsStr.split(',').map(s => s.trim()).filter(s => s) : [];
+        const desc = document.getElementById('svc-desc').value; // Short
+        // Full description or use the newly added one
+        const fullDesc = document.getElementById('svc-full-desc').value;
+
+        // Image Handling
+        let imageUrl = document.getElementById('svc-image').value;
+        const imageFile = document.getElementById('svc-image-file').files[0];
+
+        if (imageFile) {
+            btn.textContent = "A enviar imagem...";
+            try {
+                const path = `services/${Date.now()}_${imageFile.name}`;
+                imageUrl = await uploadImageToStorage(imageFile, path);
+            } catch (err) {
+                console.error("Image Upload Error", err);
+                // Proceed without updating image if failed? No, alert user.
+                throw new Error("Falha no upload da imagem: " + err.message);
+            }
+        }
+
+        // Color Configs
+        const customColors = {
+            topBg: document.getElementById('svc-top-bg-color').value,
+            topOpacity: document.getElementById('svc-top-opacity').value,
+            bottomBg: document.getElementById('svc-bottom-bg-color').value,
+            bottomOpacity: document.getElementById('svc-bottom-opacity').value,
+            btnText: document.getElementById('svc-btn-text-color').value
+        };
+
+        // Get Testimonials Selection
+        const selectedTestimonials = [];
+        document.querySelectorAll('input[name="svc-testimonial"]:checked').forEach(cb => {
+            selectedTestimonials.push(cb.value);
+        });
+
+        const serviceData = {
+            title,
+            benefits,
+            description: desc,
+            long_description: fullDesc,
+            headerImage: imageUrl,
+            customColors,
+            testimonial_ids: selectedTestimonials, // Store array of IDs
+            // order: Date.now(), // Only set on create? No, keep existing if update
+            active: true,
+            updated_at: new Date()
+        };
+
+        if (!id) {
+            serviceData.order = Date.now();
+            serviceData.created_at = new Date();
+        }
+
+        if (id) {
+            // Update
+            await window.db.collection("services").doc(id).set(serviceData, { merge: true });
+            alert("Serviço atualizado com sucesso! ✨");
+        } else {
+            // Create
+            await window.db.collection("services").add(serviceData);
+            alert("Serviço criado com sucesso! ✨");
+        }
+
+        window.resetServiceForm();
+        loadServices();
+
+    } catch (error) {
+        console.error("Error saving service:", error);
+        alert("Erro ao guardar serviço: " + error.message);
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+};
+
+window.editService = function (id) {
+    const data = window.servicesCache[id];
+
+    if (!data) {
+        console.error("No data found for ID:", id);
+        return;
+    }
+
+    const idInput = document.getElementById('svc-id');
+    if (idInput) {
+        idInput.value = id;
+    } else {
+        console.error("svc-id input not found!");
+    }
+
+    document.getElementById('svc-title').value = data.title || '';
+    document.getElementById('svc-benefits').value = (data.benefits || []).join(', ');
+    document.getElementById('svc-desc').value = data.description || '';
+    document.getElementById('svc-full-desc').value = data.long_description || '';
+    document.getElementById('svc-image').value = data.headerImage || '';
+    document.getElementById('svc-image-file').value = ''; // Reset file input
+
+    // Colors
+    if (data.customColors) {
+        if (document.getElementById('svc-top-bg-color')) document.getElementById('svc-top-bg-color').value = data.customColors.topBg || '#000000';
+        if (document.getElementById('svc-top-opacity')) {
+            const op = data.customColors.topOpacity !== undefined ? data.customColors.topOpacity : 0.5;
+            document.getElementById('svc-top-opacity').value = op;
+            if (document.getElementById('opacity-val-top')) document.getElementById('opacity-val-top').textContent = Math.round(op * 100) + '%';
+        }
+        if (document.getElementById('svc-bottom-bg-color')) document.getElementById('svc-bottom-bg-color').value = data.customColors.bottomBg || '#4F553D';
+        if (document.getElementById('svc-bottom-opacity')) {
+            const op = data.customColors.bottomOpacity !== undefined ? data.customColors.bottomOpacity : 1;
+            document.getElementById('svc-bottom-opacity').value = op;
+            if (document.getElementById('opacity-val-bottom')) document.getElementById('opacity-val-bottom').textContent = Math.round(op * 100) + '%';
+        }
+        if (document.getElementById('svc-btn-text-color')) document.getElementById('svc-btn-text-color').value = data.customColors.btnText || '#ffffff';
+    } else {
+        // Reset colors to defaults if no custom colors
+        document.getElementById('svc-top-bg-color').value = '#000000';
+        document.getElementById('svc-bottom-bg-color').value = '#4F553D';
+
+        if (document.getElementById('svc-top-opacity')) {
+            document.getElementById('svc-top-opacity').value = 0.5;
+            if (document.getElementById('opacity-val-top')) document.getElementById('opacity-val-top').textContent = '50%';
+        }
+        if (document.getElementById('svc-bottom-opacity')) {
+            document.getElementById('svc-bottom-opacity').value = 1;
+            if (document.getElementById('opacity-val-bottom')) document.getElementById('opacity-val-bottom').textContent = '100%';
+        }
+    }
+
+    // Select Testimonials
+    document.querySelectorAll('input[name="svc-testimonial"]').forEach(cb => cb.checked = false);
+
+    if (data.testimonial_ids && Array.isArray(data.testimonial_ids)) {
+        document.querySelectorAll('input[name="svc-testimonial"]').forEach(cb => {
+            if (data.testimonial_ids.includes(cb.value)) cb.checked = true;
+        });
+    }
+
+    // UI Updates
+    document.getElementById('svc-submit-btn').textContent = "Atualizar Serviço";
+    const cancelBtn = document.getElementById('svc-cancel-btn');
+    if (cancelBtn) cancelBtn.classList.remove('hidden');
+
+    // Scroll to form
+    const formEl = document.getElementById('service-form'); // Logic assumes this ID or wrapper
+    if (formEl) formEl.scrollIntoView({ behavior: 'smooth' });
+    else {
+        // Fallback
+        const card = document.getElementById('card-services');
+        if (card) {
+            card.open = true;
+            card.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+};
+
+window.deleteService = async function (id) {
+    if (confirm("Tem a certeza que deseja apagar este serviço?")) {
+        try {
+            await window.db.collection("services").doc(id).delete();
+            loadServices();
+            // alert("Serviço apagado.");
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao apagar.");
+        }
+    }
+};
+
+window.resetServiceForm = function () {
+    // Try to find the form. If 'service-form' ID exists on form tag
+    const form = document.querySelector('#card-services form') || document.getElementById('service-form');
+    if (form) form.reset();
+
+    document.getElementById('svc-id').value = "";
+    document.getElementById('svc-image-file').value = "";
+    document.getElementById('svc-submit-btn').textContent = "Publicar Serviço";
+    const cancelBtn = document.getElementById('svc-cancel-btn');
+    if (cancelBtn) cancelBtn.classList.add('hidden');
+
+    // Reset Color Defaults (Manual override as reset() might revert to value attribute)
+    if (document.getElementById('svc-top-bg-color')) document.getElementById('svc-top-bg-color').value = '#000000';
+    if (document.getElementById('svc-top-opacity')) document.getElementById('svc-top-opacity').value = 0.5;
+    if (document.getElementById('svc-bottom-bg-color')) document.getElementById('svc-bottom-bg-color').value = '#4F553D';
+    if (document.getElementById('svc-bottom-opacity')) document.getElementById('svc-bottom-opacity').value = 1;
+    if (document.getElementById('svc-btn-text-color')) document.getElementById('svc-btn-text-color').value = '#ffffff';
+
+    if (document.getElementById('opacity-val-top')) document.getElementById('opacity-val-top').textContent = '50%';
+    if (document.getElementById('opacity-val-bottom')) document.getElementById('opacity-val-bottom').textContent = '100%';
+
+    // Uncheck Testimonials
+    document.querySelectorAll('input[name="svc-testimonial"]').forEach(cb => cb.checked = false);
+};
+
+// --- Testimonials Selector Logic ---
+window.loadTestimonialsSelector = async function (selectedSet) {
+    const container = document.getElementById('svc-testimonials-selector');
+    if (!container) return;
+
+    const loading = document.getElementById('loading-testimonials-selector');
+
+    try {
+        const snapshot = await window.db.collection('testimonials').orderBy('created_at', 'desc').get();
+        if (loading) loading.style.display = 'none';
+
+        if (snapshot.empty) {
+            container.innerHTML = '<p class="font-xs text-muted">Sem testemunhos disponíveis.</p>';
+            return;
+        }
+
+        let html = '';
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            // Optional: If we passed a set, check it (handled in editService now)
+
+            // Truncate text
+            const text = data.text.length > 60 ? data.text.substring(0, 60) + '...' : data.text;
+
+            html += `
+            <div class="testimonial-checkbox-item" style="display:flex; align-items:flex-start; margin-bottom: 5px;">
+                <input type="checkbox" name="svc-testimonial" value="${doc.id}" style="margin-top:3px; margin-right:8px;">
+                <div style="font-size: 11px; line-height: 1.3;">
+                    <strong>${data.name}</strong><br>
+                    <span class="text-muted" style="font-style:italic;">"${text}"</span>
+                </div>
+            </div>
+            `;
+        });
+
+        container.innerHTML = html;
+
+    } catch (e) {
+        console.error("Error loading testimonials selector", e);
+        if (loading) loading.textContent = "Erro ao carregar.";
+    }
+};
+
+// Quick Testimonial Modal (Globals)
+window.openQuickTestimonialModal = () => {
+    const m = document.getElementById('quick-testimonial-modal');
+    if (m) m.style.display = 'flex';
+};
+window.closeQuickTestimonialModal = () => {
+    const m = document.getElementById('quick-testimonial-modal');
+    if (m) m.style.display = 'none';
+    const f = document.getElementById('quick-testimonial-form');
+    if (f) f.reset();
+};
+window.handleQuickTestimonialSubmit = async (e) => {
+    if (e) e.preventDefault();
+
+    const name = document.getElementById('quick-rev-name').value;
+    const role = document.getElementById('quick-rev-role').value;
+    const text = document.getElementById('quick-rev-text').value;
+
+    if (!name || !text) { alert("Preencha nome e depoimento."); return; }
+
+    try {
+        const docRef = await window.db.collection("testimonials").add({
+            name, role, text,
+            type: 'general',
+            active: true,
+            created_at: new Date()
+        });
+
+        // Refresh Selector
+        await window.loadTestimonialsSelector();
+
+        // Auto-select the new one
+        setTimeout(() => {
+            const cb = document.querySelector(`input[name="svc-testimonial"][value="${docRef.id}"]`);
+            if (cb) cb.checked = true;
+        }, 500);
+
+        window.closeQuickTestimonialModal();
+        alert("Testemunho criado e disponível para seleção!");
+
+    } catch (err) {
+        alert("Erro: " + err.message);
+    }
+};

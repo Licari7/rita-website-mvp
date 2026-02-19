@@ -198,14 +198,7 @@ window.initCMS = function () {
 
     const serviceForm = document.getElementById('service-form');
     if (serviceForm) {
-        // Use window.handleServiceSubmit from cms-services.js
-        if (typeof window.handleServiceSubmit === 'function') {
-            serviceForm.addEventListener('submit', window.handleServiceSubmit);
-        } else {
-            console.warn("handleServiceSubmit not found - check loading order.");
-            // Fallback: try to find it on window after a short delay? 
-            // Better to rely on dashboard.html calling initCMS() AFTER scripts load.
-        }
+        serviceForm.addEventListener('submit', handleServiceSubmit);
     }
 
     const seedBtn = document.getElementById('seed-services-btn');
@@ -1040,9 +1033,146 @@ async function loadServices(retryCount = 0) {
     }
 }
 
-// --- Services Logic Moved to cms-services.js ---
-// loadServices and editService removed from here to avoid conflicts.
-// Please refer to cms-services.js for the active implementation.
+window.editService = async (id) => {
+    try {
+        // Switch to Services Panel
+        window.openSection('panel-services');
+
+        const doc = await window.db.collection("services").doc(id).get();
+        if (!doc.exists) {
+            alert("Serviço não encontrado.");
+            return;
+        }
+        const data = doc.data();
+
+        // Populate Form
+        console.log("Editing Service Data:", data);
+
+        // Populate Form
+        document.getElementById('svc-id').value = id; // FIX: Set hidden ID
+        const titleInput = document.getElementById('svc-title');
+
+        // Sanitize & Decode Title on Load
+        let cleanTitle = data.title || '';
+        cleanTitle = decodeHtmlEntities(cleanTitle);
+        cleanTitle = cleanTitle.replace(/<\/?(p|div|br|h[1-6])[^>]*>/gi, '').trim(); // Strip blocks only
+        if (titleInput) titleInput.value = cleanTitle;
+
+        const imgInput = document.getElementById('svc-image');
+        if (imgInput) imgInput.value = data.headerImage || '';
+
+        // Decode Description as well if needed
+        const descInput = document.getElementById('svc-desc');
+        if (descInput) {
+            let cleanDesc = data.description || '';
+            cleanDesc = decodeHtmlEntities(cleanDesc);
+            // Allow inline tags for description too
+            cleanDesc = cleanDesc.replace(/<\/?(p|div|h[1-6])[^>]*>/gi, '').trim();
+            descInput.value = cleanDesc;
+        }
+
+        // FIX: If TinyMCE somehow attached to Short Description, remove it!
+        if (window.tinymce && tinymce.get('svc-desc')) {
+            console.log("Removing unwanted TinyMCE from svc-desc");
+            tinymce.get('svc-desc').remove();
+        }
+
+        // Re-set value after potential removal (redundant but safe)
+        if (descInput) {
+            let cleanDesc = data.description || ''; // Re-initialize cleanDesc
+            cleanDesc = decodeHtmlEntities(cleanDesc);
+            cleanDesc = cleanDesc.replace(/<\/?(p|div|h[1-6])[^>]*>/gi, '').trim();
+            descInput.value = cleanDesc;
+        }
+
+
+        // Debug
+        // alert("DEBUG DATA:\nID: " + id + "\nTitle: " + data.title + "\nDesc: " + data.description + "\nImg: " + data.headerImage);
+
+
+
+        // Populate Full Description
+        document.getElementById('svc-full-desc').value = data.long_description || '';
+
+        // Sanitize Benefits on Load
+        let cleanBenefits = [];
+        if (data.benefits && Array.isArray(data.benefits)) {
+            cleanBenefits = data.benefits.map(b => {
+                let cb = decodeHtmlEntities(b); // Decode
+                cb = cb.replace(/<\/?(p|div|br|h[1-6])[^>]*>/gi, '').trim(); // Strip blocks only
+                return cb;
+            });
+        }
+        document.getElementById('svc-benefits').value = cleanBenefits.join(', ');
+
+        // Populate Testimonials
+        if (data.testimonial_ids) {
+            const selectedIds = new Set(data.testimonial_ids || []);
+            loadTestimonialsSelector(selectedIds);
+        } else {
+            loadTestimonialsSelector(new Set());
+        }
+
+        // Populate Colors
+        if (data.customColors) {
+            // New Scheme Mapping
+            const cc = data.customColors;
+            document.getElementById('svc-colors-config').classList.remove('hidden');
+
+            // Top Section
+            if (document.getElementById('svc-top-bg-color')) {
+                // Fallback to old 'headerOpacity' or default black if new field missing
+                document.getElementById('svc-top-bg-color').value = cc.topBg || '#000000';
+            }
+            if (document.getElementById('svc-top-opacity')) {
+                // Fallback to old 'headerOpacity'
+                const val = (cc.topOpacity !== undefined) ? cc.topOpacity : (cc.headerOpacity !== undefined ? cc.headerOpacity : 0.5);
+                document.getElementById('svc-top-opacity').value = val;
+                document.getElementById('opacity-val-top').innerText = Math.round(val * 100) + '%';
+            }
+
+            // Bottom Section
+            if (document.getElementById('svc-bottom-bg-color')) {
+                // Fallback to old 'bg'
+                document.getElementById('svc-bottom-bg-color').value = cc.bottomBg || cc.bg || '#4F553D';
+            }
+            if (document.getElementById('svc-bottom-opacity')) {
+                // Fallback to old 'bgOpacity'
+                const val = (cc.bottomOpacity !== undefined) ? cc.bottomOpacity : (cc.bgOpacity !== undefined ? cc.bgOpacity : 1);
+                document.getElementById('svc-bottom-opacity').value = val;
+                document.getElementById('opacity-val-bottom').innerText = Math.round(val * 100) + '%';
+            }
+
+            // Buttons
+            if (document.getElementById('svc-btn-text-color')) {
+                // Fallback to old 'text'
+                document.getElementById('svc-btn-text-color').value = cc.btnText || cc.text || '#ffffff';
+            }
+
+        } else {
+            // Defaults if no data
+            document.getElementById('svc-colors-config').classList.add('hidden');
+            resetColorInputs();
+        }
+
+        // document.getElementById('svc-theme').value = data.styleClass || '';
+        if (imgInput) imgInput.value = data.headerImage || '';
+        document.getElementById('svc-image-file').value = '';
+
+        // UI Changes
+        document.getElementById('svc-submit-btn').innerText = "Atualizar Serviço";
+        document.getElementById('svc-cancel-btn').style.display = 'inline-block';
+        document.getElementById('svc-cancel-btn').classList.remove('hidden');
+
+        // Scroll
+        document.getElementById('service-form').scrollIntoView({ behavior: 'smooth' });
+
+        console.log("Edit Mode Enabled for: ", id);
+
+    } catch (error) {
+        console.error("Error getting service:", error);
+    }
+};
 
 window.resetServiceForm = async () => {
     document.getElementById('service-form').reset();
@@ -1293,7 +1423,16 @@ window.deleteServiceTestimonial = async (id) => {
     }
 };
 
-// deleteService removed. See cms-services.js
+window.deleteService = async (id) => {
+    if (confirm("Apagar este serviço?")) {
+        try {
+            await window.db.collection("services").doc(id).delete();
+            loadServices();
+        } catch (error) {
+            alert("Erro: " + error.message);
+        }
+    }
+};
 
 // Seeding Function (Updated with Static Links)
 window.seedDefaultServices = async () => {
@@ -1786,15 +1925,6 @@ async function loadSiteContent() {
                 // Images
                 if (document.getElementById('about-image-url')) document.getElementById('about-image-url').value = data.about.image_url || '';
                 if (document.getElementById('about-image-art-url')) document.getElementById('about-image-art-url').value = data.about.image_art_url || '';
-
-                // Colors
-                if (document.getElementById('about-intro-bg')) document.getElementById('about-intro-bg').value = data.about.intro_bg || '#ffffff';
-                if (document.getElementById('about-art-bg')) document.getElementById('about-art-bg').value = data.about.art_bg || '#f7f2e0';
-
-                // Update hex inputs for visual feedback
-                if (document.getElementById('about-intro-bg-hex')) document.getElementById('about-intro-bg-hex').value = document.getElementById('about-intro-bg').value;
-                if (document.getElementById('about-art-bg-hex')) document.getElementById('about-art-bg-hex').value = document.getElementById('about-art-bg').value;
-
             }
 
             // Populate Home Summary Form
@@ -1878,45 +2008,7 @@ async function handleHomeSubmit(e) {
 
 
 
-        // Explicitly check value
-        const isHighlight = document.getElementById('home-text-highlight').checked;
-
         await window.db.collection('site_content').doc('main').set(data, { merge: true });
-
-        // --- SYNC: Auto-Enable Header Transparency if Highlight is ON ---
-        if (isHighlight === true) {
-            try {
-                // FORCE UPDATE regardless of current state to ensure consistency
-                const doc = await window.db.collection('site_content').doc('main').get();
-                let currentHeader = doc.exists ? (doc.data().header || {}) : {};
-
-                // Ensure defaults
-                const defaults = {
-                    bg_color: '#80864f',
-                    text_color: '#f7f2e0',
-                    font_size: 16,
-                    padding: 20
-                };
-                const newHeader = { ...defaults, ...currentHeader, transparent: true };
-
-                // 1. Save to DB
-                await window.db.collection('site_content').doc('main').set({
-                    header: newHeader
-                }, { merge: true });
-
-                // 2. Update Local & UI
-                localStorage.setItem('site_header', JSON.stringify(newHeader));
-                if (typeof applyHeaderSettings === 'function') applyHeaderSettings(newHeader);
-
-                // 3. Update Checkbox if visible
-                const hCheck = document.getElementById('header-transparent');
-                if (hCheck) hCheck.checked = true;
-
-            } catch (err) {
-                console.warn("Auto-header-sync failed:", err);
-            }
-        }
-
         alert("Conteúdo da Página Inicial atualizado!");
 
     } catch (error) {
@@ -1964,10 +2056,7 @@ async function handleAboutSubmit(e) {
                 text_intro: (window.tinymce && tinymce.get('about-text-intro')) ? tinymce.get('about-text-intro').getContent() : document.getElementById('about-text-intro').value,
                 text_art: (window.tinymce && tinymce.get('about-text-art')) ? tinymce.get('about-text-art').getContent() : document.getElementById('about-text-art').value,
                 image_url: imageUrl,
-                image_art_url: imageArtUrl,
-                // Colors
-                intro_bg: document.getElementById('about-intro-bg').value,
-                art_bg: document.getElementById('about-art-bg').value
+                image_art_url: imageArtUrl
             }
         };
 
@@ -2239,20 +2328,7 @@ function setupHexListeners() {
         { color: 'theme-header', hex: 'theme-header-hex' },
         { color: 'theme-secondary-1', hex: 'theme-secondary-1-hex' },
         { color: 'theme-secondary-2', hex: 'theme-secondary-2-hex' },
-        { color: 'theme-footer', hex: 'theme-footer-hex' },
-        // About Page Colors
-        { color: 'about-intro-bg', hex: 'about-intro-bg-hex' },
-        // Text Color Removed
-        { color: 'about-art-bg', hex: 'about-art-bg-hex' },
-        // Text Color Removed
-        // Service Colors
-        { color: 'svc-sec2-bg', hex: 'svc-sec2-bg-hex' },
-        { color: 'svc-sec2-text', hex: 'svc-sec2-text-hex' },
-        { color: 'svc-testi-bg', hex: 'svc-testi-bg-hex' },
-        { color: 'svc-testi-text', hex: 'svc-testi-text-hex' },
-        { color: 'svc-top-bg-color', hex: 'svc-top-bg-hex' },
-        { color: 'svc-bottom-bg-color', hex: 'svc-bottom-bg-hex' },
-        { color: 'svc-btn-text-color', hex: 'svc-btn-text-hex' }
+        { color: 'theme-footer', hex: 'theme-footer-hex' }
     ];
 
     pairs.forEach(pair => {
@@ -2677,7 +2753,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadHeaderSettings();
     loadThemeSettings(); // Load Theme Settings on Init
     loadLegalContent();   // Load Legal
-    setupHexListeners(); // Initialize Color Sync
 });
 
 // --- Legal Content Management ---
@@ -2896,14 +2971,6 @@ async function loadContactContent() {
 
 const homeAboutForm = document.getElementById('home-about-form');
 if (homeAboutForm) homeAboutForm.addEventListener('submit', handleHomeAboutSubmit);
-
-// --- MISSING LISTENERS ADDED ---
-const homeContentForm = document.getElementById('home-content-form');
-if (homeContentForm) homeContentForm.addEventListener('submit', handleHomeSubmit);
-
-const aboutContentForm = document.getElementById('about-content-form');
-if (aboutContentForm) aboutContentForm.addEventListener('submit', handleAboutSubmit);
-// -------------------------------
 
 // Footer Listener
 const footerForm = document.getElementById('footer-form');

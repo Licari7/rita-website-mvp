@@ -12,44 +12,16 @@
     <script src="theme-loader.js"></script>
 
     <meta name="description" content="Conhece a Rita e a sua missão no Floresce Terapias.">
-    <link rel="stylesheet" href="style.css?v=7.1.5">
+    <link rel="stylesheet" href="style.css?v=8.0.0">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap"
         rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        /* Specific Styles for About Page */
-        .service-detail-header {
-            background: var(--bg-color-alt);
-            padding: 120px 20px 0px;
-            /* Increased Top, Decreased Bottom */
-            text-align: center;
-        }
-
-        .service-detail-content {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 10px 20px 60px;
-            /* Decreased Top to close gap */
-            font-size: 1.1rem;
-            line-height: 1.8;
-            color: var(--text-color);
-        }
-
-        .about-image-full {
-            width: 100%;
-            max-height: 600px;
-            object-fit: cover;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            margin-bottom: 40px;
-        }
-    </style>
 </head>
 
-<body>
+<body class="about-v2-body">
 
     <!-- Navigation -->
     <nav class="navbar">
@@ -88,25 +60,24 @@
     <!-- Mobile Menu Overlay -->
     <div class="mobile-menu"></div>
 
-    <!-- Main Content -->
-    <main class="about-page-main">
+    <!-- Main Content V2 -->
+    <main class="about-page-main about-v2-main">
 
         <!-- Section 1: Intro (Image Left, Text Right) -->
-        <section id="about-intro" class="about-split-section">
-            <div class="container about-split-container">
-                <div class="about-image-container left">
-                    <!-- Image will be injected here -->
-                    <div id="author-img-display" class="about-split-img"></div>
+        <section id="about-intro" class="about-v2-section">
+            <h1 class="section-title text-center" id="about-title" style="width: 100%; margin-bottom: 40px;"></h1>
+            <div class="container about-v2-grid">
+                <!-- Image Column -->
+                <div class="about-v2-col-img">
+                    <div id="author-img-display" class="about-v2-img-wrapper"></div>
                 </div>
-                <div class="about-text-content right">
-                    <!-- Moved Title Inside Section -->
-                    <h1 class="section-title text-left-md" id="about-title" style="margin-bottom: 30px;"></h1>
 
-                    <div id="about-text-intro-display">
+                <!-- Text Column -->
+                <div class="about-v2-col-text">
+                    <div id="about-text-intro-display" class="about-Formatted-text">
                         <p>A carregar...</p>
                     </div>
 
-                    <!-- Duplicated CTA Buttons (Intro Section) -->
                     <div class="cta-actions" style="justify-content: flex-start; margin-top: 30px;">
                         <a href="index.html#contact" class="btn btn-primary">Marcar Sessão</a>
                         <a href="https://wa.me/351913515406" target="_blank" rel="noopener noreferrer"
@@ -116,16 +87,17 @@
                     </div>
                 </div>
             </div>
+            </div>
         </section>
 
         <!-- Section 2: Art (Text Left, Image Right) -->
-        <section id="about-art" class="about-split-section">
-            <div class="container about-split-container">
-                <div class="about-text-content left">
-                    <div id="about-text-art-display">
+        <section id="about-art" class="about-v2-section about-v2-expanded">
+            <div class="container about-v2-grid reverse-mobile">
+                <!-- Text Column -->
+                <div class="about-v2-col-text">
+                    <div id="about-text-art-display" class="about-Formatted-text">
                         <p>A carregar...</p>
                     </div>
-
                     <!-- Moved Bottom CTAs Inside Section -->
                     <div class="cta-actions" style="justify-content: flex-start; margin-top: 30px;">
                         <a href="index.html#contact" class="btn btn-primary">Marcar Sessão</a>
@@ -135,15 +107,17 @@
                         </a>
                     </div>
                 </div>
-                <div class="about-image-container right">
-                    <div id="about-img-art-display" class="about-split-img">
+
+                <!-- Image Column -->
+                <div class="about-v2-col-img">
+                    <div id="about-img-art-display" class="about-v2-img-wrapper">
                         <img src="https://placehold.co/500x650/e0e0e0/999999?text=Arte+Floresce" alt="Arte Floresce"
                             class="about-split-img">
                     </div>
                 </div>
             </div>
 
-            <!-- Footer (Moved Inside Art Section for Seamless Background) -->
+            <!-- Integrated Footer -->
             <footer class="footer about-footer">
                 <div class="container text-center">
                     <p class="logo-text" id="footer-title"></p>
@@ -155,6 +129,7 @@
                 </div>
             </footer>
         </section>
+
     </main>
 
     <!-- Firebase SDKs -->
@@ -164,74 +139,10 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
     <script src="init-firebase.js"></script>
-
     <script src="main.js?v=7.1.0"></script>
     <script src="sidebar.js"></script>
     <script>
         lucide.createIcons();
-
-        // Load About Data
-        async function loadAboutData() {
-            // Wait for DB
-            const checkDb = () => {
-                if (window.db) {
-                    fetchData();
-                } else {
-                    setTimeout(checkDb, 200);
-                }
-            };
-            checkDb();
-        }
-
-        async function fetchData() {
-            try {
-                // Fetch from site_content/main
-                const doc = await window.db.collection('site_content').doc('main').get();
-
-                if (!doc.exists) {
-                    document.getElementById('about-text-intro-display').innerHTML = "<p>Conteúdo não disponível.</p>";
-                    return;
-                }
-
-                const data = doc.data().about || {};
-
-                // Update Title (Page Title)
-                if (data.title) {
-                    document.getElementById('about-title').textContent = data.title;
-                    document.title = `${data.title} | Floresce Terapias`;
-                }
-
-                // Render Image 1 (Intro)
-                if (data.image_url) {
-                    document.getElementById('author-img-display').innerHTML = `<img src="${data.image_url}" alt="Rita Barata" class="about-split-img">`;
-                }
-
-                // Render Image 2 (Art) - Optional Override
-                if (data.image_art_url) {
-                    document.getElementById('about-img-art-display').innerHTML = `<img src="${data.image_art_url}" alt="Arte Floresce" class="about-split-img">`;
-                }
-
-                // Render Text 1 (Intro)
-                if (data.text_intro) {
-                    const formattedText = data.text_intro.replace(/\n/g, '<br>');
-                    document.getElementById('about-text-intro-display').innerHTML = formattedText;
-                } else if (data.text) {
-                    // Fallback to old field if new one missing
-                    document.getElementById('about-text-intro-display').innerHTML = data.text.replace(/\n/g, '<br>');
-                }
-
-                // Render Text 2 (Art)
-                if (data.text_art) {
-                    const formattedText = data.text_art.replace(/\n/g, '<br>');
-                    document.getElementById('about-text-art-display').innerHTML = formattedText;
-                }
-
-            } catch (error) {
-                console.error("Error loading about data:", error);
-            }
-        }
-
-        loadAboutData();
     </script>
 </body>
 

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre Mim | Floresce Terapias</title>
+
+    <!-- Privacy / Construction Mode -->
+    <meta name="robots" content="noindex, nofollow">
+    <script src="access-control.js"></script>
+    <script src="theme-loader.js"></script>
+
+    <meta name="description" content="Conhece a Rita e a sua missão no Floresce Terapias.">
+    <link rel="stylesheet" href="style.css?v=4.3.1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Specific Styles for About Page */
+        .service-detail-header {
+            background: var(--bg-color-alt);
+            padding: 120px 20px 60px;
+            text-align: center;
+        }
+
+        .service-detail-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 20px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-color);
+        }
+
+        .about-image-full {
+            width: 100%;
+            max-height: 600px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-content">
+            <div class="brand-container">
+                <a href="index.html" class="logo-link" aria-label="Início">
+                    <img id="header-logo-display" src="" alt="Logo" class="header-logo hidden">
+                </a>
+                <div class="brand-info">
+                    <a href="index.html" class="logo">Floresce Terapias</a>
+                    <div class="header-socials">
+                        <a href="https://www.instagram.com/floresceterapias?igsh=MW90eXlmOG93em55ZA%3D%3D&utm_source=qr"
+                            target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i
+                                data-lucide="instagram"></i></a>
+                        <a href="https://chat.whatsapp.com/BpCgpanA5Wx1VEGrmo4Wwt" target="_blank"
+                            rel="noopener noreferrer" aria-label="WhatsApp"><i data-lucide="phone"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Desktop Links -->
+            <ul class="nav-links">
+                <li><a href="index.html">Voltar ao Início</a></li>
+                <li><a href="booking.html" class="btn btn-primary">Agendar</a></li>
+            </ul>
+
+            <span id="header-welcome-msg" class="header-welcome-msg"></span>
+
+            <!-- Mobile Toggle -->
+            <button class="menu-toggle" aria-label="Abrir Menu">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu"></div>
+
+    <!-- Header -->
+    <header class="service-detail-header">
+        <h1 class="section-title" id="about-title">Sobre Mim</h1>
+    </header>
+
+    <!-- Main Content -->
+    <main class="service-detail-content wide">
+
+        <!-- Section 1: Autoconhecimento (Image Left, Text Right) -->
+        <section id="about-autoconhecimento" class="about-split-section">
+            <div class="about-image-container left">
+                <!-- Image will be injected here -->
+                <div id="author-img-display" class="about-split-img"></div>
+            </div>
+            <div class="about-text-content right">
+                <h2 class="section-subtitle">Autoconhecimento</h2>
+                <div id="author-bio-display">
+                    <p>A carregar...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Arte (Text Left, Image Right) -->
+        <section id="about-arte" class="about-split-section">
+            <div class="about-text-content left">
+                <h2 class="section-subtitle">Arte</h2>
+                <p>
+                    (Espaço reservado para texto sobre Arte. O conteúdo será adicionado brevemente.)
+                </p>
+            </div>
+            <div class="about-image-container right">
+                <!-- Using same class for consistent height as requested -->
+                <img src="https://placehold.co/500x650/e0e0e0/999999?text=Arte+Floresce" alt="Arte Floresce"
+                    class="about-split-img">
+            </div>
+        </section>
+
+        <!-- CTA Buttons -->
+        <div class="cta-actions cta-actions-container">
+            <a href="booking.html" class="btn btn-primary">Marcar Sessão</a>
+            <a href="https://wa.me/351913515406" target="_blank" rel="noopener noreferrer"
+                class="btn btn-outline cta-whatsapp-btn">
+                <i data-lucide="message-circle" class="icon-sm"></i> Entra em contacto
+            </a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <p class="logo-text" id="footer-title">Floresce Terapias</p>
+            <p class="copyright" id="footer-copyright">&copy; 2026. Todos os direitos reservados.</p>
+            <p class="developer-credit footer-credits" id="footer-credit">CREATED IN PORTUGAL WITH ❤️ BY CALB</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+
+    <script src="init-firebase.js"></script>
+
+    <script src="script.js"></script>
+    <script src="sidebar.js"></script>
+    <script>
+        lucide.createIcons();
+
+        // Load About Data
+        async function loadAboutData() {
+            // Wait for DB
+            const checkDb = () => {
+                if (window.db) {
+                    fetchData();
+                } else {
+                    setTimeout(checkDb, 200);
+                }
+            };
+            checkDb();
+        }
+
+        async function fetchData() {
+            try {
+                // Fetch from site_content/main
+                const doc = await window.db.collection('site_content').doc('main').get();
+
+                if (!doc.exists) {
+                    document.getElementById('author-bio-display').innerHTML = "<p>Conteúdo não disponível.</p>";
+                    return;
+                }
+
+                const data = doc.data().about || {};
+
+                // Update Title
+                if (data.title) {
+                    document.getElementById('about-title').textContent = data.title;
+                    document.title = `${data.title} | Floresce Terapias`;
+                }
+
+                // Render Image (Section 1)
+                if (data.image_url) {
+                    document.getElementById('author-img-display').innerHTML = `<img src="${data.image_url}" alt="Rita Barata" class="about-split-img">`;
+                }
+
+                // Render Text (Section 1)
+                if (data.text) {
+                    const formattedText = data.text.replace(/\n/g, '<br>');
+                    document.getElementById('author-bio-display').innerHTML = `<p>${formattedText}</p>`;
+                } else {
+                    document.getElementById('author-bio-display').innerHTML = "<p>Sem descrição.</p>";
+                }
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('author-bio-display').innerHTML = '<p>Erro ao carregar conteúdo.</p>';
+            }
+        }
+
+        loadAboutData();
+    </script>
+</body>
+
+</html>

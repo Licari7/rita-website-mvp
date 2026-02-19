@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Área de Membros | Floresce Terapias</title>
+    <script src="theme-loader.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=4.3.1">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
+    <style>
+        /* Hide API Key Warning - Minimal & Safe */
+        .tox-notifications-container,
+        .tox-statusbar__branding,
+        .tox-promotion {
+            display: none !important;
+        }
+
+        /* Accordion Styles */
+        details.admin-card {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        details.admin-card[open] {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        details.admin-card.dragging {
+            opacity: 0.5;
+            border: 2px dashed #ccc;
+        }
+
+        summary.admin-card-header {
+            padding: 12px 16px;
+            cursor: move;
+            font-weight: 600;
+            font-family: var(--font-serif);
+            font-size: 13px;
+            /* Exact Request */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            list-style: none;
+            color: var(--color-primary);
+            background: #fff;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        summary.admin-card-header:hover {
+            background: #fcfcfc;
+        }
+
+        summary.admin-card-header::after {
+            content: '+';
+            font-size: 1.2em;
+            /* Adjusted for smaller header */
+            font-weight: 300;
+            color: #999;
+            transition: transform 0.2s;
+        }
+
+        details.admin-card[open] summary.admin-card-header::after {
+            content: '-';
+            transform: rotate(0deg);
+        }
+
+        /* Hide default marker in Webkit */
+        summary.admin-card-header::-webkit-details-marker {
+            display: none;
+        }
+
+        .admin-card-body {
+            padding: 6px;
+            /* Exact Request */
+            border-top: 1px solid #eee;
+            background: #fafafa;
+            animation: slideDown 0.3s ease-out;
+            cursor: default !important;
+            font-size: 12px;
+            /* Exact Request */
+            color: #1f2937;
+            /* Dark Gray */
+        }
+
+        /* Compact form groups inside admin cards */
+        .admin-card-body .form-group {
+            margin-bottom: 8px;
+            /* Tighter layout */
+        }
+
+        /* Ensure all inputs and labels inside obey the 12px rule */
+        .admin-card-body label {
+            font-size: 12px;
+            margin-bottom: 2px;
+            display: block;
+            font-weight: 600;
+            color: #111827;
+            /* Darker Label */
+        }
+
+        .admin-card-body input,
+        .admin-card-body select,
+        .admin-card-body textarea,
+        .admin-card-body button {
+            font-size: 12px !important;
+            padding: 8px;
+            /* Slightly reduced padding for inputs */
+            color: #000 !important;
+            /* Force Black */
+        }
+
+        .admin-card-body h3 {
+            font-size: 13px;
+            margin-bottom: 10px;
+            color: #111827;
+            /* Dark Title */
+        }
+
+
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-content">
+            <div class="brand-container">
+                <a href="index.html" class="logo-link" aria-label="site público">
+                    <img id="header-logo-display" src="" alt="Logo" class="header-logo hidden">
+                </a>
+                <div class="brand-info">
+                    <a href="index.html" class="logo">Floresce Terapias</a>
+                    <div class="header-socials">
+                        <a href="https://www.instagram.com/floresceterapias?igsh=MW90eXlmOG93em55ZA%3D%3D&utm_source=qr"
+                            target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i
+                                data-lucide="instagram"></i></a>
+                        <a href="https://chat.whatsapp.com/BpCgpanA5Wx1VEGrmo4Wwt" target="_blank"
+                            rel="noopener noreferrer" aria-label="WhatsApp"><i data-lucide="phone"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="nav-links">
+                <li><a href="index.html">Início</a></li>
+                <li><a href="index.html#about">Sobre</a></li>
+                <li><a href="index.html#services">Serviços</a></li>
+                <li><a href="index.html#events">Eventos</a></li>
+                <li><a href="booking.html">Agendar</a></li>
+                <li><a href="dashboard.html" class="active">Área de Membros</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <span id="user-name-display" class="desktop-only user-name-display">Visitante</span>
+                <a href="#" id="logout-btn" class="btn btn-outline btn-sm">Sair</a>
+            </div>
+
+            <!-- Welcome Message (New Location) -->
+            <!-- Welcome Message (New Location) -->
+            <!-- Welcome Message -->
+            <span id="header-welcome-msg" class="header-welcome-msg"></span>
+
+            <button class="menu-toggle" aria-label="Menu">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu">
+        <!-- Content injected by sidebar.js -->
+    </div>
+
+    <!-- Main Content -->
+    <main class="container section-padding">
+        <header class="section-header text-center mb-40">
+            <h1 class="section-title">Área de Membros</h1>
+            <!-- Removed welcome message from here -->
+            <p>Acede aqui aos teus recursos e meditações.</p>
+            <button id="admin-toggle-btn" class="cta-button admin-toggle-btn">
+                <i data-lucide="settings"></i> Gerir Site
+            </button>
+        </header>
+
+        <!-- ADMIN PANEL (Hidden by Default) -->
+        <section id="admin-panel" class="admin-panel-container">
+            <h2 class="admin-panel-title">
+                Painel de Administração
+            </h2>
+
+            <div id="dashboard-cards-container">
+                <!-- 1. EVENTS ACCORDION -->
+                <details class="admin-card draggable-card" id="card-events" draggable="true">
+                    <summary class="admin-card-header">
+                        <span><i data-lucide="calendar" class="admin-icon"></i> Gestão de
+                            Eventos</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <div class="admin-grid-layout">
+                            <!-- Add Event Form -->
+                            <div>
+                                <h3 class="admin-section-title">Adicionar Novo Evento
+                                </h3>
+                                <form id="event-form" class="auth-form">
+                                    <input type="hidden" id="evt-id">
+                                    <div class="form-group">
+                                        <label>Título do Evento</label>
+                                        <input type="text" id="evt-title" required placeholder="Ex: Workshop de Aura">
+                                    </div>
+                                    <div class="form-group-row">
+                                        <div class="form-group form-group-half">
+                                            <label>Data</label>
+                                            <input type="date" id="evt-date" required>
+                                        </div>
+                                        <div class="form-group form-group-half">
+                                            <label>Hora</label>
+                                            <input type="time" id="evt-time" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Localização (Ex: Online Zoom)</label>
+                                        <input type="text" id="evt-location" required
+                                            placeholder="Ex: Lisboa ou Online">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Descrição Curta</label>
+                                        <textarea id="evt-desc" rows="3" placeholder="Descrição breve para o site"
+                                            class="admin-textarea"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Imagem (Capa)</label>
+                                        <input type="file" id="evt-image" accept="image/*">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Link de Inscrição (Opcional)</label>
+                                        <input type="text" id="evt-link" placeholder="#contact ou link externo">
+                                    </div>
+                                    <button type="submit" class="cta-button primary full-width">Publicar Evento</button>
+                                </form>
+                            </div>
+
+                            <!-- Existing Events List -->
+                            <div class="admin-list-container">
+                                <div class="admin-header-flex">
+                                    <h3 class="font-serif margin-0">Eventos Ativos</h3>
+                                    <button type="button" onclick="window.resetEventForm()"
+                                        class="btn btn-outline btn-sm font-sm">+ Novo</button>
+                                </div>
+                                <div id="admin-events-list">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- 2. HOME HERO ACCORDION -->
+                <details class="admin-card draggable-card" id="card-home-hero" draggable="true">
+                    <summary class="admin-card-header">
+                        <span><i data-lucide="home" class="admin-icon"></i> Página Inicial
+                            (Hero)</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <form id="home-content-form" class="auth-form">
+                            <div class="form-group">
+                                <label>Título Principal</label>
+                                <input type="text" id="home-title" placeholder="Encontra espaço em ti...">
+                            </div>
+                            <div class="form-group">
+                                <label>Subtítulo</label>
+                                <input type="text" id="home-subtitle" placeholder="Leitura de Aura...">
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="home-cta" placeholder="Descobrir Mais">
+                            </div>
+
+                            <!-- Readability Controls -->
+                            <div class="form-group-row flex-gap-20-center bg-whitesmoke-rounded mb-15">
+                                <div class="flex-align-center-gap-10">
+                                    <label for="home-text-color" class="margin-0">Cor do Texto:</label>
+                                    <input type="color" id="home-text-color" value="#f7f2e0" class="color-input">
+                                </div>
+                                <div class="flex-align-center-gap-10">
+                                    <input type="checkbox" id="home-text-highlight" class="w-18-h-18 margin-0">
+                                    <label for="home-text-highlight" class="margin-0 cursor-pointer">Fundo de
+                                        Destaque?</label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Imagem de Fundo (Opcional)</label>
+                                <input type="text" id="home-image-url" placeholder="URL da imagem (ou upload abaixo)"
+                                    class="admin-file-url-input">
+                                <input type="file" id="home-image-file" accept="image/*">
+                                <small class="admin-help-text">Substitui a cor verde por uma foto.</small>
+                            </div>
+                            <button type="submit" id="home-save-btn" class="cta-button primary full-width">Guardar
+                                Início</button>
+                        </form>
+                    </div>
+                </details>
+
+                <!-- 3. HOME SUMMARY ACCORDION (New) -->
+                <details class="admin-card draggable-card" id="card-home-summary" draggable="true">
+                    <summary class="admin-card-header">
+                        <span><i data-lucide="align-left" class="admin-icon"></i> Página Inicial
+                            (Resumo Sobre)</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <form id="home-about-form" class="auth-form">
+                            <div class="form-group">
+                                <label>Título (Ex: Uma jornada de luz)</label>
+                                <input type="text" id="home-about-title-input" placeholder="Título do resumo">
+                            </div>
+                            <div class="form-group">
+                                <label>Texto do Resumo</label>
+                                <textarea id="home-about-text-input" rows="4"
+                                    placeholder="Breve texto introdutório que aparece na página inicial..."
+                                    class="admin-textarea"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Imagem Lateral (Pequena)</label>
+                                <input type="text" id="home-about-image-url" class="admin-file-url-input">
+                                <input type="file" id="home-about-image-file" accept="image/*">
+                            </div>
+                            <button type="submit" id="home-about-save-btn" class="cta-button primary full-width">Guardar
+                                Resumo</button>
+                        </form>
+                    </div>
+                </details>
+
+                <!-- 3. MEMBER MANAGEMENT ACCORDION (NEW) -->
+                <details class="admin-card draggable-card" id="card-members" draggable="true">
+                    <summary class="admin-card-header">
+                        <span><i data-lucide="users" class="admin-icon"></i> Gestão de
+                            Membros</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <div class="admin-panel-content" id="panel-members">
+                            <div class="admin-header-flex">
+                                <h3 class="font-serif margin-0">Lista de Membros</h3>
+                                <button class="btn btn-outline btn-sm" onclick="window.loadMembers()">Atualizar
+                                    Lista</button>
+                            </div>
+
+                            <div id="admin-members-list" class="scrollable-list-500">
+                                <p>A carregar membros...</p>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- 4. ABOUT PAGE FULL ACCORDION -->
+                <details class="admin-card draggable-card" id="card-about-full" draggable="true">
+                    <summary class="admin-card-header">
+                        <span><i data-lucide="user" class="admin-icon"></i> Página "Sobre Mim"
+                            (Completa)</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <form id="about-content-form" class="auth-form">
+                            <div class="form-group">
+                                <label>Título da Página</label>
+                                <input type="text" id="about-title" placeholder="Uma jornada de luz">
+                            </div>
+                            <div class="form-group">
+                                <label>Foto de Perfil (Topo)</label>
+                                <input type="text" id="about-image-url" class="admin-file-url-input">
+                                <input type="file" id="about-image-file" accept="image/*">
+                            </div>
+                            <div class="form-group">
+                                <label>Biografia Completa</label>
+                                <textarea id="about-text" rows="10" placeholder="A tua história completa..."
+                                    class="admin-textarea"></textarea>
+                                <small class="admin-help-text">Aceita HTML básico.</small>
+                            </div>
+                            <button type="submit" id="about-save-btn" class="cta-button primary full-width">Guardar
+                                Página Sobre</button>
+                        </form>
+                    </div>
+                </details>
+
+                <!-- 5. SERVICES ACCORDION -->
+                <details class="admin-card draggable-card" id="card-services" draggable="true">
+                    <summary class="admin-card-header">
+                        <span><i data-lucide="sparkles" class="admin-icon"></i> Gestão de
+                            Serviços</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <div class="admin-panel-content" id="panel-services">
+                            <form id="service-form" class="auth-form full-width-max">
+                                <input type="hidden" id="svc-id">
+
+                                <!-- TOP SECTION: List & Metadata -->
+                                <div class="admin-grid-2-col-fixed">
+
+                                    <!-- LEFT: List -->
+                                    <div class="bg-gray-light box-padding border-radius-12 border-light">
+                                        <div class="admin-header-flex mb-10">
+                                            <h3 class="font-serif margin-0">Serviços Ativos</h3>
+                                            <button type="button" onclick="window.resetServiceForm()"
+                                                class="btn btn-outline btn-sm font-sm">+
+                                                Novo</button>
+                                        </div>
+                                        <div id="admin-services-list" class="scrollable-list-400">
+                                            <!-- Populated by JS -->
+                                        </div>
+
+                                        <!-- New Service Section Config -->
+                                        <div class="mt-20 pt-20 border-top-light">
+                                            <h4 class="font-serif mb-10 text-primary">Fundo da Secção</h4>
+                                            <p class="font-xs mb-10 text-muted">A imagem de floresta/fundo geral.</p>
+                                            <form id="service-config-form"
+                                                onsubmit="event.preventDefault(); window.handleServiceConfigSubmit();">
+                                                <div class="form-group mb-5">
+                                                    <input type="text" id="service-bg-url"
+                                                        placeholder="URL da Imagem..."
+                                                        class="admin-input-select font-xs">
+                                                </div>
+                                                <div class="form-group mb-5">
+                                                    <input type="file" id="service-bg-file" accept="image/*"
+                                                        class="font-xs">
+                                                </div>
+                                                <button type="submit" id="service-config-btn"
+                                                    class="btn btn-sm btn-outline full-width">Guardar Fundo</button>
+                                            </form>
+                                        </div>
+                                    </div>
+
+                                    <!-- RIGHT: Basic Inputs -->
+                                    <div>
+                                        <h3 class="font-serif mb-15 flex-between-center">
+                                            Dados do Serviço
+                                            <button type="button"
+                                                onclick="if(window.initTinyMCE) window.initTinyMCE('', true); else if(initTinyMCE) initTinyMCE('', true);"
+                                                class="btn btn-sm btn-outline pad-2-8 font-xs">
+                                                Reset Editor
+                                            </button>
+                                        </h3>
+
+                                        <div class="grid-2-col-gap-20">
+                                            <div class="form-group col-span-full">
+                                                <label>Nome do Serviço</label>
+                                                <input type="text" id="svc-title" required
+                                                    placeholder="Ex: Leitura de Aura">
+                                            </div>
+
+                                            <div class="form-group col-span-full">
+                                                <label>Descrição Curta (Cartão)</label>
+                                                <textarea id="svc-desc" rows="3" required
+                                                    placeholder="Resumo breve para o cartão..."
+                                                    class="admin-textarea"></textarea>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>Tema</label>
+                                                <select id="svc-theme" class="admin-input-select">
+                                                    <option value="">Padrão</option>
+                                                    <option value="innerdance">Innerdance</option>
+                                                    <option value="constellations">Constelações</option>
+                                                    <option value="expansion">Expansão</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>Link (Opcional)</label>
+                                                <input type="text" id="svc-link" placeholder="https://...">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>Benefícios (Separar por vírgula)</label>
+                                                <input type="text" id="svc-benefits"
+                                                    placeholder="Ex: Presencial, Online">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>Imagem de Cabeçalho (URL)</label>
+                                                <input type="text" id="svc-image" placeholder="https://..."
+                                                    class="admin-input-select">
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group mt-10">
+                                            <label>Ou Upload Imagem</label>
+                                            <input type="file" id="svc-image-file" accept="image/*">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- BOTTOM SECTION: Editor (Full Width) -->
+                                <div class="mt-30">
+                                    <h3 class="font-serif mb-10">Descrição Completa
+                                        (Página
+                                        Detalhada)</h3>
+                                    <div class="form-group">
+                                        <textarea id="my-tinymce-editor"></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- ACTIONS -->
+                                <div class="admin-action-bar">
+                                    <button type="submit" id="svc-submit-btn"
+                                        class="cta-button primary min-w-200">Publicar Serviço</button>
+                                    <button type="button" id="svc-cancel-btn" class="btn btn-outline hidden"
+                                        onclick="window.resetServiceForm()">Cancelar
+                                        Edição</button>
+                                    <div class="flex-grow"></div>
+                                    <button type="button" id="seed-services-btn"
+                                        class="btn btn-outline btn-sm">Recuperar
+                                        Originais</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- 5.5 HEADER MANAGEMENT -->
+                <details class="admin-card draggable-card" id="card-header" draggable="true">
+                    <summary class="admin-card-header">
+                        <span><i data-lucide="layout-template" class="admin-icon"></i> Gestão do
+                            Cabeçalho</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <form id="header-form">
+                            <!-- Logo Upload -->
+                            <div class="form-group mb-20">
+                                <label>Logótipo (PNG/SVG Transparent)</label>
+                                <input type="file" id="header-logo-upload" accept="image/*">
+                                <small class="admin-help-text">Aparecerá à esquerda do texto "Floresce
+                                    Terapias".</small>
+                                <img id="admin-logo-preview" class="hidden admin-logo-preview-img" src="" alt="Preview">
+                            </div>
+
+                            <!-- Toggle Transparency -->
+                            <div class="form-group mb-20">
+                                <label class="flex-align-center-gap-10 cursor-pointer">
+                                    <input type="checkbox" id="header-transparent" class="w-auto">
+                                    <span><strong>Transparente no Topo?</strong> (Fica opaco ao descer)</span>
+                                </label>
+                                <small class="admin-help-text ml-24">Se ativo, o cabeçalho não tem cor de
+                                    fundo até fazeres scroll.</small>
+                            </div>
+
+                            <!-- Opaque Settings -->
+                            <h4 class="admin-section-divider">Estilo
+                                (Quando Opaco / Scroll)</h4>
+
+                            <div class="grid-2-col-gap-15 mb-15">
+                                <div class="form-group">
+                                    <label>Cor de Fundo</label>
+                                    <div class="flex-gap-5">
+                                        <input type="color" id="header-bg-color" class="color-preview-box">
+                                        <input type="text" id="header-bg-color-hex" maxlength="7"
+                                            class="color-hex-input">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Cor do Texto</label>
+                                    <div class="flex-gap-5">
+                                        <input type="color" id="header-text-color" class="color-preview-box">
+                                        <input type="text" id="header-text-color-hex" maxlength="7"
+                                            class="color-hex-input">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid-2-col-gap-15">
+                                <div class="form-group">
+                                    <label>Tamanho da Fonte (px)</label>
+                                    <input type="number" id="header-font-size" value="16" min="10" max="30">
+                                </div>
+                                <div class="form-group">
+                                    <label>Padding Vertical (px)</label>
+                                    <input type="number" id="header-padding" value="20" min="5" max="50">
+                                </div>
+                            </div>
+
+                            <div class="form-actions mt-20">
+                                <button type="submit" id="header-save-btn" class="btn btn-primary full-width">Guardar
+                                    Cabeçalho</button>
+                            </div>
+                        </form>
+                    </div>
+                </details>
+
+                <!-- 6. TESTIMONIALS ACCORDION -->
+                <details class="admin-card draggable-card" id="card-testimonials" draggable="true">
+                    <summary class="admin-card-header">
+                        <span><i data-lucide="message-circle" class="admin-icon"></i> Gestão de
+                            Testemunhos</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <div class="admin-grid-2-col-gap-40">
+                            <!-- Add Review Form -->
+                            <div>
+                                <h3 class="font-serif mb-15">Adicionar Novo
+                                    Testemunho</h3>
+                                <form id="review-form" class="auth-form">
+                                    <div class="form-group">
+                                        <label>Nome do Cliente</label>
+                                        <input type="text" id="rev-name" required placeholder="Ex: Maria Silva">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Título/Role (Opcional)</label>
+                                        <input type="text" id="rev-role" placeholder="Ex: Cliente de Leitura de Aura">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Mensagem</label>
+                                        <textarea id="rev-text" rows="3" required placeholder="O testemunho..."
+                                            class="admin-textarea"></textarea>
+                                    </div>
+                                    <button type="submit" class="cta-button primary full-width">Publicar
+                                        Testemunho</button>
+                                </form>
+                            </div>
+
+                            <!-- Existing Reviews List -->
+                            <div class="admin-list-container">
+                                <h3 class="font-serif mb-15">Testemunhos Ativos</h3>
+                                <div id="admin-reviews-list">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- 7. MEDITATIONS ACCORDION -->
+                <details class="admin-card draggable-card" id="card-meditations" draggable="true">
+                    <summary class="admin-card-header">
+                        <span><i data-lucide="headphones" class="admin-icon"></i> Gestão de
+                            Meditações</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <div class="admin-grid-2-col-gap-40">
+                            <!-- Add Meditation Form -->
+                            <div>
+                                <h3 class="font-serif mb-15">Adicionar
+                                    Meditação/Recurso</h3>
+                                <form id="meditation-form" class="auth-form">
+                                    <input type="hidden" id="med-id">
+                                    <div class="form-group">
+                                        <label>Título</label>
+                                        <input type="text" id="med-title" required
+                                            placeholder="Ex: Meditação de Enraizamento">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Tema</label>
+                                        <select id="med-theme" required class="admin-input-select">
+                                            <option value="enraizamento">Enraizamento</option>
+                                            <option value="limpeza">Limpeza Energética</option>
+                                            <option value="protecao">Proteção</option>
+                                            <option value="intuicao">Intuição</option>
+                                            <option value="chakras">Chakras</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Tipo de Conteúdo</label>
+                                        <select id="med-type" required class="admin-input-select">
+                                            <option value="audio">Áudio (Link MP3/SoundCloud)</option>
+                                            <option value="video">Vídeo (YouTube/Vimeo)</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Link do Recurso (URL ou Iframe)</label>
+                                        <input type="text" id="med-url" required
+                                            placeholder="https://youtube.com/... ou <iframe...>">
+                                        <small class="admin-help-text">YouTube, Vimeo ou link direto para ficheiro
+                                            áudio.</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Imagem de Capa (Opcional)</label>
+                                        <input type="file" id="med-image" accept="image/*">
+                                        <input type="hidden" id="med-image-url">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Descrição Opcional</label>
+                                        <textarea id="med-desc" rows="2" placeholder="Breve descrição..."
+                                            class="admin-textarea"></textarea>
+                                    </div>
+
+                                    <div class="flex-gap-10">
+                                        <button type="submit" id="med-submit-btn"
+                                            class="cta-button primary full-width">Publicar
+                                            Recurso</button>
+                                        <button type="button" id="med-cancel-btn" class="btn btn-outline hidden"
+                                            onclick="window.resetMeditationForm()">Cancelar</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Existing Meditations List -->
+                            <div class="admin-list-container">
+                                <h3 class="font-serif mb-15">Recursos Ativos</h3>
+                                <div id="admin-meditations-list">
+                                    <!-- Populated by JS -->
+                                    <p class="text-muted">A carregar lista...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- 8. FOOTER MANAGEMENT ACCORDION -->
+                <details class="admin-card draggable-card" id="card-footer" draggable="true">
+                    <summary class="admin-card-header">
+                        <span><i data-lucide="layout-template" class="admin-icon"></i> Gestão do
+                            Rodapé</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <form id="footer-form" class="auth-form"
+                            onsubmit="event.preventDefault(); window.handleFooterSubmit();">
+                            <div class="form-group">
+                                <label>Título / Logótipo do Rodapé</label>
+                                <input type="text" id="footer-title-input" placeholder="Ex: Floresce Terapias">
+                            </div>
+                            <div class="form-group">
+                                <label>Direitos Reservados (Copyright)</label>
+                                <input type="text" id="footer-copyright-input"
+                                    placeholder="Ex: &copy; 2026 Floresce Terapias. Todos os direitos reservados.">
+                            </div>
+                            <div class="form-group">
+                                <label>Créditos / Desenvolvido por</label>
+                                <input type="text" id="footer-dev-input"
+                                    placeholder="Ex: CREATED IN PORTUGAL WITH ❤️ BY CALB">
+                            </div>
+                            <button type="submit" class="cta-button primary full-width">Guardar Alterações do
+                                Rodapé</button>
+                        </form>
+                    </div>
+                </details>
+
+                <!-- 9. CONTACT MANAGEMENT ACCORDION -->
+                <details class="admin-card draggable-card" id="card-contact" draggable="true">
+                    <summary class="admin-card-header">
+                        <span><i data-lucide="phone" class="admin-icon"></i> Gestão de
+                            Contactos</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <form id="contact-form" class="auth-form"
+                            onsubmit="event.preventDefault(); window.handleContactSubmit();">
+                            <div class="form-group">
+                                <label>Título da Secção</label>
+                                <input type="text" id="contact-title-input" placeholder="Ex: Vamos conversar?">
+                            </div>
+                            <div class="form-group">
+                                <label>Subtítulo / Descrição</label>
+                                <textarea id="contact-subtitle-input"
+                                    placeholder="Ex: Tens dúvidas ou queres agendar? Envia uma mensagem." rows="2"
+                                    class="admin-textarea"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="text" id="contact-email-input"
+                                    placeholder="Ex: floresceterapias@gmail.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Telefone</label>
+                                <input type="text" id="contact-phone-input" placeholder="Ex: +351 913 515 406">
+                            </div>
+                            <div class="form-group">
+                                <label>Instagram</label>
+                                <input type="text" id="contact-instagram-input" placeholder="Ex: @floresceterapias">
+                            </div>
+                            <button type="submit" class="cta-button primary full-width">Guardar Contactos</button>
+                        </form>
+                    </div>
+                </details>
+
+                <!-- Visual Customization -->
+                <details class="admin-card draggable-card" id="card-theme" draggable="true">
+                    <summary class="admin-card-header">
+                        <span><i data-lucide="palette" class="admin-icon"></i> Personalização
+                            Visual</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <p class="text-muted mb-20">Altere as cores do site. As alterações são
+                            instantâneas para os visitantes.</p>
+
+                        <form id="theme-form" class="auth-form grid-2-col-gap-20">
+
+                            <div class="form-group">
+                                <label>Fundo Geral (Background)</label>
+                                <div class="flex-align-center-gap-10">
+                                    <input type="color" id="theme-bg" value="#80864f" class="color-preview-box-large">
+                                    <input type="text" id="theme-bg-hex" value="#80864f" maxlength="7"
+                                        class="color-text-input">
+                                    <span class="admin-help-text-inline">Cor principal de fundo</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Texto Principal</label>
+                                <div class="flex-align-center-gap-10">
+                                    <input type="color" id="theme-text" value="#f7f2e0" class="color-preview-box-large">
+                                    <input type="text" id="theme-text-hex" value="#f7f2e0" maxlength="7"
+                                        class="color-text-input">
+                                    <span class="admin-help-text-inline">Títulos e texto corpo</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Cor Primária (Botões/Destaques)</label>
+                                <div class="flex-align-center-gap-10">
+                                    <input type="color" id="theme-primary" value="#BF897F"
+                                        class="color-preview-box-large">
+                                    <input type="text" id="theme-primary-hex" value="#BF897F" maxlength="7"
+                                        class="color-text-input">
+                                    <span class="admin-help-text-inline">Botões e ícones</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Fundo do Cabeçalho (Navbar)</label>
+                                <div class="flex-align-center-gap-10">
+                                    <input type="color" id="theme-header" value="#80864f"
+                                        class="color-preview-box-large">
+                                    <input type="text" id="theme-header-hex" value="#80864f" maxlength="7"
+                                        class="color-text-input">
+                                    <span class="admin-help-text-inline">Barra de navegação</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-20">
+                                <label class="block-mb-8">Cor Secundária 1 (Bege -
+                                    Sobre/Agenda)</label>
+                                <div class="flex-align-center-gap-10">
+                                    <input type="color" id="theme-secondary-1" value="#f7f2e0"
+                                        class="color-preview-box-large">
+                                    <input type="text" id="theme-secondary-1-hex" value="#f7f2e0" maxlength="7"
+                                        class="color-text-input">
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-20">
+                                <label class="block-mb-8">Cor Secundária 2 (Azul -
+                                    Sessões/Testemunhos)</label>
+                                <div class="flex-align-center-gap-10">
+                                    <input type="color" id="theme-secondary-2" value="#dac2b2"
+                                        class="color-preview-box-large">
+                                    <input type="text" id="theme-secondary-2-hex" value="#dac2b2" maxlength="7"
+                                        class="color-text-input">
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-20">
+                                <label class="block-mb-8">Fundo do Rodapé</label>
+                                <div class="flex-align-center-gap-10">
+                                    <input type="color" id="theme-footer" value="#F7F2E0"
+                                        class="color-preview-box-large">
+                                    <input type="text" id="theme-footer-hex" value="#F7F2E0" maxlength="7"
+                                        class="color-text-input">
+                                </div>
+                            </div>
+
+
+                            <!-- Theme Preview -->
+                            <div class="col-span-full mt-20 flex-gap-15">
+                                <button type="submit" id="theme-save-btn" class="cta-button primary">Guardar
+                                    Tema</button>
+                                <button type="button" id="theme-reset-btn"
+                                    class="btn btn-outline border-red color-red">Restaurar Padrões</button>
+                            </div>
+                        </form>
+                    </div>
+                </details>
+            </div>
+        </section>
+
+        <!-- Carousel Section -->
+        <section class="content-section">
+            <h2 class="section-title text-center-primary">As Minhas
+                Meditações</h2>
+
+            <div class="carousel-wrapper relative">
+                <button class="carousel-nav prev" aria-label="Anterior"><i data-lucide="chevron-left"></i></button>
+
+                <div class="carousel-container">
+                    <!-- Card 1: Grounding -->
+                    <a href="theme.html#enraizamento" class="carousel-card">
+                        <div class="carousel-image bg-green-light relative">
+                            <i data-lucide="anchor" size="32" color="#2e7d32"></i>
+                            <!-- Place for image if needed: <img src="..." class="card-bg-img"> -->
+                        </div>
+                        <div class="carousel-content">
+                            <h3>Enraizamento</h3>
+                            <p>Conexão com a Terra e estabilidade.</p>
+                        </div>
+                    </a>
+
+                    <!-- Card 2: Cleaning -->
+                    <a href="theme.html#limpeza" class="carousel-card">
+                        <div class="carousel-image bg-blue-light relative">
+                            <i data-lucide="droplets" size="32" color="#1565c0"></i>
+                        </div>
+                        <div class="carousel-content">
+                            <h3>Limpeza Energética</h3>
+                            <p>Purificação do campo áurico.</p>
+                        </div>
+                    </a>
+
+                    <!-- Card 3: Protection -->
+                    <a href="theme.html#protecao" class="carousel-card">
+                        <div class="carousel-image bg-purple-light relative">
+                            <i data-lucide="shield" size="32" color="#7b1fa2"></i>
+                        </div>
+                        <div class="carousel-content">
+                            <h3>Proteção</h3>
+                            <p>Escudos e limites energéticos.</p>
+                        </div>
+                    </a>
+
+                    <!-- Card 4: Intuition -->
+                    <a href="theme.html#intuicao" class="carousel-card">
+                        <div class="carousel-image bg-orange-light relative">
+                            <i data-lucide="eye" size="32" color="#ef6c00"></i>
+                        </div>
+                        <div class="carousel-content">
+                            <h3>Intuição</h3>
+                            <p>Despertar a visão interior.</p>
+                        </div>
+                    </a>
+
+                    <!-- Card 5: Chakras -->
+                    <a href="theme.html#chakras" class="carousel-card">
+                        <div class="carousel-image bg-deep-purple-light relative">
+                            <i data-lucide="aperture" size="32" color="#8e24aa"></i>
+                        </div>
+                        <div class="carousel-content">
+                            <h3>Meditações - Chakras</h3>
+                            <p>Equilíbrio dos 7 centros de energia.</p>
+                        </div>
+                    </a>
+                </div>
+
+                <button class="carousel-nav next" aria-label="Seguinte"><i data-lucide="chevron-right"></i></button>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Handle Mobile Logout
+        const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+        if (mobileLogoutBtn) {
+            mobileLogoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const mainLogoutBtn = document.getElementById('logout-btn');
+                if (mainLogoutBtn) mainLogoutBtn.click();
+            });
+        }
+
+        // Sync User Name for Mobile Menu
+        const nameDisplay = document.getElementById('user-name-display');
+        const mobileNameDisplay = document.getElementById('mobile-user-name');
+
+        // Load Saved Name
+        const savedName = localStorage.getItem('userName');
+        if (savedName && nameDisplay) {
+            nameDisplay.textContent = savedName;
+        }
+
+        // Observer to copy name when it changes (populated by Firebase)
+        const observer = new MutationObserver(() => {
+            if (mobileNameDisplay) mobileNameDisplay.textContent = nameDisplay.textContent;
+        });
+        if (nameDisplay) {
+            // Initial sync
+            if (mobileNameDisplay) mobileNameDisplay.textContent = nameDisplay.textContent;
+            observer.observe(nameDisplay, { childList: true, characterData: true, subtree: true });
+        }
+        // Carousel Navigation
+        const carousel = document.querySelector('.carousel-container');
+        const prevBtn = document.querySelector('.carousel-nav.prev');
+        const nextBtn = document.querySelector('.carousel-nav.next');
+
+        if (carousel && prevBtn && nextBtn) {
+            prevBtn.addEventListener('click', () => {
+                carousel.scrollBy({ left: -300, behavior: 'smooth' });
+            });
+            nextBtn.addEventListener('click', () => {
+                carousel.scrollBy({ left: 300, behavior: 'smooth' });
+            });
+        }
+    </script>
+
+    <!-- DRAG AND DROP LOGIC FOR DASHBOARD CARDS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('dashboard-cards-container');
+            if (!container) return;
+
+            const cards = document.querySelectorAll('.draggable-card');
+
+            // 1. Load Saved Order from LocalStorage
+            const savedOrder = localStorage.getItem('dashboardOrder');
+            if (savedOrder) {
+                try {
+                    const order = JSON.parse(savedOrder);
+                    // Append cards in the saved order
+                    order.forEach(id => {
+                        const card = document.getElementById(id);
+                        if (card) {
+                            container.appendChild(card);
+                        }
+                    });
+                } catch (e) {
+                    console.error("Error loading dashboard order", e);
+                }
+            }
+
+            // 2. Setup Drag Events
+            cards.forEach(card => {
+                // Feature: Dynamic Draggable Toggle
+                // When mouse enters form elements, disable dragging on the card to allow text select.
+                const formElements = card.querySelectorAll('input, textarea, select, button, label, .editor-container');
+                formElements.forEach(el => {
+                    el.addEventListener('mouseenter', () => {
+                        card.setAttribute('draggable', 'false');
+                    });
+                    el.addEventListener('mouseleave', () => {
+                        card.setAttribute('draggable', 'true');
+                    });
+                    // Touch support
+                    el.addEventListener('touchstart', () => {
+                        card.setAttribute('draggable', 'false');
+                    }, { passive: true });
+                    el.addEventListener('touchend', () => {
+                        card.setAttribute('draggable', 'true');
+                    });
+                });
+
+                card.addEventListener('dragstart', (e) => {
+                    card.classList.add('dragging');
+                });
+
+                card.addEventListener('dragend', () => {
+                    card.setAttribute('draggable', 'true'); // Reset just in case
+                    card.classList.remove('dragging');
+                    saveOrder();
+                });
+            });
+
+            // 3. Setup Drop Zone (Container)
+            container.addEventListener('dragover', e => {
+                e.preventDefault(); // Enable Drop
+                const afterElement = getDragAfterElement(container, e.clientY);
+                const draggable = document.querySelector('.dragging');
+                if (draggable) {
+                    if (afterElement == null) {
+                        container.appendChild(draggable);
+                    } else {
+                        container.insertBefore(draggable, afterElement);
+                    }
+                }
+            });
+
+            // Helper: Find position
+            function getDragAfterElement(container, y) {
+                const draggableElements = [...container.querySelectorAll('.draggable-card:not(.dragging)')];
+
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            }
+
+            // Helper: Save Order
+            function saveOrder() {
+                const currentOrder = [...container.querySelectorAll('.draggable-card')].map(card => card.id);
+                localStorage.setItem('dashboardOrder', JSON.stringify(currentOrder));
+                console.log("Dashboard order saved:", currentOrder);
+            }
+        });
+    </script>
+
+    <footer class="footer footer-centered">
+        <div class="container">
+            <div class="container">
+                <p class="logo-text" id="footer-title"></p>
+                <p class="copyright" id="footer-copyright"></p>
+                <p class="footer-credits" id="footer-credit"></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js"></script>
+    <script src="init-firebase.js?v=2"></script>
+
+    <!-- CMS Logic -->
+    <script src="cms.js?v=3"></script>
+    <script>
+        // Initialize CMS
+        if (window.initCMS) {
+            window.initCMS();
+        }
+
+        // Tab Switching Logic (Global) - Legacy support if needed, but we use Accordions now
+        window.openSection = function (sectionId) {
+            // With accordion, we might want to just open the relevant detail
+            // For now, this old function can just return or log
+            console.log("Opening section:", sectionId);
+        }
+    </script>
+
+    <script>
+        // Protect Route & Auth Logic
+        // Protect Route & Auth Logic
+        const localUser = localStorage.getItem('userEmail');
+
+        // Helper: Check Status
+        // Helper: Check Status and Show Modal if needed
+        async function verifyUserStatus(email) {
+            if (!window.db) return true;
+            try {
+                const docSnap = await window.db.collection("users").doc(email).get();
+                if (docSnap.exists) {
+                    const data = docSnap.data();
+
+                    // If user is BLOCKED, SHOW MODAL
+                    // 'pending' is now considered active for free access
+                    if (data.status === 'blocked') {
+                        console.log("User status requires action:", data.status);
+
+                        // Show Modal
+                        const modal = document.getElementById('subscriptionModal');
+                        if (modal) {
+                            modal.classList.remove('hidden');
+                            modal.classList.add('flex'); // Ensure flex is added specifically
+                        }
+
+                        // Freeze background scrolling
+                        document.body.style.overflow = 'hidden';
+                        return false; // Stop further loading
+                    }
+                }
+            } catch (error) {
+                console.error("Status check failed", error);
+            }
+            return true;
+        }
+
+        async function logoutAndRedirect() {
+            if (window.auth) await auth.signOut();
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        // Modal Actions
+        function logoutFromModal() {
+            logoutAndRedirect();
+        }
+
+        // Modal Actions
+        function logoutFromModal() {
+            logoutAndRedirect();
+        }
+
+        // startSubscription is now global in script.js
+        // resetBtn is now global in script.js
+
+        if (!localUser) {
+            if (window.auth) {
+                auth.onAuthStateChanged(async (user) => {
+                    if (!user) {
+                        window.location.href = 'login.html';
+                    } else {
+                        // Check Status
+                        await verifyUserStatus(user.email);
+
+                        localStorage.setItem('userEmail', user.email);
+                        localStorage.setItem('isMember', 'true');
+
+                        let finalName = user.displayName;
+                        if (!finalName) {
+                            try {
+                                const userDocRef = window.db.collection("users").doc(user.email);
+                                const userDocSnap = await userDocRef.get();
+                                if (userDocSnap.exists) finalName = userDocSnap.data().name;
+                            } catch (e) { }
+                        }
+                        if (!finalName) finalName = user.email.split('@')[0];
+
+                        localStorage.setItem('userName', finalName);
+
+                        // Update UI Immediately
+                        const nameDisplay = document.getElementById('header-welcome-msg');
+                        if (nameDisplay) nameDisplay.textContent = `Olá, ${finalName}`;
+                        updateUserDisplay(finalName);
+
+                        // Fix for missing sidebar button (Manual Injection)
+                        ensureMobileLogoutButton();
+                    }
+                });
+            } else {
+                window.location.href = 'login.html';
+            }
+        } else {
+            // Already logged in locally, but verify status in background
+            if (window.auth) {
+                auth.onAuthStateChanged(async (user) => {
+                    if (user) {
+                        if (user.email !== localUser) {
+                            localStorage.setItem('userEmail', user.email);
+                        }
+                        // Verify Status Background Check
+                        await verifyUserStatus(user.email);
+                    } else {
+                        // Session expired
+                        await logoutAndRedirect();
+                    }
+                });
+            }
+            updateUserDisplay(localStorage.getItem('userName') || 'Visitante');
+        }
+
+        function updateUserDisplay(name) {
+            const nameDisplay = document.getElementById('user-name-display');
+            const mobileNameDisplay = document.getElementById('mobile-user-name');
+            const welcomeDisplay = document.getElementById('header-welcome-msg');
+
+            if (nameDisplay) nameDisplay.textContent = name;
+            if (mobileNameDisplay) mobileNameDisplay.textContent = name;
+            if (welcomeDisplay) {
+                welcomeDisplay.textContent = `Olá, ${name}`;
+                welcomeDisplay.style.display = 'inline-block';
+            }
+
+            ensureMobileLogoutButton();
+        }
+
+        function ensureMobileLogoutButton() {
+            // Fix for missing sidebar button (Manual Injection)
+            if (window.updateMobileAuthUI) {
+                window.updateMobileAuthUI();
+            } else {
+                // Fallback if script.js isn't ready
+                const mobileMenu = document.querySelector('.mobile-menu');
+                const socials = document.querySelector('.mobile-socials');
+                if (mobileMenu && socials && !document.getElementById('mobile-logout-btn')) {
+
+                    const btn = document.createElement('a');
+                    btn.href = '#';
+                    btn.id = 'mobile-logout-btn';
+                    // Ensure high contrast and display block
+                    btn.style.cssText = 'color: #e57373 !important; display: flex !important; align-items: center; gap: 8px; font-weight: 500; padding: 10px 0; margin-top: 10px; cursor: pointer;';
+                    btn.innerHTML = '<i data-lucide="log-out" style="width: 18px;"></i> Sair da Conta';
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        if (confirm('Tem a certeza que deseja sair?')) {
+                            localStorage.clear();
+                            window.location.href = 'index.html';
+                        }
+                    });
+
+                    // Insert BEFORE the socials div wrapper, not inside it or mixed weirdly
+                    // This ensures it sits above the social icons
+                    const divider = document.createElement('div');
+                    divider.style.cssText = 'height: 1px; background: #eee; margin: 15px 0;';
+
+                    socials.parentNode.insertBefore(divider, socials);
+                    socials.parentNode.insertBefore(btn, socials);
+
+                    if (window.lucide) window.lucide.createIcons();
+                }
+            }
+        }
+
+        // Logout
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (window.auth) auth.signOut();
+                localStorage.clear();
+                window.location.href = 'index.html';
+            });
+        }
+
+    </script>
+    <script src="sidebar.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sessão | Floresce Terapias</title>
+
+    <!-- Privacy / Construction Mode -->
+    <meta name="robots" content="noindex, nofollow">
+    <script src="access-control.js"></script>
+    <script src="theme-loader.js"></script>
+
+    <meta name="description" content="Detalhes da sessão terapêutica.">
+    <link rel="stylesheet" href="style.css?v=7.1.5">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Styles moved to style.css */
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-content">
+            <div class="brand-container">
+                <a href="index.html" class="logo-link" aria-label="Início">
+                    <img id="header-logo-display" src="" alt="Logo" class="header-logo hidden">
+                </a>
+                <div class="brand-info">
+                    <a href="index.html" class="logo">Floresce Terapias</a>
+                    <div class="header-socials">
+                        <a href="https://www.instagram.com/floresceterapias?igsh=MW90eXlmOG93em55ZA%3D%3D&utm_source=qr"
+                            target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i
+                                data-lucide="instagram"></i></a>
+                        <a href="https://wa.me/351913515406" target="_blank" rel="noopener noreferrer"
+                            aria-label="WhatsApp"><i data-lucide="message-circle"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Desktop Links -->
+            <ul class="nav-links">
+                <li><a href="index.html">Voltar</a></li>
+                <li><a href="booking.html" class="btn btn-primary">Agendar</a></li>
+            </ul>
+
+            <span id="header-welcome-msg" class="header-welcome-msg"></span>
+
+            <!-- Mobile Toggle -->
+            <button class="menu-toggle" aria-label="Abrir Menu">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu"></div>
+
+    <!-- Header -->
+    <header class="service-detail-header">
+        <h1 class="section-title" id="svc-title">A carregar...</h1>
+        <!-- Subtitle removed as requested (redundant) -->
+    </header>
+
+    <!-- Main Content -->
+    <main class="service-detail-content">
+        <div id="svc-content">
+            <!-- Dynamic Content Here -->
+            <!-- Dynamic Content Here -->
+            <p class="text-center" id="loading-msg">A carregar detalhes do serviço...</p>
+        </div>
+
+        <!-- Testimonials Carousel -->
+        <div id="svc-testimonials-section" class="svc-testimonials-section-hidden">
+            <h3 class="font-serif text-center section-title custom-primary mb-40">Testemunhos</h3>
+
+            <div class="carousel-wrapper">
+                <button class="carousel-nav prev" id="svc-prev-btn" aria-label="Anterior">
+                    <i data-lucide="chevron-left"></i>
+                </button>
+
+                <div class="carousel-container" id="svc-testimonials-carousel">
+                    <!-- Cards Injected Here -->
+                </div>
+
+                <button class="carousel-nav next" id="svc-next-btn" aria-label="Próximo">
+                    <i data-lucide="chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- CTA Buttons -->
+        <div class="cta-actions">
+            <a href="https://wa.me/351913515406" class="btn btn-primary" target="_blank"
+                rel="noopener noreferrer">Agendar via WhatsApp</a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <p class="logo-text" id="footer-title"></p>
+            <div class="footer-links">
+                <a href="termos.html">Termos e Privacidade</a>
+            </div>
+            <p class="copyright" id="footer-copyright"></p>
+            <p class="footer-credits" id="footer-credit"></p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="init-firebase.js"></script>
+
+    <script src="main.js?v=4.9.9"></script>
+    <script src="carousel.js"></script>
+    <script src="sidebar.js"></script>
+    <script>
+        lucide.createIcons();
+
+        // Load Service Data
+        async function loadServiceDetail() {
+            // Support both Hash (#aura) and Query (?id=aura)
+            let serviceId = window.location.hash.substring(1);
+            if (!serviceId) {
+                const params = new URLSearchParams(window.location.search);
+                serviceId = params.get('id');
+            }
+
+            if (!serviceId) {
+                document.getElementById('svc-content').innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <h2 style="color: var(--color-primary);">Serviço não encontrado</h2>
+                        <p>O serviço que procura não está disponível ou o link está incorreto.</p>
+                        <div style="background:#eee; padding:10px; margin:10px; font-family:monospace; word-break:break-all;">
+                           URL Atual: ${window.location.href}<br>
+                           Search: ${window.location.search}<br>
+                           Hash: ${window.location.hash}
+                        </div>
+                        <p style="font-size:0.8rem; color:#666;">Erro: ID não detetado.</p>
+                        <a href="index.html" class="btn btn-primary" style="margin-top:20px;">Voltar ao Início</a>
+                    </div>`;
+                return;
+            }
+
+            // Show Debug ID
+            const loadMsg = document.getElementById('loading-msg');
+            if (loadMsg) loadMsg.textContent = `A procurar por: "${serviceId}"...`;
+
+            // Wait for DB
+            const checkDb = () => {
+                if (window.db) {
+                    fetchData(serviceId);
+                } else {
+                    setTimeout(checkDb, 200);
+                }
+            };
+            checkDb();
+        }
+
+        async function fetchData(id) {
+            try {
+                // Try fetching by Doc ID first (simple migration)
+                // If we used the "seed" where we set IDs manually... wait, `add()` auto-generates IDs.
+                // The seed script used `add()`, so IDs are random strings like '7s8df76...'.
+                // The `link` in the seed data was `service.html?id=aura` which implies we might want to query by a slug or something?
+                // BUT, `script.js` renders links using `data.link`.
+                // 
+                // Strategy:
+                // Since I populated the seed data with `link: "service.html?id=aura"`, that's just a query param. 
+                // I need to find the document where `link` contains this ID OR just rely on the user clicking the card generated by `script.js`?
+                // 
+                // Wait, `script.js` generates cards using `data.link`.
+                // If I update `script.js` to point to `service.html?id=[DOC_ID]`, then this page just needs to `doc(id).get()`.
+                // This is the cleanest way.
+
+                let docSnap = await window.db.collection('services').doc(id).get();
+
+                if (!docSnap.exists) {
+                    document.getElementById('svc-content').innerHTML = `
+                        <div style="text-align: center; color: var(--color-text-main);">
+                            <h2 style="color: #d9534f;">Serviço não encontrado</h2>
+                            <p>O serviço que procura não está disponível ou o link está incorreto.</p>
+                            <a href="index.html" class="btn btn-primary" style="margin-top:20px;">Voltar ao Início</a>
+                        </div>`;
+                    return;
+                }
+
+                const data = docSnap.data();
+
+                // Update Page Title
+                document.title = `${data.title} | Floresce Terapias`;
+
+                // Header
+                document.getElementById('svc-title').textContent = data.title;
+                // document.getElementById('svc-subtitle').textContent = data.description; // REMOVED
+
+                // Content
+                document.getElementById('svc-content').innerHTML = data.long_description || "<p>Sem descrição detalhada.</p>";
+
+                // Testimonials
+                if (data.testimonial_ids && data.testimonial_ids.length > 0) {
+                    loadServiceTestimonials(data.testimonial_ids);
+                }
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('svc-content').innerHTML = '<p>Erro ao carregar sessão.</p>';
+            }
+        }
+
+        async function loadServiceTestimonials(ids) {
+            try {
+                // Fetch all linked testimonials
+                const promises = ids.map(id => window.db.collection('testimonials').doc(id).get());
+                const snapshots = await Promise.all(promises);
+
+                const reviews = [];
+                snapshots.forEach(doc => {
+                    if (doc.exists) {
+                        reviews.push({ id: doc.id, ...doc.data() });
+                    }
+                });
+
+                if (reviews.length === 0) return;
+
+                // Show Section
+                document.getElementById('svc-testimonials-section').style.display = 'block';
+
+                // Instantiate Carousel with Custom Render
+                new DashboardCarousel({
+                    containerId: 'svc-testimonials-carousel',
+                    prevBtnId: 'svc-prev-btn',
+                    nextBtnId: 'svc-next-btn',
+                    collectionName: 'testimonials', // Not used since we pass data
+                    data: reviews,
+                    renderCard: (item) => {
+                        // Custom Card HTML for Testimonials
+                        // Stars removed as requested
+                        return `
+                        <div class="carousel-card testimonial-card" style="min-width: 300px; max-width: 350px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; text-align: center; scroll-snap-align: center;">
+                            <div style="font-style: italic; color: #555; font-size: 1rem; line-height: 1.6; margin-bottom: 20px; width: 100%;">
+                                "${item.text || ''}"
+                            </div>
+                            <h4 style="font-family: 'Cormorant Garamond', serif; color: var(--color-primary); font-size: 1.2rem; margin: 0;">
+                                ${item.name}
+                            </h4>
+                            <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #999; margin-top: 5px;">
+                                ${item.role || 'Cliente'}
+                            </span>
+                        </div>
+                        `;
+                    }
+                });
+
+            } catch (e) {
+                console.error("Error loading testimonials:", e);
+            }
+        }
+
+        loadServiceDetail();
+    </script>
+</body>
+
+</html>
