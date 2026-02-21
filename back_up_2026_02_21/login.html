@@ -13,32 +13,7 @@
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap"
         rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- EmailJS SDK (for pending-user admin notifications) -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <script>emailjs.init("gGZY_zuQOJdC0hcAH");</script>
 
-    <style>
-        .forgot-pwd-link {
-            font-size: 14px !important;
-            color: #e1d7ce !important;
-            text-decoration: underline !important;
-            display: block !important;
-            margin-top: 10px;
-            opacity: 1 !important;
-            visibility: visible !important;
-        }
-
-        .forgot-pwd-link:hover {
-            color: #ffffff !important;
-        }
-
-        #forgotPwdWrapper {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            margin-top: 4px;
-        }
-    </style>
 </head>
 
 <body class="auth-page">
@@ -82,11 +57,6 @@
                 Ainda não és membro? <a href="#" id="toggleSignupBtn">Subscrever agora</a>
                 <br><small class="auth-small-text">CREATED BY CALB</small>
             </p>
-            <p id="forgotPwdWrapper" style="text-align:center; margin-top:8px; display:block;">
-                <a href="#" id="forgotPasswordBtn"
-                    style="color:#e1d7ce; font-size:14px; text-decoration:underline; display:inline-block;">Esqueci a
-                    password</a>
-            </p>
         </div>
     </div>
 
@@ -121,30 +91,6 @@
                 }
             }
 
-            // --- PASSWORD RESET ---
-            const forgotBtn = document.getElementById('forgotPasswordBtn');
-            if (forgotBtn) {
-                forgotBtn.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    const emailVal = document.getElementById('email').value.trim();
-                    if (!emailVal) {
-                        alert('Introduz o teu email no campo acima e clica novamente em "Esqueci a password".');
-                        return;
-                    }
-                    try {
-                        const authInstance = await ensureAuth();
-                        await authInstance.sendPasswordResetEmail(emailVal);
-                        alert(`Email de recuperação enviado para ${emailVal}.\n\nVerifica a caixa de entrada (e a pasta de spam).`);
-                    } catch (err) {
-                        if (err.code === 'auth/user-not-found') {
-                            alert('Não existe nenhuma conta com esse email.');
-                        } else {
-                            alert('Erro ao enviar email: ' + err.message);
-                        }
-                    }
-                });
-            }
-
             // Initialize Auth Persistence
             if (window.auth) {
                 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => { });
@@ -163,19 +109,17 @@
                         isSignupMode = !isSignupMode;
 
                         if (isSignupMode) {
-                            nameGroup.classList.remove('hidden');
+                            nameGroup.classList.remove('hidden'); // Remove !important class
                             nameGroup.style.display = 'block';
                             authTitle.textContent = 'Criar Conta';
                             loginBtn.textContent = 'Registar';
                             authFooter.innerHTML = 'Já tens conta? <a href="#" id="toggleLoginBtn">Entrar</a>';
-                            document.getElementById('forgotPwdWrapper').style.display = 'none';
                         } else {
-                            nameGroup.classList.add('hidden');
+                            nameGroup.classList.add('hidden'); // Add !important class
                             nameGroup.style.display = 'none';
                             authTitle.textContent = 'Área Reservada';
                             loginBtn.textContent = 'Entrar';
-                            authFooter.innerHTML = 'Ainda não és membro? <a href="#" id="toggleSignupBtn">Subscrever agora</a><br><small class="auth-small-text">CREATED BY CALB</small>';
-                            document.getElementById('forgotPwdWrapper').style.display = 'block';
+                            authFooter.innerHTML = 'Ainda não és membro? <a href="#" id="toggleSignupBtn">Subscrever agora</a>';
                         }
                     }
                 });
@@ -271,19 +215,6 @@
                                 await user.updateProfile({ displayName: name }).catch(e => console.warn("updateProfile failed:", e));
                             }
 
-                            // Determine status based on access mode
-                            let newUserStatus = 'active'; // default: free access
-                            if (db) {
-                                try {
-                                    const configDoc = await db.collection('config').doc('settings').get();
-                                    if (configDoc.exists && configDoc.data().freeAccess === false) {
-                                        newUserStatus = 'pending';
-                                    }
-                                } catch (configErr) {
-                                    console.warn("Could not read access mode, defaulting to active:", configErr);
-                                }
-                            }
-
                             // Save to Firestore (best-effort — auth already succeeded)
                             if (db) {
                                 try {
@@ -291,10 +222,7 @@
                                         uid: user.uid,
                                         name: name,
                                         email: email,
-                                        status: newUserStatus,
-                                        loginCount: 0,
-                                        totalTimeSeconds: 0,
-                                        incidents: [],
+                                        status: 'active',
                                         createdAt: new Date(),
                                         lastLogin: new Date()
                                     });
@@ -309,37 +237,8 @@
                             localStorage.setItem('isMember', 'true');
                             localStorage.setItem('userName', name);
 
-                            if (newUserStatus === 'pending') {
-                                // --- Notify Admin: Email ---
-                                try {
-                                    await emailjs.send('service_8726bv6', 'template_sboqw1k', {
-                                        user_name: name,
-                                        user_email: email,
-                                        registration_date: new Date().toLocaleString('pt-PT'),
-                                        name: name,   // alias for {{name}} in From Name
-                                        email: email  // alias for {{email}} in Reply To
-                                    });
-                                    console.log('Admin email notification sent.');
-                                } catch (emailErr) {
-                                    console.warn('Admin email notification failed:', emailErr);
-                                }
-
-                                // --- Notify Admin: WhatsApp ---
-                                try {
-                                    const waMsg = encodeURIComponent(`🔔 Novo registo pendente no site Floresce Terapias!\n\nNome: ${name}\nEmail: ${email}\nData: ${new Date().toLocaleString('pt-PT')}\n\nPor favor aprova ou rejeita o acesso no painel de membros.`);
-                                    window.open(`https://wa.me/351913515406?text=${waMsg}`, '_blank');
-                                } catch (waErr) {
-                                    console.warn('WhatsApp notification failed:', waErr);
-                                }
-
-                                alert("Conta criada com sucesso! ✅\n\nO seu acesso está PENDENTE de aprovação pelo administrador. Receberá confirmação em breve.");
-                                loginBtn.textContent = originalText;
-                                loginBtn.disabled = false;
-                                return;
-                            } else {
-                                alert("Conta criada com sucesso! Bem-vindo(a) à família Floresce. 🌿");
-                                window.location.href = 'dashboard.html';
-                            }
+                            alert("Conta criada com sucesso! Bem-vindo(a) à família Floresce.");
+                            window.location.href = 'dashboard.html';
 
                         } else {
                             // --- LOGIN ---
@@ -362,12 +261,9 @@
                                             return;
                                         }
 
-                                        // Update last login and increment login counter
+                                        // Update Last Login
                                         window.db.collection("users").doc(user.email).update({
-                                            lastLogin: new Date(),
-                                            loginCount: window.firebase && window.firebase.firestore
-                                                ? window.firebase.firestore.FieldValue.increment(1)
-                                                : (docSnap.data().loginCount || 0) + 1
+                                            lastLogin: new Date()
                                         }).catch(e => console.log("Erro a atualizar lastLogin", e));
                                     }
                                 } catch (dbError) {

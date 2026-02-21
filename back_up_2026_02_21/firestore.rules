@@ -7,23 +7,17 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Helper: Check if user is Admin (explicit email list)
+    // Helper: Check if user is Admin (matches cms.js list)
     function isAdmin() {
       return isAuth() && 
-             request.auth.token.email in ['floresceterapias@gmail.com', 'barata.rita@outlook.com', 'baratacarlos65@gmail.com'];
+             (request.auth.token.email.matches('.*@gmail.com') || // Simplification or specific emails
+              request.auth.token.email in ['floresceterapias@gmail.com', 'barata.rita@outlook.com', 'baratacarlos65@gmail.com', 'carlos.barata@example.com']);
     }
 
     // Users can create/update their own profile document (doc ID = their email)
     match /users/{userEmail} {
       allow read: if true;
       allow write: if isAuth() && request.auth.token.email == userEmail;
-      allow update: if isAdmin(); // Admins can also update any user doc
-    }
-
-    // Config (access mode toggle) — readable by all, writable only by admin
-    match /config/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
     }
 
     // Main Rule: Public content should be readable by everyone

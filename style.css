@@ -357,7 +357,7 @@ ul {
 }
 
 .brand-info .logo {
-    font-size: 1.1em;
+    font-size: 1.5em;
     /* Use em to scale with navbar font-size setting */
     line-height: 1.1;
     margin-bottom: 2px;
@@ -1727,7 +1727,8 @@ ul {
     flex-wrap: nowrap;
     overflow-x: auto;
     scroll-behavior: smooth;
-    gap: 30px;
+    gap: 45px;
+    /* Increased from 30px for more space */
     padding: 0 30px 50px 30px;
     width: 100%;
     -ms-overflow-style: none;
@@ -1835,25 +1836,33 @@ ul {
         margin: 0 auto;
     }
 
-    /* Mobile Carousel Adjustment (Single Card View) */
-    /* Mobile Carousel Adjustment (Single Card Grid View) */
-    /* Mobile Carousel Adjustment (Single Card View) */
+    /* Mobile: Stack meditation cards in a single column */
     .carousel-container {
-        /* On mobile, we can keep flex but adjust widths */
         display: flex;
+        flex-direction: column;
         flex-wrap: nowrap;
-        gap: 20px;
-        padding: 40px 7.5vw;
-        scroll-snap-type: x mandatory;
+        overflow-x: hidden;
+        overflow-y: visible;
+        gap: 30px;
+        padding: 20px 20px 50px 20px;
+        scroll-snap-type: none;
         width: 100%;
+        box-sizing: border-box;
+        cursor: default;
     }
 
     .carousel-card {
         min-width: 0;
         width: 100%;
-        margin: 0;
-        scroll-snap-align: center;
-        height: 100%;
+        margin: 0 auto 30px auto;
+        scroll-snap-align: none;
+        height: auto;
+        flex: 0 0 auto;
+        box-sizing: border-box;
+    }
+
+    .carousel-card:last-child {
+        margin-bottom: 0;
     }
 
     /* Fill grid height */
@@ -2936,6 +2945,29 @@ body.auth-page {
     margin-bottom: 15px;
 }
 
+.members-header-flex {
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.members-actions-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.access-mode-toggle-btn {
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
 .admin-list-container {
     border-left: 1px solid #eee;
     padding-left: 40px;
@@ -3418,7 +3450,13 @@ body.auth-page {
     width: 100%;
     /* Hide scrollbar */
     -ms-overflow-style: none;
-    scrollbar-width: none;
+}
+
+@supports (scrollbar-width: none) {
+    .carousel-container {
+        scrollbar-width: none;
+        /* Firefox */
+    }
 }
 
 .carousel-container::-webkit-scrollbar {
@@ -3759,6 +3797,35 @@ body.auth-page {
     border: none;
     background-color: #E1D7CE;
     /* input-sand default */
+}
+
+/* Fix Lints: Clean up inline styles */
+
+/* About page: full-width title */
+.about-title-full {
+    width: 100%;
+    margin-bottom: 40px;
+}
+
+/* About page: title with bottom margin */
+.about-title-mb {
+    margin-bottom: 30px;
+}
+
+/* About page: left-aligned CTA buttons */
+.cta-actions--left {
+    justify-content: flex-start;
+    margin-top: 30px;
+}
+
+/* Dashboard: Testimonials background color input */
+.svc-testi-bg-input {
+    width: 50px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    border-radius: 4px;
 }
 
 /* Fix Lints: Clean up dashboard inline styles */
@@ -4232,8 +4299,13 @@ body.auth-page {
     /* Hide Scrollbar */
     -ms-overflow-style: none;
     /* IE and Edge */
-    scrollbar-width: none;
-    /* Firefox */
+}
+
+@supports (scrollbar-width: none) {
+    .carousel-container {
+        scrollbar-width: none;
+        /* Firefox */
+    }
 }
 
 .carousel-container::-webkit-scrollbar {
@@ -4537,7 +4609,7 @@ body.auth-page {
     line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: auto;
+    min-height: 0;
     /* Remove fixed min-height for compactness */
 }
 
@@ -4582,7 +4654,12 @@ body.auth-page {
     scroll-snap-type: x mandatory;
     width: 100%;
     -ms-overflow-style: none;
-    scrollbar-width: none;
+}
+
+@supports (scrollbar-width: none) {
+    .carousel-container {
+        scrollbar-width: none;
+    }
 }
 
 .carousel-container::-webkit-scrollbar {

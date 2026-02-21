@@ -2943,245 +2943,140 @@ setupHexListeners();
 // Init Admin Panels
 if (window.loadServices) window.loadServices();
 if (window.loadMembers) window.loadMembers();
-// =============================================
-// --- Member Management Logic (v2) ---
-// =============================================
+// --- Member Management Logic ---
 
 window.membersCache = {};
 
-// --- Helpers ---
-function fmtDate(ts) {
-    if (!ts) return 'N/A';
-    try {
-        const d = ts.toDate ? ts.toDate() : new Date(ts);
-        return d.toLocaleDateString('pt-PT');
-    } catch { return 'N/A'; }
-}
-
-function fmtSeconds(sec) {
-    if (!sec || sec < 1) return '0m';
-    const h = Math.floor(sec / 3600);
-    const m = Math.floor((sec % 3600) / 60);
-    if (h > 0) return `${h}h ${m}m`;
-    return `${m}m`;
-}
-
-// --- Access Mode Toggle ---
-window.loadAccessMode = async function () {
-    try {
-        const doc = await window.db.collection('config').doc('settings').get();
-        const freeAccess = doc.exists ? (doc.data().freeAccess !== false) : true; // default: free
-        const btn = document.getElementById('access-mode-toggle-btn');
-        if (btn) {
-            btn.textContent = freeAccess ? '🟢 Acesso Livre Ativo' : '🔴 Acesso Restrito Ativo';
-            btn.dataset.mode = freeAccess ? 'free' : 'restricted';
-            btn.style.background = freeAccess ? '#e8f5e9' : '#fff5f5';
-            btn.style.borderColor = freeAccess ? '#4caf50' : '#f44336';
-            btn.style.color = freeAccess ? '#2e7d32' : '#c62828';
-        }
-    } catch (e) {
-        console.error('loadAccessMode error:', e);
-    }
-};
-
-window.toggleAccessMode = async function () {
-    const btn = document.getElementById('access-mode-toggle-btn');
-    if (!btn) return;
-    const currentlyFree = btn.dataset.mode === 'free';
-    const newFree = !currentlyFree;
-    const modeLabel = newFree ? 'ACESSO LIVRE (qualquer registo acede imediatamente)' : 'ACESSO RESTRITO (novos registos ficam pendentes)';
-    if (!confirm(`Mudar para: ${modeLabel}?`)) return;
-
-    try {
-        await window.db.collection('config').doc('settings').set({ freeAccess: newFree }, { merge: true });
-        await window.loadAccessMode();
-    } catch (e) {
-        alert('Erro ao mudar modo: ' + e.message);
-    }
-};
-
-// --- Load Members (Full Table) ---
 window.loadMembers = async function () {
-    if (!window.db) { setTimeout(window.loadMembers, 500); return; }
+    // Wait for DB to initialize
+    if (!window.db) {
+        setTimeout(window.loadMembers, 500);
+        return;
+    }
     const listContainer = document.getElementById('admin-members-list');
     if (!listContainer) return;
-    listContainer.innerHTML = '<p style="color:#888;padding:10px;">A carregar membros...</p>';
-
-    // Also refresh access mode toggle
-    await window.loadAccessMode();
+    listContainer.innerHTML = '<p>A carregar membros...</p>';
 
     try {
-        const querySnapshot = await window.db.collection('users').get();
+        const querySnapshot = await window.db.collection("users").orderBy("createdAt", "desc").get();
 
         if (querySnapshot.empty) {
-            listContainer.innerHTML = '<p style="padding:10px;">Sem membros registados.</p>';
+            listContainer.innerHTML = '<p>Sem membros registados.</p>';
             return;
         }
 
-        // --- Sort: Pendente → Ativo → Bloqueado, then by createdAt desc ---
-        const statusOrder = { pending: 0, active: 1, blocked: 2 };
-        const members = [];
-        querySnapshot.forEach(doc => {
-            members.push({ id: doc.id, ...doc.data() });
-            window.membersCache[doc.id] = doc.data();
-        });
-        members.sort((a, b) => {
-            const so = (statusOrder[a.status] ?? 1) - (statusOrder[b.status] ?? 1);
-            if (so !== 0) return so;
-            const ta = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
-            const tb = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
-            return tb - ta;
-        });
-
-        // --- Row colors ---
-        const rowBg = { pending: '#fff8e8', active: '#f0fff4', blocked: '#fff5f5' };
-        const statusColor = { pending: '#e65100', active: '#2e7d32', blocked: '#c62828' };
-        const statusLabel = { pending: '⏳ Pendente', active: '✅ Ativo', blocked: '⛔ Bloqueado' };
-
-        let rows = '';
-        members.forEach(data => {
-            const bg = rowBg[data.status] || '#fff';
-            const sc = statusColor[data.status] || '#555';
-            const sl = statusLabel[data.status] || data.status;
-            const incidents = (data.incidents || []).join(' | ') || '—';
-
-            rows += `
-            <tr style="background:${bg}; border-bottom:1px solid #eee; vertical-align:top;">
-                <td style="padding:7px 6px; min-width:100px; font-weight:600; font-size:12px;">${data.name || '<em style="color:#aaa">Sem nome</em>'}</td>
-                <td style="padding:7px 6px; font-size:11px; color:#555; max-width:140px; word-break:break-all;">${data.email || '—'}</td>
-                <td style="padding:7px 6px; font-size:11px; white-space:nowrap;">${fmtDate(data.createdAt)}</td>
-                <td style="padding:7px 6px; font-size:11px; text-align:center;">${data.loginCount || 0}</td>
-                <td style="padding:7px 6px; font-size:11px; text-align:center;">${fmtSeconds(data.totalTimeSeconds)}</td>
-                <td style="padding:7px 4px; font-size:11px;">
-                    <input type="date" id="pay-date-${data.email?.replace(/[@.]/g, '_')}"
-                        value="${data.datePayment || ''}"
-                        style="font-size:10px; border:1px solid #ddd; border-radius:4px; padding:2px 4px; width:110px;"
-                        onchange="window.saveMemberPayment('${data.email}')">
-                </td>
-                <td style="padding:7px 4px; font-size:11px;">
-                    <input type="number" id="pay-val-${data.email?.replace(/[@.]/g, '_')}"
-                        value="${data.paymentValue || ''}"
-                        placeholder="€"
-                        style="font-size:10px; border:1px solid #ddd; border-radius:4px; padding:2px 4px; width:60px;"
-                        onchange="window.saveMemberPayment('${data.email}')">
-                </td>
-                <td style="padding:7px 6px; font-size:11px; white-space:nowrap; font-weight:600; color:${sc};">${sl}</td>
-                <td style="padding:7px 6px; font-size:10px; color:#777; max-width:120px; word-break:break-word;">${incidents}</td>
-                <td style="padding:7px 6px; white-space:nowrap;">
-                    <div style="display:flex; gap:4px; flex-wrap:wrap;">
-                        ${data.status !== 'active'
-                    ? `<button onclick="window.activateMember('${data.email}')"
-                                style="background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;">Ativar</button>`
-                    : ''}
-                        ${data.status !== 'blocked'
-                    ? `<button onclick="window.blockMember('${data.email}')"
-                                style="background:#fff5f5;color:#c62828;border:1px solid #ef9a9a;border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;">Bloquear</button>`
-                    : ''}
-                        <button onclick="window.deleteMember('${data.email}')"
-                            style="background:#f5f5f5;color:#555;border:1px solid #ddd;border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;">🗑</button>
-                    </div>
-                </td>
-            </tr>`;
-        });
-
-        listContainer.innerHTML = `
-        <div style="overflow-x:auto;">
-        <table style="width:100%; border-collapse:collapse; font-size:12px; min-width:900px;">
+        // Table Header
+        let html = `
+                < table style = "width:100%; border-collapse: collapse; font-size:12px;" >
             <thead>
-                <tr style="background:#f5f5f5; text-align:left; border-bottom:2px solid #ddd; font-size:11px; color:#555;">
-                    <th style="padding:7px 6px;">User</th>
-                    <th style="padding:7px 6px;">Email</th>
-                    <th style="padding:7px 6px; white-space:nowrap;">Data Conta</th>
-                    <th style="padding:7px 6px; text-align:center;">Logins</th>
-                    <th style="padding:7px 6px; text-align:center; white-space:nowrap;">Tempo Site</th>
-                    <th style="padding:7px 6px; white-space:nowrap;">Data Pagamento</th>
-                    <th style="padding:7px 6px;">Valor €</th>
-                    <th style="padding:7px 6px;">Status</th>
-                    <th style="padding:7px 6px;">Incidentes</th>
-                    <th style="padding:7px 6px;">Ações</th>
+                <tr style="text-align:left; border-bottom:2px solid #eee;">
+                    <th style="padding:8px;">Membro</th>
+                    <th style="padding:8px;">Status</th>
+                    <th style="padding:8px;">Último Login</th>
+                    <th style="padding:8px; text-align:right;">Ações</th>
                 </tr>
             </thead>
-            <tbody>${rows}</tbody>
-        </table>
-        </div>
-        <p style="font-size:10px; color:#aaa; text-align:right; margin-top:6px;">
-            Total: ${members.length} membros
-            — 🟠 Pendentes: ${members.filter(m => m.status === 'pending').length}
-            &nbsp;🟢 Ativos: ${members.filter(m => m.status === 'active').length}
-            &nbsp;🔴 Bloqueados: ${members.filter(m => m.status === 'blocked').length}
-        </p>`;
+            <tbody>
+        `;
+
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            window.membersCache[doc.id] = data;
+
+            let statusColor = '#666';
+            if (data.status === 'active') statusColor = 'green';
+            if (data.status === 'pending') statusColor = 'orange';
+            if (data.status === 'blocked') statusColor = 'red';
+
+            const statusLabel = {
+                'active': 'Ativo',
+                'pending': 'Pendente',
+                'blocked': 'Bloqueado'
+            }[data.status] || data.status;
+
+            const lastLoginDate = data.lastLogin && data.lastLogin.toDate ? new Date(data.lastLogin.toDate()).toLocaleDateString() : 'N/A';
+            const lastPaymentDate = data.lastPaymentDate && data.lastPaymentDate.toDate ? new Date(data.lastPaymentDate.toDate()).toLocaleDateString() : null;
+
+            html += `
+                <tr style="border-bottom:1px solid #eee;">
+                    <td style="padding:8px;">
+                        <strong>${data.name || 'Sem nome'}</strong><br>
+                        <span style="color:#888;">${data.email}</span>
+                        ${lastPaymentDate ? `<div style="font-size:10px; color:green;">Pagou: ${lastPaymentDate}</div>` : ''}
+                    </td>
+                    <td style="padding:8px;">
+                        <span style="color:${statusColor}; font-weight:600;">● ${statusLabel}</span>
+                    </td>
+                    <td style="padding:8px; color:#666;">
+                        ${lastLoginDate}
+                    </td>
+                    <td style="padding:8px; text-align:right;">
+                         <div style="display:flex; gap:5px; justify-content:flex-end;">
+                            ${data.status !== 'active' ? `<button class="btn-outline" style="color:green; border-color:#d4edda; background:#f0fff4; padding:2px 6px; font-size:11px;" onclick="window.approveMember('${doc.id}')">Aprovar</button>` : ''}
+                            ${data.status !== 'blocked' ? `<button class="btn-outline" style="color:red; border-color:#f8d7da; background:#fff5f5; padding:2px 6px; font-size:11px;" onclick="window.blockMember('${doc.id}')">Bloquear</button>` : ''}
+                            <button class="btn-delete" style="padding:2px 6px; font-size:11px; margin-left:5px;" onclick="window.deleteMember('${doc.id}')"><i data-lucide="trash-2" style="width:12px; height:12px; vertical-align:middle;"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+        html += '</tbody></table > ';
+        listContainer.innerHTML = html;
 
     } catch (error) {
-        console.error('Error loading members:', error);
-        listContainer.innerHTML = `<p style="color:red;padding:10px;">Erro ao carregar membros: ${error.message}</p>`;
+        console.error("Error loading members:", error);
+        listContainer.innerHTML = '<p style="color:red">Erro ao carregar membros.</p>';
     }
 };
 
-// --- Save Payment (manual fields) ---
-window.saveMemberPayment = async function (email) {
-    if (!email) return;
-    const key = email.replace(/[@.]/g, '_');
-    const dateInput = document.getElementById(`pay-date-${key}`);
-    const valInput = document.getElementById(`pay-val-${key}`);
+window.approveMember = async function (email) {
+    if (!confirm(`Tem a certeza que quer APROVAR ${email} manualmente? (Isto dá acesso sem pagamento)`)) return;
+
     try {
-        await window.db.collection('users').doc(email).update({
-            datePayment: dateInput ? dateInput.value : '',
-            paymentValue: valInput ? parseFloat(valInput.value) || 0 : 0,
+        await window.db.collection("users").doc(email).update({
+            status: 'active',
+            manualApproval: true,
             updatedAt: new Date()
         });
-    } catch (e) {
-        console.error('saveMemberPayment error:', e);
+        alert("Membro aprovado com sucesso! ✅");
+        window.loadMembers();
+    } catch (error) {
+        alert("Erro: " + error.message);
     }
 };
 
-// --- Activate ---
-window.activateMember = async function (email) {
-    if (!confirm(`Ativar acesso de ${email}?`)) return;
-    try {
-        const today = new Date().toLocaleDateString('pt-PT');
-        const ref = window.db.collection('users').doc(email);
-        const doc = await ref.get();
-        const incidents = doc.exists ? (doc.data().incidents || []) : [];
-        incidents.push(`Ativado ${today}`);
-        await ref.update({ status: 'active', incidents, updatedAt: new Date() });
-        alert('Membro ativado! ✅');
-        window.loadMembers();
-    } catch (e) { alert('Erro: ' + e.message); }
-};
-
-// --- Block ---
 window.blockMember = async function (email) {
-    if (!confirm(`Bloquear acesso de ${email}?`)) return;
+    if (!confirm(`Tem a certeza que quer BLOQUEAR o acesso de ${email}?`)) return;
+
     try {
-        const today = new Date().toLocaleDateString('pt-PT');
-        const ref = window.db.collection('users').doc(email);
-        const doc = await ref.get();
-        const incidents = doc.exists ? (doc.data().incidents || []) : [];
-        incidents.push(`Bloqueado ${today}`);
-        await ref.update({ status: 'blocked', incidents, updatedAt: new Date() });
-        alert('Membro bloqueado. ⛔');
+        await window.db.collection("users").doc(email).update({
+            status: 'blocked',
+            updatedAt: new Date()
+        });
+        alert("Membro bloqueado. ⛔");
         window.loadMembers();
-    } catch (e) { alert('Erro: ' + e.message); }
+    } catch (error) {
+        alert("Erro: " + error.message);
+    }
 };
 
-// --- Delete ---
 window.deleteMember = async function (email) {
-    if (ADMIN_EMAILS.some(a => a.toLowerCase() === email.toLowerCase())) {
-        alert('⚠️ Não é possível apagar contas de Administrador.');
+    // Safety Check: Prevent deleting Admins
+    if (ADMIN_EMAILS.some(admin => admin.toLowerCase() === email.toLowerCase())) {
+        alert("⚠️ AÇÃO BLOQUEADA: Não é possível apagar contas de Administrador.");
         return;
     }
-    if (!confirm(`Apagar DEFINITIVAMENTE o registo de ${email}? Esta ação é irreversível.`)) return;
+
+    if (!confirm(`Tem a certeza que quer APAGAR DEFINITIVAMENTE o registo de ${email} da Base de Dados?\n\nIsto remove os dados do cliente, mas não apaga a conta de Login (Google/Email). Para proteção total, o utilizador perde o acesso imediato.`)) return;
+
     try {
-        await window.db.collection('users').doc(email).delete();
-        alert('Registo apagado. 🗑️');
+        await window.db.collection("users").doc(email).delete();
+        alert("Registo apagado da Base de Dados com sucesso. 🗑️");
         window.loadMembers();
-    } catch (e) { alert('Erro: ' + e.message); }
+    } catch (error) {
+        alert("Erro ao apagar: " + error.message);
+    }
 };
-
-// Keep legacy alias for backwards compatibility
-window.approveMember = window.activateMember;
-
-
 
 // Helper to decode HTML entities (e.g. &atilde; -> ã)
 function decodeHtmlEntities(str) {
