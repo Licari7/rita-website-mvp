@@ -3151,12 +3151,20 @@ window.activateMember = async function (email) {
 
 // --- Block ---
 window.blockMember = async function (email) {
-    if (!confirm(`Bloquear acesso de ${email}?`)) return;
     try {
-        const today = new Date().toLocaleDateString('pt-PT');
         const ref = window.db.collection('users').doc(email);
         const doc = await ref.get();
-        const incidents = doc.exists ? (doc.data().incidents || []) : [];
+        const userData = doc.exists ? doc.data() : {};
+
+        // Protect users with role 'membro'
+        if (userData.role === 'membro') {
+            if (!confirm(`⚠️ ATENÇÃO: ${email} tem o papel de "Membro". Tem a certeza que quer bloquear este utilizador?`)) return;
+        } else {
+            if (!confirm(`Bloquear acesso de ${email}?`)) return;
+        }
+
+        const today = new Date().toLocaleDateString('pt-PT');
+        const incidents = userData.incidents || [];
         incidents.push(`Bloqueado ${today}`);
         await ref.update({ status: 'blocked', incidents, updatedAt: new Date() });
         alert('Membro bloqueado. ⛔');
@@ -3170,9 +3178,19 @@ window.deleteMember = async function (email) {
         alert('⚠️ Não é possível apagar contas de Administrador.');
         return;
     }
-    if (!confirm(`Apagar DEFINITIVAMENTE o registo de ${email}? Esta ação é irreversível.`)) return;
     try {
-        await window.db.collection('users').doc(email).delete();
+        const ref = window.db.collection('users').doc(email);
+        const doc = await ref.get();
+        const userData = doc.exists ? doc.data() : {};
+
+        // Protect users with role 'membro'
+        if (userData.role === 'membro') {
+            if (!confirm(`⚠️ ATENÇÃO: ${email} tem o papel de "Membro". Tem a certeza que quer apagar este utilizador? Esta ação é irreversível.`)) return;
+        } else {
+            if (!confirm(`Apagar DEFINITIVAMENTE o registo de ${email}? Esta ação é irreversível.`)) return;
+        }
+
+        await ref.delete();
         alert('Registo apagado. 🗑️');
         window.loadMembers();
     } catch (e) { alert('Erro: ' + e.message); }
