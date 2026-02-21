@@ -3040,10 +3040,26 @@ window.loadMembers = async function () {
 
         let rows = '';
         members.forEach(data => {
-            const bg = rowBg[data.status] || '#fff';
-            const sc = statusColor[data.status] || '#555';
-            const sl = statusLabel[data.status] || data.status;
+            const isAdmin = ADMIN_EMAILS.some(a => a.toLowerCase() === (data.email || '').toLowerCase());
+            const bg = isAdmin ? '#f0f4ff' : (rowBg[data.status] || '#fff');
+            const sc = isAdmin ? '#3949ab' : (statusColor[data.status] || '#555');
+            const sl = isAdmin ? '👑 Administrador' : (statusLabel[data.status] || data.status);
             const incidents = (data.incidents || []).join(' | ') || '—';
+
+            const actionButtons = isAdmin
+                ? `<span style="font-size:10px; color:#9e9e9e; font-style:italic;">Protegido</span>`
+                : `<div style="display:flex; gap:4px; flex-wrap:wrap;">
+                    ${data.status !== 'active'
+                    ? `<button onclick="window.activateMember('${data.email}')"
+                            style="background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;">Ativar</button>`
+                    : ''}
+                    ${data.status !== 'blocked'
+                    ? `<button onclick="window.blockMember('${data.email}')"
+                            style="background:#fff5f5;color:#c62828;border:1px solid #ef9a9a;border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;">Bloquear</button>`
+                    : ''}
+                    <button onclick="window.deleteMember('${data.email}')"
+                        style="background:#f5f5f5;color:#555;border:1px solid #ddd;border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;">🗑</button>
+                </div>`;
 
             rows += `
             <tr style="background:${bg}; border-bottom:1px solid #eee; vertical-align:top;">
@@ -3068,18 +3084,7 @@ window.loadMembers = async function () {
                 <td style="padding:7px 6px; font-size:11px; white-space:nowrap; font-weight:600; color:${sc};">${sl}</td>
                 <td style="padding:7px 6px; font-size:10px; color:#777; max-width:120px; word-break:break-word;">${incidents}</td>
                 <td style="padding:7px 6px; white-space:nowrap;">
-                    <div style="display:flex; gap:4px; flex-wrap:wrap;">
-                        ${data.status !== 'active'
-                    ? `<button onclick="window.activateMember('${data.email}')"
-                                style="background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;">Ativar</button>`
-                    : ''}
-                        ${data.status !== 'blocked'
-                    ? `<button onclick="window.blockMember('${data.email}')"
-                                style="background:#fff5f5;color:#c62828;border:1px solid #ef9a9a;border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;">Bloquear</button>`
-                    : ''}
-                        <button onclick="window.deleteMember('${data.email}')"
-                            style="background:#f5f5f5;color:#555;border:1px solid #ddd;border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;">🗑</button>
-                    </div>
+                    ${actionButtons}
                 </td>
             </tr>`;
         });
@@ -3151,12 +3156,17 @@ window.activateMember = async function (email) {
 
 // --- Block ---
 window.blockMember = async function (email) {
+    // Hard stop for admin accounts
+    if (ADMIN_EMAILS.some(a => a.toLowerCase() === email.toLowerCase())) {
+        alert('⚠️ Não é possível bloquear contas de Administrador.');
+        return;
+    }
     try {
         const ref = window.db.collection('users').doc(email);
         const doc = await ref.get();
         const userData = doc.exists ? doc.data() : {};
 
-        // Protect users with role 'membro'
+        // Extra warning for 'membro' role
         if (userData.role === 'membro') {
             if (!confirm(`⚠️ ATENÇÃO: ${email} tem o papel de "Membro". Tem a certeza que quer bloquear este utilizador?`)) return;
         } else {
@@ -3174,6 +3184,7 @@ window.blockMember = async function (email) {
 
 // --- Delete ---
 window.deleteMember = async function (email) {
+    // Hard stop for admin accounts
     if (ADMIN_EMAILS.some(a => a.toLowerCase() === email.toLowerCase())) {
         alert('⚠️ Não é possível apagar contas de Administrador.');
         return;
@@ -3183,7 +3194,7 @@ window.deleteMember = async function (email) {
         const doc = await ref.get();
         const userData = doc.exists ? doc.data() : {};
 
-        // Protect users with role 'membro'
+        // Extra warning for 'membro' role
         if (userData.role === 'membro') {
             if (!confirm(`⚠️ ATENÇÃO: ${email} tem o papel de "Membro". Tem a certeza que quer apagar este utilizador? Esta ação é irreversível.`)) return;
         } else {
@@ -3198,6 +3209,24 @@ window.deleteMember = async function (email) {
 
 // Keep legacy alias for backwards compatibility
 window.approveMember = window.activateMember;
+
+// --- One-time cleanup: clear incidents for admin accounts ---
+(async function clearAdminIncidents() {
+    if (!window.db) { setTimeout(clearAdminIncidents, 1000); return; }
+    const adminsToClear = ['floresceterapias@gmail.com'];
+    for (const email of adminsToClear) {
+        try {
+            const ref = window.db.collection('users').doc(email);
+            const doc = await ref.get();
+            if (doc.exists && doc.data().incidents && doc.data().incidents.length > 0) {
+                await ref.update({ incidents: [] });
+                console.log(`✅ Incidentes limpos para ${email}`);
+            }
+        } catch (e) {
+            console.warn(`Não foi possível limpar incidentes de ${email}:`, e);
+        }
+    }
+})();
 
 
 
