@@ -3210,23 +3210,7 @@ window.deleteMember = async function (email) {
 // Keep legacy alias for backwards compatibility
 window.approveMember = window.activateMember;
 
-// --- One-time cleanup: clear incidents for admin accounts ---
-(async function clearAdminIncidents() {
-    if (!window.db) { setTimeout(clearAdminIncidents, 1000); return; }
-    const adminsToClear = ['floresceterapias@gmail.com'];
-    for (const email of adminsToClear) {
-        try {
-            const ref = window.db.collection('users').doc(email);
-            const doc = await ref.get();
-            if (doc.exists && doc.data().incidents && doc.data().incidents.length > 0) {
-                await ref.update({ incidents: [] });
-                console.log(`✅ Incidentes limpos para ${email}`);
-            }
-        } catch (e) {
-            console.warn(`Não foi possível limpar incidentes de ${email}:`, e);
-        }
-    }
-})();
+// (Incident cleanup ran once and is now complete)
 
 
 
