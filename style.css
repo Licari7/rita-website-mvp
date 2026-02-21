@@ -1851,6 +1851,18 @@ ul {
         cursor: default;
     }
 
+    /* Exception: Testimonials carousel stays horizontal on mobile */
+    #dynamic-testimonials-container {
+        flex-direction: row;
+        overflow-x: scroll;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        padding: 10px 0 20px 0;
+        gap: 0;
+        -webkit-overflow-scrolling: touch;
+        /* legacy iOS support */
+    }
+
     .carousel-card {
         min-width: 0;
         width: 100%;
