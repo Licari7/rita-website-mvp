@@ -60,9 +60,17 @@
                 max-width: 100%;
             }
 
-            /* Maintain side-by-side or wrapped buttons, don't force stack */
+            /* Stack buttons vertically and make them full width to match about-new */
             .svc-btn-group {
-                justify-content: center;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .svc-btn-group .btn {
+                width: 100%;
+                text-align: center;
+                display: block;
+                box-sizing: border-box;
             }
         }
     </style>

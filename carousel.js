@@ -224,10 +224,7 @@ class DashboardCarousel {
         this.carousel.addEventListener('mouseleave', end);
         this.carousel.addEventListener('mouseup', end);
         this.carousel.addEventListener('mousemove', move);
-        // Touch
-        this.carousel.addEventListener('touchstart', start, { passive: true });
-        this.carousel.addEventListener('touchend', end);
-        this.carousel.addEventListener('touchmove', move, { passive: false });
+        // Note: Touch events removed to allow native mobile scrolling (overflow-x: auto)
     }
 
     // --- 4. Auto Scroll ---
