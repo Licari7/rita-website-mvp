@@ -164,8 +164,6 @@ ul {
     transition: all 0.3s ease;
     text-transform: uppercase;
     letter-spacing: 1px;
-    white-space: nowrap;
-    /* Prevent text wrap inside button */
 }
 
 .btn-primary {
@@ -4303,9 +4301,9 @@ body.auth-page {
    Universal Carousel Container
    ========================================= */
 .carousel-container {
-    display: flex !important;
-    flex-wrap: nowrap !important;
+    display: flex;
     overflow-x: auto;
+    scroll-behavior: smooth;
     gap: 30px;
     padding-bottom: 20px;
     /* Space for scrollbar or shadow */
@@ -4348,10 +4346,9 @@ body.auth-page {
     }
 
     .cta-actions {
-        flex-direction: row;
-        justify-content: center;
+        flex-direction: column;
+        align-items: center;
         gap: 15px;
-        flex-wrap: wrap;
     }
 
     .cta-actions .btn,
@@ -5183,92 +5180,4 @@ body.auth-page {
     background: var(--bg-color);
     text-align: center;
     /* Generally standard for CTA containers */
-}
-
-/* --- Carousel Enhancements for Service Detail --- */
-.carousel-wrapper {
-    position: relative;
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 0 50px;
-    /* Space for buttons */
-}
-
-.carousel-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.8);
-    border: none;
-    border-radius: 50%;
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 10;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    color: var(--color-primary-dark);
-}
-
-.carousel-nav:hover {
-    background: #fff;
-    transform: translateY(-50%) scale(1.1);
-}
-
-.carousel-nav.prev {
-    left: 0;
-}
-
-.carousel-nav.next {
-    right: 0;
-}
-
-.carousel-card {
-    flex: 0 0 350px !important;
-    /* Precise width for carousel logic */
-    max-width: 85vw !important;
-    flex-shrink: 0 !important;
-}
-
-@media (max-width: 768px) {
-    .carousel-wrapper {
-        padding: 0;
-        /* Swipe is better on mobile */
-    }
-
-    .carousel-nav {
-        display: none !important;
-    }
-
-    .carousel-container {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-    }
-
-    .carousel-card {
-        flex: 0 0 85vw !important;
-        min-width: 85vw !important;
-        flex-shrink: 0 !important;
-    }
-
-    /* Dashboard Meditations Exception - Single Column */
-    .dashboard-page .carousel-container {
-        flex-direction: column !important;
-        gap: 30px !important;
-        overflow-x: hidden !important;
-        overflow-y: visible !important;
-        padding: 20px 20px 50px 20px !important;
-    }
-
-    .dashboard-page .carousel-card {
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        flex: 0 0 auto !important;
-        margin: 0 auto !important;
-    }
 }

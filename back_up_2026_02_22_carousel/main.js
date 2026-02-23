@@ -550,22 +550,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             });
 
-            // INFITE LOOP: Duplicate content 3 times (Standard Buffer)
+            // INFITE LOOP: Duplicate content 3 times (Buffer Left, Main, Buffer Right)
+            // This ensures we can scroll endlessly in both directions
             container.innerHTML = html + html + html;
 
             if (window.lucide) lucide.createIcons();
 
-            // Accurate setWidth calculation
+            // Setup Infinite Scroll Logic
+            // Exact width calculation for smooth infinite scroll
             const singleSetCount = snapshot.size;
-            const cards = container.querySelectorAll('.premium-card');
-            const cardWidth = cards.length > 0 ? cards[0].offsetWidth : 350;
-            const gap = 30;
-            let setWidth = singleSetCount * (cardWidth + gap);
-            if (cards.length >= (singleSetCount * 2)) {
-                setWidth = cards[singleSetCount].offsetLeft - cards[0].offsetLeft;
-            }
+            const firstCard = container.querySelector('.premium-card');
+            const cardWidth = firstCard ? firstCard.offsetWidth : 350;
+            const gap = 30; // Standard CSS gap
+            // Calculate exact width of one set of cards (including gaps)
+            const setWidth = singleSetCount * (cardWidth + gap);
 
-            // Start in the Middle Set (Set 2)
+            // Start in the Middle Set
             if (container.scrollLeft === 0) {
                 container.scrollLeft = setWidth;
             }
@@ -575,33 +575,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 container.style.scrollSnapType = enable ? 'x mandatory' : 'none';
             };
 
-            // Scroll Handler: Robust Infinite Scroll (Jump when reaching the end of the buffer)
+            // Scroll Handler (Debounced to simulate scrollend)
+            let isScrolling;
             const handleInfiniteScroll = () => {
-                const scrollLeft = container.scrollLeft;
-                const tolerance = 50;
+                window.clearTimeout(isScrolling);
 
-                // Thresholds:
-                // Set 1: [0, setWidth]
-                // Set 2: [setWidth, 2*setWidth] <--- Working Area
-                // Set 3: [2*setWidth, 3*setWidth]
+                isScrolling = setTimeout(() => {
+                    // Animation has likely ended
 
-                // If we enter Set 3, jump back to Set 2
-                if (scrollLeft >= (setWidth * 2) - tolerance) {
-                    toggleSnap(false);
-                    container.style.scrollBehavior = 'auto';
-                    container.scrollLeft = scrollLeft - setWidth;
-                    container.style.scrollBehavior = '';
-                    // Force a tiny delay to let the jump settle before re-enabling snapping
-                    setTimeout(() => toggleSnap(true), 50);
-                }
-                // If we enter Set 1 (moving backwards), jump to Set 2
-                else if (scrollLeft <= tolerance) {
-                    toggleSnap(false);
-                    container.style.scrollBehavior = 'auto';
-                    container.scrollLeft = scrollLeft + setWidth;
-                    container.style.scrollBehavior = '';
-                    setTimeout(() => toggleSnap(true), 50);
-                }
+                    const tolerance = 10;
+                    // Check End (Clone)
+                    if (container.scrollLeft >= (setWidth * 2) - tolerance) {
+                        toggleSnap(false);
+                        container.style.scrollBehavior = 'auto'; // Instant
+                        container.scrollLeft -= setWidth;
+
+                        // Restore
+                        requestAnimationFrame(() => {
+                            toggleSnap(true);
+                            container.style.scrollBehavior = '';
+                        });
+                    }
+                    // Check Start (Buffer)
+                    else if (container.scrollLeft <= tolerance) {
+                        toggleSnap(false);
+                        container.style.scrollBehavior = 'auto';
+                        container.scrollLeft += setWidth;
+
+                        requestAnimationFrame(() => {
+                            toggleSnap(true);
+                            container.style.scrollBehavior = '';
+                        });
+                    }
+                }, 60); // 60ms debounce (wait for snap to settle)
             };
             container.addEventListener('scroll', handleInfiniteScroll);
 
@@ -1272,7 +1278,7 @@ window.loadServiceDetail = async function () {
         }
 
         content1.innerHTML = html1;
-        // lucide.createIcons() moved to bottom of try block
+        if (window.lucide) window.lucide.createIcons(); // FIX: Render icons after injection
 
         // Remove loader
         if (loadMsg) loadMsg.remove();
@@ -1361,7 +1367,6 @@ window.loadServiceDetail = async function () {
             secTesti.style.display = 'none';
         }
 
-        if (window.lucide) window.lucide.createIcons();
     } catch (err) {
         console.error("Error loading service detail:", err);
     }
@@ -1399,16 +1404,16 @@ async function loadServiceTestimonials(ids) {
                 prevBtnId: 'svc-prev-btn',
                 nextBtnId: 'svc-next-btn',
                 enableLoop: true,
-                autoScrollDelay: 7000,
+                autoScrollDelay: 5000,
                 data: items, // Pass pre-loaded data
                 renderCard: (t) => {
                     // Custom Render Function using 'review-card' style
                     // Add 'carousel-card' class for width calculation
                     return `
-                        <div class="review-card carousel-card" style="min-width: 100%; width: 100%; flex: 0 0 100%; min-height: 250px; display: flex; flex-direction: column; justify-content: center; background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 8px 20px rgba(0,0,0,0.05);">
-                            <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 20px; color: #333; text-align: center;">"${t.text}"</p>
-                            <div class="author" style="font-weight: 600; text-transform: uppercase; color: var(--color-primary); letter-spacing: 1px; text-align: center;">${t.name}</div>
-                            ${t.role ? `<div class="role" style="font-size: 0.95rem; margin-top:5px; color: #666; font-weight: 500; text-align: center;">${t.role}</div>` : ''}
+                        <div class="review-card carousel-card">
+                            <p>"${t.text}"</p>
+                            <div class="author">${t.name}</div>
+                            ${t.role ? `<div class="role" style="font-size: 0.85rem; color: #666; margin-top:5px;">${t.role}</div>` : ''}
                         </div>
                     `;
                 }

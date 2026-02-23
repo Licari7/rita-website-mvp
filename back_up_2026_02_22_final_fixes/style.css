@@ -5254,21 +5254,4 @@ body.auth-page {
         min-width: 85vw !important;
         flex-shrink: 0 !important;
     }
-
-    /* Dashboard Meditations Exception - Single Column */
-    .dashboard-page .carousel-container {
-        flex-direction: column !important;
-        gap: 30px !important;
-        overflow-x: hidden !important;
-        overflow-y: visible !important;
-        padding: 20px 20px 50px 20px !important;
-    }
-
-    .dashboard-page .carousel-card {
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        flex: 0 0 auto !important;
-        margin: 0 auto !important;
-    }
 }
