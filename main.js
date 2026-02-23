@@ -262,9 +262,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    // --- Marketing Popup (Free Trial) ---
+    // --- Marketing Popup (Free Trial) - Persistent 30s Timer ---
     if (!localStorage.getItem('isMember') && !document.querySelector('.auth-page') && !localStorage.getItem('seenPopup')) {
-        setTimeout(showPopup, 3000);
+        let firstVisit = localStorage.getItem('firstVisitTime');
+        const now = Date.now();
+
+        if (!firstVisit) {
+            // User just arrived at the site
+            firstVisit = now;
+            localStorage.setItem('firstVisitTime', firstVisit);
+        }
+
+        const timePassed = now - parseInt(firstVisit);
+        const popupDelay = 30000; // 30 seconds
+
+        if (timePassed >= popupDelay) {
+            // More than 30s have passed (perhaps they were on another page), show immediately
+            showPopup();
+        } else {
+            // Less than 30s have passed, wait the remaining time
+            const remainingTime = popupDelay - timePassed;
+            setTimeout(showPopup, remainingTime);
+        }
     }
 
     function showPopup() {

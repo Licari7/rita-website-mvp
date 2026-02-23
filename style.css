@@ -4660,6 +4660,8 @@ body.auth-page {
     align-items: center;
     justify-content: center;
     gap: 10px;
+    min-height: 480px;
+    /* Increased to account for taller testimonials cards */
 }
 
 .carousel-container {
@@ -5271,4 +5273,81 @@ body.auth-page {
         flex: 0 0 auto !important;
         margin: 0 auto !important;
     }
+}
+
+/* Maintenance Mode Dashboard Styles */
+details.admin-card.maintenance-card {
+    border: 2px solid #28a745;
+    /* Initial state is green outline */
+    transition: all 0.3s ease;
+}
+
+details.admin-card.maintenance-card summary.maintenance-card-header {
+    background: #e6f4ea;
+    /* Soft green tint */
+    color: #137333;
+    /* Dark green text */
+    position: relative;
+    /* For absolute badge positioning */
+}
+
+.maintenance-header-pos {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    /* Slightly smaller for the header */
+    padding: 4px 12px;
+}
+
+details.admin-card.maintenance-card.offline {
+    border: 2px solid #dc3545;
+    /* Red outline when offline */
+}
+
+details.admin-card.maintenance-card.offline summary.maintenance-card-header {
+    background: #ffebeb;
+    /* Visually distinct red tint */
+    color: #dc3545;
+    /* Red text */
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.text-success {
+    color: #137333 !important;
+}
+
+/* Maintenance Badge */
+.maintenance-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    text-align: center;
+    min-width: 100px;
+    transition: background-color 0.3s ease;
+}
+
+.maintenance-badge.online {
+    background-color: #28a745;
+    color: white !important;
+    border: 2px solid #1e7e34;
+}
+
+.maintenance-badge.offline {
+    background-color: #dc3545;
+    color: white !important;
+    border: 2px solid #bd2130;
+}
+
+/* Fix for smooth scrolling anchor jump to contact form */
+#contact {
+    scroll-margin-top: 120px;
+    /* Accounts for fixed navbar height */
 }

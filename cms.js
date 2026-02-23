@@ -303,8 +303,6 @@ window.initCMS = function () {
         });
     }
 
-
-
     const contactForm = document.getElementById('contact-form');
     if (contactForm) {
         contactForm.addEventListener('submit', (e) => {
@@ -316,6 +314,63 @@ window.initCMS = function () {
     const themeResetBtn = document.getElementById('theme-reset-btn');
     if (themeResetBtn) {
         themeResetBtn.addEventListener('click', resetThemeSettings);
+    }
+
+    // Initialize Dashboard Ordering (SortableJS)
+    if (typeof window.loadDashboardOrder === 'function') {
+        window.loadDashboardOrder();
+    }
+};
+
+// --- SortableJS Dashboard Logic ---
+window.loadDashboardOrder = async function () {
+    const container = document.getElementById('dashboard-cards-container');
+    if (!container || typeof Sortable === 'undefined') return;
+
+    try {
+        // 1. Try to load from Firebase first
+        const docSnap = await window.db.collection('config').doc('cms_layout').get();
+        if (docSnap.exists && docSnap.data().order) {
+            const order = docSnap.data().order;
+            // Append cards in the saved order
+            order.forEach(id => {
+                const card = document.getElementById(id);
+                if (card) {
+                    container.appendChild(card);
+                }
+            });
+        }
+    } catch (error) {
+        console.error("Erro ao carregar ordem do Firebase:", error);
+    }
+
+    // 2. Initialize SortableJS
+    Sortable.create(container, {
+        animation: 150,
+        handle: '.drag-handle', // Movel only by the grip icon
+        ghostClass: 'dragging',
+        onEnd: function (evt) {
+            // Triggered when dragging stops
+            window.saveDashboardOrder();
+        }
+    });
+};
+
+window.saveDashboardOrder = async function () {
+    const container = document.getElementById('dashboard-cards-container');
+    if (!container) return;
+
+    const currentOrder = Array.from(container.children)
+        .filter(el => el.classList.contains('admin-card'))
+        .map(el => el.id);
+
+    try {
+        await window.db.collection('config').doc('cms_layout').set({
+            order: currentOrder
+        }, { merge: true });
+        console.log("Dashboard order saved to Firebase!");
+    } catch (error) {
+        console.error("Erro ao guardar ordem no Firebase:", error);
     }
 };
 
@@ -3235,6 +3290,109 @@ function decodeHtmlEntities(str) {
     txt.innerHTML = str;
     return txt.value;
 }
+
+// --- Maintenance Mode Logic ---
+async function loadMaintenanceConfig() {
+    try {
+        const docSnap = await window.db.collection('config').doc('maintenance').get();
+        const toggle = document.getElementById('maintenance-toggle');
+        const passInput = document.getElementById('maintenance-password');
+
+        if (!toggle) return; // Prevent errors on other pages
+
+        if (docSnap.exists) {
+            const data = docSnap.data();
+            toggle.checked = data.isActive || false;
+            if (passInput) passInput.value = data.password || '';
+        } else {
+            toggle.checked = false;
+        }
+
+        // Init visuals
+        window.updateMaintenanceVisuals();
+    } catch (error) {
+        console.error("Erro ao carregar configurações de manutenção:", error);
+    }
+}
+
+function updateMaintenanceVisuals() {
+    const toggle = document.getElementById('maintenance-toggle');
+    const label = document.getElementById('maintenance-status-label');
+    const headerBadge = document.getElementById('maintenance-header-badge');
+    const card = document.getElementById('card-maintenance');
+    const passGroup = document.getElementById('maintenance-password-group');
+
+    if (!toggle || !label || !card) return;
+
+    if (toggle.checked) {
+        label.innerText = 'OFFLINE';
+        label.className = 'maintenance-badge offline';
+        if (headerBadge) {
+            headerBadge.innerText = 'OFFLINE';
+            headerBadge.className = 'maintenance-badge offline maintenance-header-pos';
+        }
+        card.classList.add('offline');
+        if (passGroup) passGroup.style.display = 'block';
+    } else {
+        label.innerText = 'ONLINE';
+        label.className = 'maintenance-badge online';
+        if (headerBadge) {
+            headerBadge.innerText = 'ONLINE';
+            headerBadge.className = 'maintenance-badge online maintenance-header-pos';
+        }
+        card.classList.remove('offline');
+        if (passGroup) passGroup.style.display = 'none';
+    }
+}
+
+async function saveMaintenanceConfig() {
+    const toggle = document.getElementById('maintenance-toggle');
+    const passInput = document.getElementById('maintenance-password');
+    const btn = document.getElementById('maintenance-save-btn');
+    if (!toggle || !btn) return;
+
+    const originalText = btn.innerText;
+
+    if (toggle.checked && passInput && passInput.value.trim().length < 4) {
+        alert("A password de acesso deve ter pelo menos 4 caracteres.");
+        return;
+    }
+
+    try {
+        btn.innerText = 'A Guardar...';
+        btn.disabled = true;
+
+        await window.db.collection('config').doc('maintenance').set({
+            isActive: toggle.checked,
+            password: passInput ? passInput.value.trim() : '',
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        btn.innerText = 'Guardado!';
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }, 2000);
+
+    } catch (error) {
+        console.error("Erro ao guardar definições de manutenção:", error);
+        alert("Erro ao guardar as definições. Verifica a consola.");
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+
+// Attach to window
+window.loadMaintenanceConfig = loadMaintenanceConfig;
+window.saveMaintenanceConfig = saveMaintenanceConfig;
+window.updateMaintenanceVisuals = updateMaintenanceVisuals;
+
+// Add to init routine if on dashboard
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('card-maintenance')) {
+        setTimeout(window.loadMaintenanceConfig, 1000); // Slight delay to ensure firebase is ready
+    }
+});
 
 // --- Services Logic Moved to cms-services.js ---
 

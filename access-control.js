@@ -1,7 +1,8 @@
+// 1. Password Protection Logic (Integrated with Firebase)
 (function () {
-    // 1. Password Protection Logic
     const PROTECTION_KEY = 'site_unlocked';
-    const CORRECT_PASS = 'floresce'; // Simple password
+    let CORRECT_PASS = 'floresce'; // Fallback password
+    let isActive = false;
 
     function showOverlay() {
         // Create Overlay
@@ -38,8 +39,11 @@
         const errorMsg = overlay.querySelector('#access-error');
 
         function checkPass() {
-            if (input.value.toLowerCase() === CORRECT_PASS) {
-                localStorage.setItem(PROTECTION_KEY, 'true');
+            if (input.value.toLowerCase() === CORRECT_PASS.toLowerCase()) {
+                // Use session storage so they don't get locked out immediately if they reload, 
+                // but we also want it to persist nicely. Let's keep local storage for now but you 
+                // might consider sessionStorage.
+                sessionStorage.setItem(PROTECTION_KEY, 'true'); // Changed to session storage for better security during maintenance
                 overlay.remove();
             } else {
                 errorMsg.style.display = 'block';
@@ -53,13 +57,39 @@
         });
     }
 
-    // Check if unlocked
-    if (localStorage.getItem(PROTECTION_KEY) !== 'true') {
-        // Run immediately if body exists, else wait for load
-        if (document.body) {
-            showOverlay();
-        } else {
-            window.addEventListener('DOMContentLoaded', showOverlay);
+    async function checkMaintenanceMode() {
+        // Wait until firebase is initialized and window.db is available
+        if (typeof window.db === 'undefined') {
+            setTimeout(checkMaintenanceMode, 100);
+            return;
+        }
+
+        try {
+            const docSnap = await window.db.collection('config').doc('maintenance').get();
+            if (docSnap.exists) {
+                const data = docSnap.data();
+                isActive = data.isActive || false;
+                if (data.password) {
+                    CORRECT_PASS = data.password;
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching maintenance config:", error);
+            // Default to false if we can't fetch to avoid locking out accidentally on error
+            isActive = false;
+        }
+
+        // If active and not unlocked in this session
+        if (isActive && sessionStorage.getItem(PROTECTION_KEY) !== 'true') {
+            if (document.body) {
+                showOverlay();
+            } else {
+                window.addEventListener('DOMContentLoaded', showOverlay);
+            }
         }
     }
+
+    // Start checking when DOM is ready (to ensure firebase scripts start loading)
+    window.addEventListener('DOMContentLoaded', checkMaintenanceMode);
+
 })();
