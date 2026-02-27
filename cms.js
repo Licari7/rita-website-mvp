@@ -50,6 +50,212 @@ const uploadImageToStorage = async (file, path) => {
 };
 window.uploadImageToStorage = uploadImageToStorage;
 
+window.deleteFileFromStorage = async (url) => {
+    if (!url || !url.startsWith('http')) return false;
+    try {
+        const ref = window.storage.refFromURL(url);
+        await ref.delete();
+        console.log('File deleted from storage:', url);
+        return true;
+    } catch (e) {
+        console.error('Error deleting file:', e);
+        return false;
+    }
+};
+
+window.extractFilenameFromUrl = function (url) {
+    if (!url) return '';
+    try {
+        if (url.includes('firebasestorage')) {
+            // Extract after last slash and before ?
+            let path = decodeURIComponent(url.split('?')[0]);
+            let readableName = path.substring(path.lastIndexOf('/') + 1);
+            // Remove timestamp prefix if present (123456789_)
+            if (readableName.match(/^\d+_/)) {
+                readableName = readableName.replace(/^\d+_/, '');
+            }
+            return readableName;
+        } else if (url.includes('drive.google')) {
+            return "Google Drive Link";
+        } else if (url.includes('youtu')) {
+            return "Vídeo YouTube";
+        }
+        return url.substring(0, 30) + "...";
+    } catch (e) {
+        return "Link ativo";
+    }
+};
+
+/**
+ * Renders a file preview card inside a container element.
+ * Shows a thumbnail (images) or an icon (audio). Provides Keep/Remove buttons.
+ * Deletion is DEFERRED — only happens on save via getExistingFileDecision.
+ *
+ * @param {string} containerId  - ID of the <div> to render into
+ * @param {string} url          - The existing file URL (Firebase Storage)
+ * @param {Object} [opts]       - { urlInputId, fileInputId } for clearing fields on remove
+ */
+window.renderFilePreview = function (containerId, url, opts = {}) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    if (!url) {
+        container.innerHTML = '';
+        container.dataset.existingUrl = '';
+        container.dataset.pendingDelete = 'false';
+        return;
+    }
+
+    const filename = window.extractFilenameFromUrl(url);
+    const isImage = url.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i)
+        || url.includes('firebasestorage') && !url.match(/\.(mp3|wav|ogg|m4a)(\?|$)/i);
+    const isAudio = url.match(/\.(mp3|wav|ogg|m4a)(\?|$)/i)
+        || (url.includes('firebasestorage') && url.includes('audio'));
+
+    container.dataset.existingUrl = url;
+    container.dataset.pendingDelete = 'false';
+
+    const mediaHtml = isImage
+        ? `<img src="${url}" alt="${filename}" class="file-preview-thumb" onerror="this.style.display='none'">`
+        : `<div class="file-preview-icon"><i data-lucide="music" class="icon-24"></i><span class="font-xs text-muted mt-5">${filename}</span></div>`;
+
+    container.innerHTML = `
+        <div class="file-preview-box" id="${containerId}-box">
+            <div class="file-preview-media">${mediaHtml}</div>
+            <div class="file-preview-info">
+                <span class="font-xs text-muted text-truncate" title="${filename}">${filename}</span>
+                <div class="file-preview-actions">
+                    <button type="button"
+                        class="file-preview-btn keep active"
+                        id="${containerId}-keep-btn"
+                        onclick="window._previewKeep('${containerId}')">
+                        <i data-lucide="check" class="icon-12"></i> Manter
+                    </button>
+                    <button type="button"
+                        class="file-preview-btn remove"
+                        id="${containerId}-remove-btn"
+                        onclick="window._previewRemove('${containerId}', '${opts.urlInputId || ''}', '${opts.fileInputId || ''}')">
+                        <i data-lucide="trash-2" class="icon-12"></i> Remover
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    if (window.lucide) window.lucide.createIcons();
+};
+
+window._previewKeep = function (containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.dataset.pendingDelete = 'false';
+    const keepBtn = document.getElementById(containerId + '-keep-btn');
+    const remBtn = document.getElementById(containerId + '-remove-btn');
+    const box = document.getElementById(containerId + '-box');
+    if (keepBtn) keepBtn.classList.add('active');
+    if (remBtn) remBtn.classList.remove('active');
+    if (box) box.classList.remove('pending-delete');
+};
+
+window._previewRemove = function (containerId, urlInputId, fileInputId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.dataset.pendingDelete = 'true';
+    const keepBtn = document.getElementById(containerId + '-keep-btn');
+    const remBtn = document.getElementById(containerId + '-remove-btn');
+    const box = document.getElementById(containerId + '-box');
+    if (keepBtn) keepBtn.classList.remove('active');
+    if (remBtn) remBtn.classList.add('active');
+    if (box) box.classList.add('pending-delete');
+    // Clear the URL input so the save logic treats it as empty
+    if (urlInputId) {
+        const urlInput = document.getElementById(urlInputId);
+        if (urlInput) { urlInput.value = ''; urlInput.dataset.originalUrl = ''; }
+    }
+};
+
+/**
+ * Returns the save-time decision for an existing file.
+ * Call before every upload block in a submit handler.
+ *
+ * Returns:
+ *   { action: 'keep' | 'remove' | 'replace', existingUrl: string }
+ *
+ *   keep    → reuse existingUrl, skip upload, skip delete
+ *   remove  → delete existingUrl from Firebase, save null
+ *   replace → delete existingUrl from Firebase (_before_ uploading new), upload new
+ *
+ * @param {string} containerId  - preview container ID
+ * @param {boolean} hasNewFile  - true if the user selected a new file in input
+ */
+window.getExistingFileDecision = function (containerId, hasNewFile) {
+    const container = document.getElementById(containerId);
+    const existingUrl = container ? (container.dataset.existingUrl || '') : '';
+    const pendingDelete = container ? (container.dataset.pendingDelete === 'true') : false;
+
+    if (!existingUrl) {
+        // Nothing existed before → just upload if there's a new file
+        return { action: hasNewFile ? 'replace' : 'none', existingUrl: '' };
+    }
+    if (pendingDelete || hasNewFile) {
+        return { action: pendingDelete && !hasNewFile ? 'remove' : 'replace', existingUrl };
+    }
+    return { action: 'keep', existingUrl };
+};
+
+window.setFileUrlInput = function (inputId, url) {
+    const el = document.getElementById(inputId);
+    if (!el) return;
+    el.dataset.originalUrl = url || '';
+    if (url && url.includes('firebasestorage')) {
+        el.value = window.extractFilenameFromUrl(url);
+    } else {
+        el.value = url || '';
+    }
+};
+
+window.getFileUrlInput = function (inputId) {
+    const el = document.getElementById(inputId);
+    if (!el) return '';
+    if (el.dataset.originalUrl && el.value === window.extractFilenameFromUrl(el.dataset.originalUrl)) {
+        return el.dataset.originalUrl;
+    }
+    return el.value;
+};
+
+window.removeFileWithUrl = async function (urlInputId, fileInputId) {
+    const urlInput = document.getElementById(urlInputId);
+    const fileInput = document.getElementById(fileInputId);
+    if (!urlInput) return;
+
+    if (urlInput.dataset.originalUrl || urlInput.value) {
+        const realUrl = urlInput.dataset.originalUrl || urlInput.value;
+        if (confirm('Tem a certeza que quer remover este ficheiro permanentemente?')) {
+            const btn = window.event ? window.event.currentTarget : null;
+            let originalHtml = '';
+            if (btn) {
+                originalHtml = btn.innerHTML;
+                btn.innerHTML = '...';
+                btn.disabled = true;
+            }
+
+            if (realUrl.includes('firebasestorage')) {
+                await window.deleteFileFromStorage(realUrl);
+            }
+            urlInput.value = '';
+            urlInput.dataset.originalUrl = '';
+            if (fileInput) fileInput.value = '';
+
+            if (btn) {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        }
+    } else {
+        if (fileInput) fileInput.value = '';
+    }
+};
+
 // Helper: Upload with Progress
 const uploadFileWithProgress = (file, path, onProgress) => {
     return new Promise((resolve, reject) => {
@@ -75,16 +281,23 @@ const uploadFileWithProgress = (file, path, onProgress) => {
 };
 
 // Clear Resource Logic
-window.clearMeditationResource = function () {
-    if (confirm("Tem a certeza que deseja remover este ficheiro/link?\n\nNota: Isto apenas remove a ligação no site. O ficheiro original permanece no armazenamento de backup.")) {
-        document.getElementById('med-url').value = "";
-        document.getElementById('med-audio-file').value = "";
-        document.getElementById('current-resource-display').classList.add('hidden');
+window.clearMeditationResource = async function () {
+    const urlInput = document.getElementById('med-url');
+    if (urlInput && urlInput.value && urlInput.value.includes('firebasestorage')) {
+        if (!confirm("Tem a certeza que deseja remover este ficheiro DEFINITIVAMENTE?\n\nAção irreversível e será apagado do armazenamento.")) return;
 
-        // Hide progress bar if visible
-        const pContainer = document.getElementById('audio-upload-progress');
-        if (pContainer) pContainer.classList.add('hidden');
+        await window.deleteFileFromStorage(urlInput.value);
+    } else {
+        if (!confirm("Tem a certeza que deseja remover este link?")) return;
     }
+
+    if (urlInput) urlInput.value = "";
+    document.getElementById('med-audio-file').value = "";
+    document.getElementById('current-resource-display').classList.add('hidden');
+
+    // Hide dropdown/progress UI
+    const pContainer = document.getElementById('audio-upload-progress');
+    if (pContainer) pContainer.classList.add('hidden');
 };
 
 window.initCMS = function () {
@@ -494,7 +707,7 @@ async function handleEventSubmit(e) {
         const link = document.getElementById('evt-link').value;
         const fileInput = document.getElementById('evt-image');
 
-        let imageUrl = null;
+        let imageUrl = document.getElementById('evt-image-url') ? document.getElementById('evt-image-url').value : null;
         if (fileInput.files.length > 0) {
             const file = fileInput.files[0];
             const path = `events/${Date.now()}_${file.name}`;
@@ -513,8 +726,8 @@ async function handleEventSubmit(e) {
             updated_at: new Date()
         };
 
-        // Only update image if new one provided
-        if (imageUrl) {
+        // Ensure empty fields or removed URLs are maintained
+        if (imageUrl !== null) {
             eventData.image_url = imageUrl;
         }
 
@@ -593,6 +806,18 @@ window.editEvent = function (id) {
     document.getElementById('evt-desc').value = data.description || '';
     if (window.tinymce && tinymce.get('evt-desc')) tinymce.get('evt-desc').setContent(data.description || '');
     document.getElementById('evt-link').value = data.registration_link || '';
+    if (document.getElementById('evt-image-url')) {
+        const imageUrl = data.image_url || '';
+        document.getElementById('evt-image-url').value = imageUrl;
+        window.renderFilePreview('evt-image-preview', imageUrl, { urlInputId: 'evt-image-url', fileInputId: 'evt-image' });
+
+        // Visual enhancement: Change the URL placeholder to show the filename if it's a firebase url
+        if (imageUrl && imageUrl.includes('firebasestorage')) {
+            document.getElementById('evt-image-url').placeholder = window.extractFilenameFromUrl(imageUrl);
+        } else {
+            document.getElementById('evt-image-url').placeholder = "URL da imagem (auto)";
+        }
+    }
 
     // Update Button Text
     const btn = document.querySelector('#event-form button[type="submit"]');
@@ -1487,6 +1712,8 @@ async function handleMeditationSubmit(e) {
         const theme = document.getElementById('med-theme').value;
         const type = document.getElementById('med-type').value;
         let url = document.getElementById('med-url').value;
+        let audioUrlHidden = document.getElementById('med-audio-url-hidden') ? document.getElementById('med-audio-url-hidden').value : '';
+        if (audioUrlHidden && !url) url = audioUrlHidden;
 
         // Fallback: If page title empty, use internal title
         if (!pageTitle) pageTitle = title;
@@ -1503,11 +1730,14 @@ async function handleMeditationSubmit(e) {
         }
 
         // Image Processing (Card Background)
-        let imageUrl = document.getElementById('med-image-url').value;
+        let imageUrl = window.getFileUrlInput('med-image-url');
         const imageFile = document.getElementById('med-image').files[0];
 
         if (imageFile) {
             btn.innerText = "A enviar imagem...";
+            if (imageUrl && imageUrl.includes('firebasestorage')) {
+                await window.deleteFileFromStorage(imageUrl);
+            }
             const path = `meditations/${Date.now()}_${imageFile.name}`;
             imageUrl = await uploadImageToStorage(imageFile, path);
         }
@@ -1516,6 +1746,10 @@ async function handleMeditationSubmit(e) {
         const audioFile = document.getElementById('med-audio-file').files[0];
         if (audioFile) {
             btn.innerText = "A enviar áudio...";
+
+            if (url && url.includes('firebasestorage')) {
+                await window.deleteFileFromStorage(url);
+            }
 
             // Show Progress UI
             const progressContainer = document.getElementById('audio-upload-progress');
@@ -1725,8 +1959,14 @@ window.editMeditation = (id) => {
     document.getElementById('med-card-bg-color-hex').value = data.card_bg_color || '#80864f';
     document.getElementById('med-card-opacity').value = data.card_opacity || '0.6';
 
-    document.getElementById('med-image-url').value = data.image_url || '';
+    window.setFileUrlInput('med-image-url', data.image_url || '');
     document.getElementById('med-image').value = '';
+    window.renderFilePreview('med-image-preview', data.image_url || '', { urlInputId: 'med-image-url', fileInputId: 'med-image' });
+
+    const medAudioInput = document.getElementById('med-audio-url-hidden');
+    const audioUrl = data.url && data.url.includes('firebasestorage') ? data.url : '';
+    if (medAudioInput) window.setFileUrlInput('med-audio-url-hidden', audioUrl);
+    window.renderFilePreview('med-audio-preview', audioUrl, { urlInputId: 'med-audio-url-hidden', fileInputId: 'med-audio-file' });
 
     // Trigger toggle to show correct BG input
     window.toggleMedBgType();
@@ -1775,9 +2015,15 @@ window.editMeditation = (id) => {
 window.resetMeditationForm = () => {
     const form = document.getElementById('meditation-form');
     if (form) form.reset();
-    document.getElementById('med-id').value = "";
-    document.getElementById('med-image-url').value = "";
-    document.getElementById('med-audio-file').value = ""; // Clear audio input
+    window.setFileUrlInput('med-image-url', '');
+    document.getElementById('med-image').value = ''; // Clear image input
+    window.renderFilePreview('med-image-preview', '', { urlInputId: 'med-image-url', fileInputId: 'med-image' });
+
+    document.getElementById('med-audio-file').value = ''; // Clear audio input
+    const medAudioInput = document.getElementById('med-audio-url-hidden');
+    if (medAudioInput) window.setFileUrlInput('med-audio-url-hidden', '');
+    window.renderFilePreview('med-audio-preview', '', { urlInputId: 'med-audio-url-hidden', fileInputId: 'med-audio-file' });
+
 
     // clear tinymce
     if (window.tinymce && tinymce.get('med-desc')) tinymce.get('med-desc').setContent('');
@@ -1806,7 +2052,9 @@ async function loadSiteContent() {
 
             // Populate Service Config Form
             if (data.service_section) {
-                if (document.getElementById('service-bg-url')) document.getElementById('service-bg-url').value = data.service_section.background_image || '';
+                const svcBgUrl = data.service_section.background_image || '';
+                if (document.getElementById('service-bg-url')) window.setFileUrlInput('service-bg-url', svcBgUrl);
+                window.renderFilePreview('service-bg-preview', svcBgUrl, { urlInputId: 'service-bg-url', fileInputId: 'service-bg-file' });
                 if (document.getElementById('service-section-title')) document.getElementById('service-section-title').value = data.service_section.title || '';
                 if (document.getElementById('service-title-highlight-enabled')) document.getElementById('service-title-highlight-enabled').checked = data.service_section.title_highlight_enabled || false;
                 if (document.getElementById('service-title-highlight-color')) document.getElementById('service-title-highlight-color').value = data.service_section.title_highlight_color || '#f7f2e0';
@@ -1825,6 +2073,10 @@ async function loadSiteContent() {
                 if (document.getElementById('home-cta')) document.getElementById('home-cta').value = data.home.cta_text || '';
                 if (document.getElementById('home-text-color')) document.getElementById('home-text-color').value = data.home.text_color || '#f7f2e0';
                 if (document.getElementById('home-text-highlight')) document.getElementById('home-text-highlight').checked = data.home.text_highlight || false;
+                // Hero background image preview
+                const homeImgUrl = data.home.hero_image || '';
+                if (document.getElementById('home-image-url')) window.setFileUrlInput('home-image-url', homeImgUrl);
+                window.renderFilePreview('home-image-preview', homeImgUrl, { urlInputId: 'home-image-url', fileInputId: 'home-image-file' });
             }
 
             // Populate About Form
@@ -1842,8 +2094,12 @@ async function loadSiteContent() {
                 }
 
                 // Images
-                if (document.getElementById('about-image-url')) document.getElementById('about-image-url').value = data.about.image_url || '';
-                if (document.getElementById('about-image-art-url')) document.getElementById('about-image-art-url').value = data.about.image_art_url || '';
+                const aboutImgUrl = data.about.image_url || '';
+                const aboutImgArtUrl = data.about.image_art_url || '';
+                if (document.getElementById('about-image-url')) window.setFileUrlInput('about-image-url', aboutImgUrl);
+                window.renderFilePreview('about-image-preview', aboutImgUrl, { urlInputId: 'about-image-url', fileInputId: 'about-image-file' });
+                if (document.getElementById('about-image-art-url')) window.setFileUrlInput('about-image-art-url', aboutImgArtUrl);
+                window.renderFilePreview('about-image-art-preview', aboutImgArtUrl, { urlInputId: 'about-image-art-url', fileInputId: 'about-image-art-file' });
 
                 // Colors
                 if (document.getElementById('about-intro-bg')) document.getElementById('about-intro-bg').value = data.about.intro_bg || '#ffffff';
@@ -1859,7 +2115,9 @@ async function loadSiteContent() {
             if (data.home_about) {
                 if (document.getElementById('home-about-title-input')) document.getElementById('home-about-title-input').value = data.home_about.title || '';
                 if (document.getElementById('home-about-text-input')) document.getElementById('home-about-text-input').value = data.home_about.text || '';
-                if (document.getElementById('home-about-image-url')) document.getElementById('home-about-image-url').value = data.home_about.image_url || '';
+                const homeAboutImgUrl = data.home_about.image_url || '';
+                if (document.getElementById('home-about-image-url')) window.setFileUrlInput('home-about-image-url', homeAboutImgUrl);
+                window.renderFilePreview('home-about-image-preview', homeAboutImgUrl, { urlInputId: 'home-about-image-url', fileInputId: 'home-about-image-file' });
             }
 
             const footerTitle = document.getElementById('footer-title');
@@ -1997,21 +2255,27 @@ async function handleAboutSubmit(e) {
 
     try {
         // Image 1 (Intro)
-        let imageUrl = document.getElementById('about-image-url').value;
+        let imageUrl = window.getFileUrlInput('about-image-url');
         const imageFile = document.getElementById('about-image-file').files[0];
 
         if (imageFile) {
             btn.textContent = "A enviar imagem 1...";
+            if (imageUrl && imageUrl.includes('firebasestorage')) {
+                await window.deleteFileFromStorage(imageUrl);
+            }
             const path = `about / ${Date.now()}_${imageFile.name} `;
             imageUrl = await uploadImageToStorage(imageFile, path);
         }
 
         // Image 2 (Art)
-        let imageArtUrl = document.getElementById('about-image-art-url').value;
+        let imageArtUrl = window.getFileUrlInput('about-image-art-url');
         const imageArtFile = document.getElementById('about-image-art-file').files[0];
 
         if (imageArtFile) {
             btn.textContent = "A enviar imagem 2...";
+            if (imageArtUrl && imageArtUrl.includes('firebasestorage')) {
+                await window.deleteFileFromStorage(imageArtUrl);
+            }
             const path = `about / art_${Date.now()}_${imageArtFile.name} `;
             imageArtUrl = await uploadImageToStorage(imageArtFile, path);
         }
@@ -2041,14 +2305,16 @@ async function handleAboutSubmit(e) {
     }
 }
 
-// Image Removal for Home About
-window.removeHomeAboutImage = function () {
-    if (confirm("Deseja remover a imagem atual do resumo?")) {
-        const urlInput = document.getElementById('home-about-image-url');
+// Image Removal for Home About (Legacy support, now uses removeFileWithUrl in HTML)
+window.removeHomeAboutImage = async function () {
+    const urlInput = document.getElementById('home-about-image-url');
+    if (urlInput && urlInput.value) {
+        await window.removeFileWithUrl('home-about-image-url', 'home-about-image-file');
+    } else {
         const fileInput = document.getElementById('home-about-image-file');
         if (urlInput) urlInput.value = '';
         if (fileInput) fileInput.value = '';
-        alert("Imagem removida do formulário. Clique em 'Guardar Resumo' para confirmar as alterações no site.");
+        alert("Imagem removida do formulário.");
     }
 };
 
@@ -2063,12 +2329,15 @@ async function handleHomeAboutSubmit(e) {
     btn.disabled = true;
 
     try {
-        let imageUrl = document.getElementById('home-about-image-url').value;
+        let imageUrl = window.getFileUrlInput('home-about-image-url');
         const imageFile = document.getElementById('home-about-image-file').files[0];
 
         // Upload Image
         if (imageFile) {
             btn.textContent = "A enviar imagem...";
+            if (imageUrl && imageUrl.includes('firebasestorage')) {
+                await window.deleteFileFromStorage(imageUrl);
+            }
             const path = `home_about / ${Date.now()}_${imageFile.name} `;
             imageUrl = await uploadImageToStorage(imageFile, path);
         }

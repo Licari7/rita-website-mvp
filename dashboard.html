@@ -271,6 +271,15 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        .update-members-link {
+            margin-left: 8px;
+            font-size: 11px;
+            font-weight: 400;
+            color: var(--color-primary);
+            text-decoration: underline;
+            font-family: var(--font-sans);
+        }
     </style>
 </head>
 
@@ -423,6 +432,9 @@
                                     </div>
                                     <div class="form-group">
                                         <label>Imagem (Capa)</label>
+                                        <input type="text" id="evt-image-url" class="admin-file-url-input margin-0"
+                                            placeholder="URL da imagem (auto)" readonly>
+                                        <div id="evt-image-preview" class="mb-5"></div>
                                         <input type="file" id="evt-image" accept="image/*">
                                     </div>
                                     <div class="form-group">
@@ -484,7 +496,8 @@
                             <div class="form-group">
                                 <label>Imagem de Fundo (Opcional)</label>
                                 <input type="text" id="home-image-url" placeholder="URL da imagem (ou upload abaixo)"
-                                    class="admin-file-url-input">
+                                    class="admin-file-url-input margin-0">
+                                <div id="home-image-preview" class="mb-5"></div>
                                 <input type="file" id="home-image-file" accept="image/*">
                                 <small class="admin-help-text">Substitui a cor verde por uma foto.</small>
                             </div>
@@ -514,13 +527,8 @@
                             </div>
                             <div class="form-group">
                                 <label>Imagem Lateral (Pequena)</label>
-                                <div class="flex-align-center-gap-10 mb-5">
-                                    <input type="text" id="home-about-image-url" class="admin-file-url-input margin-0">
-                                    <button type="button" class="btn btn-outline btn-sm text-danger"
-                                        onclick="window.removeHomeAboutImage()" title="Remover Imagem">
-                                        <i data-lucide="trash-2" class="icon-14"></i>
-                                    </button>
-                                </div>
+                                <input type="text" id="home-about-image-url" class="admin-file-url-input margin-0">
+                                <div id="home-about-image-preview" class="mb-5"></div>
                                 <input type="file" id="home-about-image-file" accept="image/*">
                             </div>
                             <button type="submit" id="home-about-save-btn" class="cta-button primary full-width">Guardar
@@ -541,8 +549,7 @@
                                 <h3 class="font-serif margin-0">
                                     Lista de Membros
                                     <a href="#" onclick="event.preventDefault(); window.loadMembers();"
-                                        title="Atualizar lista"
-                                        style="margin-left:8px; font-size:11px; font-weight:400; color:var(--color-primary); text-decoration:underline; font-family:var(--font-sans);">↺
+                                        title="Atualizar lista" class="update-members-link">↺
                                         Atualizar</a>
                                 </h3>
                                 <div class="members-actions-row">
@@ -574,7 +581,8 @@
                             </div>
                             <div class="form-group">
                                 <label>Foto de Perfil (Intro)</label>
-                                <input type="text" id="about-image-url" class="admin-file-url-input">
+                                <input type="text" id="about-image-url" class="admin-file-url-input margin-0">
+                                <div id="about-image-preview" class="mb-5"></div>
                                 <input type="file" id="about-image-file" accept="image/*">
                             </div>
                             <div class="form-group">
@@ -587,7 +595,8 @@
 
                             <div class="form-group">
                                 <label>Foto Secção Arte (Opcional)</label>
-                                <input type="text" id="about-image-art-url" class="admin-file-url-input">
+                                <input type="text" id="about-image-art-url" class="admin-file-url-input margin-0">
+                                <div id="about-image-art-preview" class="mb-5"></div>
                                 <input type="file" id="about-image-art-file" accept="image/*">
                             </div>
                             <div class="form-group">
@@ -711,9 +720,17 @@
                                             <div class="form-group mb-5">
                                                 <label class="font-xs text-muted mb-2 block">Imagem de Fundo
                                                     (Geral)</label>
-                                                <input type="text" id="service-bg-url" placeholder="URL da Imagem..."
-                                                    class="admin-input-select font-xs">
+                                                <div class="flex-align-center-gap-10 mb-5">
+                                                    <input type="text" id="service-bg-url"
+                                                        placeholder="URL da Imagem..."
+                                                        class="admin-file-url-input margin-0 font-xs">
+                                                    <button type="button" class="btn btn-outline btn-sm text-danger"
+                                                        onclick="window.removeFileWithUrl('service-bg-url', 'service-bg-file')"
+                                                        title="Remover Imagem"><i data-lucide="trash-2"
+                                                            class="icon-14"></i></button>
+                                                </div>
                                             </div>
+                                            <div id="service-bg-preview" class="mb-5"></div>
                                             <div class="form-group mb-5">
                                                 <input type="file" id="service-bg-file" accept="image/*"
                                                     class="font-xs">
@@ -785,7 +802,7 @@
                                                             <!-- Fixed 'Remover Ficheiro' text/button -->
                                                             <button type="button"
                                                                 class="btn-text-danger font-xs text-nowrap"
-                                                                onclick="document.getElementById('svc-image').value=''; document.getElementById('svc-image-file').value='';"
+                                                                onclick="window.removeFileWithUrl('svc-image', 'svc-image-file')"
                                                                 title="Remover ficheiro">
                                                                 Remover Ficheiro
                                                             </button>
@@ -793,6 +810,7 @@
                                                         <input type="file" id="svc-image-file" accept="image/*"
                                                             class="font-xs">
                                                     </div>
+                                                    <div id="svc-image-preview" class="mt-5"></div>
                                                 </div>
                                             </div>
 
@@ -881,11 +899,12 @@
                                                                 class="font-xs width-100">
                                                             <button type="button"
                                                                 class="btn-text-danger font-xs text-nowrap"
-                                                                onclick="document.getElementById('svc-image-1').value=''; document.getElementById('svc-image-1-file').value='';"
+                                                                onclick="window.removeFileWithUrl('svc-image-1', 'svc-image-1-file')"
                                                                 title="Remover ficheiro">
                                                                 Remover
                                                             </button>
                                                         </div>
+                                                        <div id="svc-image-1-preview" class="mt-5"></div>
                                                     </div>
 
                                                     <div class="preview-box-item">
@@ -956,11 +975,12 @@
                                                                 class="font-xs width-100">
                                                             <button type="button"
                                                                 class="btn-text-danger font-xs text-nowrap"
-                                                                onclick="document.getElementById('svc-image-2').value=''; document.getElementById('svc-image-2-file').value='';"
+                                                                onclick="window.removeFileWithUrl('svc-image-2', 'svc-image-2-file')"
                                                                 title="Remover ficheiro">
                                                                 Remover
                                                             </button>
                                                         </div>
+                                                        <div id="svc-image-2-preview" class="mt-5"></div>
                                                     </div>
 
                                                     <div class="preview-box-item">
@@ -1071,6 +1091,7 @@
                                             <input type="text" id="service-bg-url" placeholder="URL da Imagem..."
                                                 class="admin-input-select font-xs">
                                         </div>
+                                        <div id="service-bg-preview" class="mb-5"></div>
                                         <div class="form-group mb-5">
                                             <input type="file" id="service-bg-file" accept="image/*" class="font-xs">
                                         </div>
@@ -1226,9 +1247,10 @@
                                     <!-- Background Options (Toggled via JS) -->
                                     <div id="med-bg-image-group" class="form-group">
                                         <label>Imagem de Fundo (Capa)</label>
+                                        <input type="text" id="med-image-url" placeholder="URL da imagem (auto)"
+                                            class="admin-file-url-input margin-0" readonly>
+                                        <div id="med-image-preview" class="mb-5"></div>
                                         <input type="file" id="med-image" accept="image/*">
-                                        <input type="text" id="med-image-url" placeholder="ou URL da imagem"
-                                            class="input-helper-text">
                                     </div>
 
                                     <div id="med-bg-color-group" class="form-group admin-color-group">
@@ -1307,8 +1329,12 @@
                                             <label class="font-xs text-muted mb-5 block">Ou carregue um ficheiro de
                                                 Áudio
                                                 (MP3/WAV)</label>
-                                            <input type="file" id="med-audio-file" accept="audio/*"
-                                                class="font-xs full-width">
+                                            <div class="flex-align-center-gap-10 mb-5">
+                                                <input type="text" id="med-audio-url-hidden" class="hidden">
+                                                <input type="file" id="med-audio-file" accept="audio/*"
+                                                    class="font-xs full-width margin-0">
+                                            </div>
+                                            <div id="med-audio-preview" class="mt-5"></div>
 
                                             <!-- Progress Bar -->
                                             <div id="audio-upload-progress" class="hidden mt-10">

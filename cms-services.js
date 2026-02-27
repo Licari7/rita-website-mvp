@@ -114,6 +114,9 @@ window.handleServiceSubmit = async function (e) {
         if (imageFile) {
             if (statusBtn) statusBtn.textContent = "A enviar imagem (Topo)...";
             try {
+                if (imageUrl && imageUrl.includes('firebasestorage')) {
+                    await window.deleteFileFromStorage(imageUrl);
+                }
                 const path = `services/${Date.now()}_header_${imageFile.name}`;
                 imageUrl = await window.uploadImageToStorage(imageFile, path);
             } catch (err) {
@@ -126,6 +129,9 @@ window.handleServiceSubmit = async function (e) {
         if (image1File) {
             if (statusBtn) statusBtn.textContent = "A enviar imagem (Secção 1)...";
             try {
+                if (image1Url && image1Url.includes('firebasestorage')) {
+                    await window.deleteFileFromStorage(image1Url);
+                }
                 const path = `services/${Date.now()}_sec1_${image1File.name}`;
                 image1Url = await window.uploadImageToStorage(image1File, path);
             } catch (err) {
@@ -138,6 +144,9 @@ window.handleServiceSubmit = async function (e) {
         if (image2File) {
             if (statusBtn) statusBtn.textContent = "A enviar imagem (Secção 2)...";
             try {
+                if (image2Url && image2Url.includes('firebasestorage')) {
+                    await window.deleteFileFromStorage(image2Url);
+                }
                 const path = `services/${Date.now()}_sec2_${image2File.name}`;
                 image2Url = await window.uploadImageToStorage(image2File, path);
             } catch (err) {
@@ -258,19 +267,41 @@ window.editService = async function (id) {
     document.getElementById('svc-title').value = data.title || '';
     document.getElementById('svc-benefits').value = (data.benefits || []).join(', ');
     document.getElementById('svc-desc').value = data.description || '';
-    document.getElementById('svc-image').value = data.headerImage || '';
+
     document.getElementById('svc-image-file').value = '';
+    const svcImageUrl = data.headerImage || '';
+    document.getElementById('svc-image').value = svcImageUrl;
+    window.renderFilePreview('svc-image-preview', svcImageUrl, { urlInputId: 'svc-image', fileInputId: 'svc-image-file' });
+    if (svcImageUrl && svcImageUrl.includes('firebasestorage')) {
+        document.getElementById('svc-image').placeholder = window.extractFilenameFromUrl(svcImageUrl);
+    } else {
+        document.getElementById('svc-image').placeholder = "URL...";
+    }
 
     // Section 1
     document.getElementById('svc-sec1-title').value = data.section1_title || '';
     document.getElementById('svc-full-desc').value = data.long_description || '';
-    document.getElementById('svc-image-1').value = data.section1_image || '';
     document.getElementById('svc-image-1-file').value = '';
+    const svcImage1Url = data.section1_image || '';
+    document.getElementById('svc-image-1').value = svcImage1Url;
+    window.renderFilePreview('svc-image-1-preview', svcImage1Url, { urlInputId: 'svc-image-1', fileInputId: 'svc-image-1-file' });
+    if (svcImage1Url && svcImage1Url.includes('firebasestorage')) {
+        document.getElementById('svc-image-1').placeholder = window.extractFilenameFromUrl(svcImage1Url);
+    } else {
+        document.getElementById('svc-image-1').placeholder = "URL Imagem";
+    }
 
     // Section 2
     document.getElementById('svc-full-desc-2').value = data.long_description_2 || '';
-    document.getElementById('svc-image-2').value = data.section2_image || '';
     document.getElementById('svc-image-2-file').value = '';
+    const svcImage2Url = data.section2_image || '';
+    document.getElementById('svc-image-2').value = svcImage2Url;
+    window.renderFilePreview('svc-image-2-preview', svcImage2Url, { urlInputId: 'svc-image-2', fileInputId: 'svc-image-2-file' });
+    if (svcImage2Url && svcImage2Url.includes('firebasestorage')) {
+        document.getElementById('svc-image-2').placeholder = window.extractFilenameFromUrl(svcImage2Url);
+    } else {
+        document.getElementById('svc-image-2').placeholder = "URL Imagem";
+    }
 
     // Configs & Colors
     if (data.customColors) {

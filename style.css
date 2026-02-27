@@ -1861,8 +1861,6 @@ ul {
         scroll-snap-type: x mandatory;
         padding: 10px 0 20px 0;
         gap: 0;
-        -webkit-overflow-scrolling: touch;
-        /* legacy iOS support */
     }
 
     .carousel-card {
@@ -3081,6 +3079,101 @@ body.auth-page {
     padding: 10px;
     border-radius: 8px;
     display: none;
+}
+
+/* ─── File Preview Card ─────────────────────────────── */
+.file-preview-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.file-preview-box.pending-delete {
+    background: #fff5f5;
+    border-color: #f28b82;
+    opacity: 0.8;
+}
+
+.file-preview-media {
+    flex-shrink: 0;
+}
+
+.file-preview-thumb {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .1);
+}
+
+.file-preview-icon {
+    width: 72px;
+    height: 72px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #e8e8e8;
+    border-radius: 8px;
+    color: #666;
+}
+
+.file-preview-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.file-preview-info .text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+}
+
+.file-preview-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.file-preview-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1.5px solid #ccc;
+    background: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #555;
+    transition: all 0.15s;
+}
+
+.file-preview-btn.keep.active {
+    border-color: #4caf50;
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.file-preview-btn.remove.active {
+    border-color: #d32f2f;
+    background: #ffebee;
+    color: #c62828;
+}
+
+.file-preview-btn:hover {
+    filter: brightness(0.95);
 }
 
 /* Booking / Content Page Utilities */
@@ -5350,4 +5443,18 @@ details.admin-card.maintenance-card.offline summary.maintenance-card-header {
 #contact {
     scroll-margin-top: 120px;
     /* Accounts for fixed navbar height */
+}
+
+/* Booking Page Form Wrappers */
+.booking-contact-form-wrapper {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+    text-align: left;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.booking-contact-form-wrapper h3 {
+    text-align: center;
 }

@@ -22,6 +22,14 @@
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap"
         rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function () {
+            emailjs.init("gGZY_zuQOJdC0hcAH");
+        })();
+    </script>
 </head>
 
 <body>
@@ -69,8 +77,40 @@
 
     <main class="container section content-padded text-center">
         <h1 class="section-title text-center">Agendar Sessão</h1>
-        <p class="booking-text">Para agendar a sua sessão, por favor entre em
+        <p class="booking-text">Para agendar a sua sessão, por favor preencha o formulário abaixo ou entre em
             contacto connosco diretamente através do WhatsApp.</p>
+
+        <div class="contact-form-wrapper booking-contact-form-wrapper">
+            <h3>Formulário de Contacto</h3>
+            <form id="contactForm">
+                <div class="form-group">
+                    <label for="name">Nome</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Telefone</label>
+                    <input type="tel" id="phone" name="phone">
+                </div>
+                <div class="form-group">
+                    <label for="type">Assunto</label>
+                    <select id="type" name="type">
+                        <option value="consulta">Marcação de Consulta</option>
+                        <option value="evento">Inscrição em Evento</option>
+                        <option value="duvida">Outro / Dúvidas</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Mensagem</label>
+                    <textarea id="message" name="message" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary full-width">Enviar Mensagem</button>
+            </form>
+        </div>
 
         <a href="https://wa.me/351913515406" target="_blank" rel="noopener noreferrer"
             class="btn btn-primary btn-with-icon">
