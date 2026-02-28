@@ -50,6 +50,212 @@ const uploadImageToStorage = async (file, path) => {
 };
 window.uploadImageToStorage = uploadImageToStorage;
 
+window.deleteFileFromStorage = async (url) => {
+    if (!url || !url.startsWith('http')) return false;
+    try {
+        const ref = window.storage.refFromURL(url);
+        await ref.delete();
+        console.log('File deleted from storage:', url);
+        return true;
+    } catch (e) {
+        console.error('Error deleting file:', e);
+        return false;
+    }
+};
+
+window.extractFilenameFromUrl = function (url) {
+    if (!url) return '';
+    try {
+        if (url.includes('firebasestorage')) {
+            // Extract after last slash and before ?
+            let path = decodeURIComponent(url.split('?')[0]);
+            let readableName = path.substring(path.lastIndexOf('/') + 1);
+            // Remove timestamp prefix if present (123456789_)
+            if (readableName.match(/^\d+_/)) {
+                readableName = readableName.replace(/^\d+_/, '');
+            }
+            return readableName;
+        } else if (url.includes('drive.google')) {
+            return "Google Drive Link";
+        } else if (url.includes('youtu')) {
+            return "Vídeo YouTube";
+        }
+        return url.substring(0, 30) + "...";
+    } catch (e) {
+        return "Link ativo";
+    }
+};
+
+/**
+ * Renders a file preview card inside a container element.
+ * Shows a thumbnail (images) or an icon (audio). Provides Keep/Remove buttons.
+ * Deletion is DEFERRED — only happens on save via getExistingFileDecision.
+ *
+ * @param {string} containerId  - ID of the <div> to render into
+ * @param {string} url          - The existing file URL (Firebase Storage)
+ * @param {Object} [opts]       - { urlInputId, fileInputId } for clearing fields on remove
+ */
+window.renderFilePreview = function (containerId, url, opts = {}) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    if (!url) {
+        container.innerHTML = '';
+        container.dataset.existingUrl = '';
+        container.dataset.pendingDelete = 'false';
+        return;
+    }
+
+    const filename = window.extractFilenameFromUrl(url);
+    const isImage = url.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i)
+        || url.includes('firebasestorage') && !url.match(/\.(mp3|wav|ogg|m4a)(\?|$)/i);
+    const isAudio = url.match(/\.(mp3|wav|ogg|m4a)(\?|$)/i)
+        || (url.includes('firebasestorage') && url.includes('audio'));
+
+    container.dataset.existingUrl = url;
+    container.dataset.pendingDelete = 'false';
+
+    const mediaHtml = isImage
+        ? `<img src="${url}" alt="${filename}" class="file-preview-thumb" onerror="this.style.display='none'">`
+        : `<div class="file-preview-icon"><i data-lucide="music" class="icon-24"></i><span class="font-xs text-muted mt-5">${filename}</span></div>`;
+
+    container.innerHTML = `
+        <div class="file-preview-box" id="${containerId}-box">
+            <div class="file-preview-media">${mediaHtml}</div>
+            <div class="file-preview-info">
+                <span class="font-xs text-muted text-truncate" title="${filename}">${filename}</span>
+                <div class="file-preview-actions">
+                    <button type="button"
+                        class="file-preview-btn keep active"
+                        id="${containerId}-keep-btn"
+                        onclick="window._previewKeep('${containerId}')">
+                        <i data-lucide="check" class="icon-12"></i> Manter
+                    </button>
+                    <button type="button"
+                        class="file-preview-btn remove"
+                        id="${containerId}-remove-btn"
+                        onclick="window._previewRemove('${containerId}', '${opts.urlInputId || ''}', '${opts.fileInputId || ''}')">
+                        <i data-lucide="trash-2" class="icon-12"></i> Remover
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    if (window.lucide) window.lucide.createIcons();
+};
+
+window._previewKeep = function (containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.dataset.pendingDelete = 'false';
+    const keepBtn = document.getElementById(containerId + '-keep-btn');
+    const remBtn = document.getElementById(containerId + '-remove-btn');
+    const box = document.getElementById(containerId + '-box');
+    if (keepBtn) keepBtn.classList.add('active');
+    if (remBtn) remBtn.classList.remove('active');
+    if (box) box.classList.remove('pending-delete');
+};
+
+window._previewRemove = function (containerId, urlInputId, fileInputId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.dataset.pendingDelete = 'true';
+    const keepBtn = document.getElementById(containerId + '-keep-btn');
+    const remBtn = document.getElementById(containerId + '-remove-btn');
+    const box = document.getElementById(containerId + '-box');
+    if (keepBtn) keepBtn.classList.remove('active');
+    if (remBtn) remBtn.classList.add('active');
+    if (box) box.classList.add('pending-delete');
+    // Clear the URL input so the save logic treats it as empty
+    if (urlInputId) {
+        const urlInput = document.getElementById(urlInputId);
+        if (urlInput) { urlInput.value = ''; urlInput.dataset.originalUrl = ''; }
+    }
+};
+
+/**
+ * Returns the save-time decision for an existing file.
+ * Call before every upload block in a submit handler.
+ *
+ * Returns:
+ *   { action: 'keep' | 'remove' | 'replace', existingUrl: string }
+ *
+ *   keep    → reuse existingUrl, skip upload, skip delete
+ *   remove  → delete existingUrl from Firebase, save null
+ *   replace → delete existingUrl from Firebase (_before_ uploading new), upload new
+ *
+ * @param {string} containerId  - preview container ID
+ * @param {boolean} hasNewFile  - true if the user selected a new file in input
+ */
+window.getExistingFileDecision = function (containerId, hasNewFile) {
+    const container = document.getElementById(containerId);
+    const existingUrl = container ? (container.dataset.existingUrl || '') : '';
+    const pendingDelete = container ? (container.dataset.pendingDelete === 'true') : false;
+
+    if (!existingUrl) {
+        // Nothing existed before → just upload if there's a new file
+        return { action: hasNewFile ? 'replace' : 'none', existingUrl: '' };
+    }
+    if (pendingDelete || hasNewFile) {
+        return { action: pendingDelete && !hasNewFile ? 'remove' : 'replace', existingUrl };
+    }
+    return { action: 'keep', existingUrl };
+};
+
+window.setFileUrlInput = function (inputId, url) {
+    const el = document.getElementById(inputId);
+    if (!el) return;
+    el.dataset.originalUrl = url || '';
+    if (url && url.includes('firebasestorage')) {
+        el.value = window.extractFilenameFromUrl(url);
+    } else {
+        el.value = url || '';
+    }
+};
+
+window.getFileUrlInput = function (inputId) {
+    const el = document.getElementById(inputId);
+    if (!el) return '';
+    if (el.dataset.originalUrl && el.value === window.extractFilenameFromUrl(el.dataset.originalUrl)) {
+        return el.dataset.originalUrl;
+    }
+    return el.value;
+};
+
+window.removeFileWithUrl = async function (urlInputId, fileInputId) {
+    const urlInput = document.getElementById(urlInputId);
+    const fileInput = document.getElementById(fileInputId);
+    if (!urlInput) return;
+
+    if (urlInput.dataset.originalUrl || urlInput.value) {
+        const realUrl = urlInput.dataset.originalUrl || urlInput.value;
+        if (confirm('Tem a certeza que quer remover este ficheiro permanentemente?')) {
+            const btn = window.event ? window.event.currentTarget : null;
+            let originalHtml = '';
+            if (btn) {
+                originalHtml = btn.innerHTML;
+                btn.innerHTML = '...';
+                btn.disabled = true;
+            }
+
+            if (realUrl.includes('firebasestorage')) {
+                await window.deleteFileFromStorage(realUrl);
+            }
+            urlInput.value = '';
+            urlInput.dataset.originalUrl = '';
+            if (fileInput) fileInput.value = '';
+
+            if (btn) {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        }
+    } else {
+        if (fileInput) fileInput.value = '';
+    }
+};
+
 // Helper: Upload with Progress
 const uploadFileWithProgress = (file, path, onProgress) => {
     return new Promise((resolve, reject) => {
@@ -75,16 +281,23 @@ const uploadFileWithProgress = (file, path, onProgress) => {
 };
 
 // Clear Resource Logic
-window.clearMeditationResource = function () {
-    if (confirm("Tem a certeza que deseja remover este ficheiro/link?\n\nNota: Isto apenas remove a ligação no site. O ficheiro original permanece no armazenamento de backup.")) {
-        document.getElementById('med-url').value = "";
-        document.getElementById('med-audio-file').value = "";
-        document.getElementById('current-resource-display').classList.add('hidden');
+window.clearMeditationResource = async function () {
+    const urlInput = document.getElementById('med-url');
+    if (urlInput && urlInput.value && urlInput.value.includes('firebasestorage')) {
+        if (!confirm("Tem a certeza que deseja remover este ficheiro DEFINITIVAMENTE?\n\nAção irreversível e será apagado do armazenamento.")) return;
 
-        // Hide progress bar if visible
-        const pContainer = document.getElementById('audio-upload-progress');
-        if (pContainer) pContainer.classList.add('hidden');
+        await window.deleteFileFromStorage(urlInput.value);
+    } else {
+        if (!confirm("Tem a certeza que deseja remover este link?")) return;
     }
+
+    if (urlInput) urlInput.value = "";
+    document.getElementById('med-audio-file').value = "";
+    document.getElementById('current-resource-display').classList.add('hidden');
+
+    // Hide dropdown/progress UI
+    const pContainer = document.getElementById('audio-upload-progress');
+    if (pContainer) pContainer.classList.add('hidden');
 };
 
 window.initCMS = function () {
@@ -162,6 +375,29 @@ window.initCMS = function () {
                         loadMeditations();
                         loadSiteContent(); // Load Home & About data
                     }
+                } else {
+                    // --- Non-admin member: verify status in Firestore ---
+                    // This catches users with existing sessions who bypass the login page
+                    if (window.db) {
+                        window.db.collection('users').doc(user.email).get().then(docSnap => {
+                            if (docSnap.exists) {
+                                const status = docSnap.data().status;
+                                if (status === 'pending') {
+                                    alert('⏳ O teu acesso ainda está pendente de aprovação pelo administrador.\n\nReceberás confirmação assim que for ativado.');
+                                    window.auth.signOut().then(() => {
+                                        window.location.href = 'login.html';
+                                    });
+                                } else if (status === 'blocked') {
+                                    alert('Esta conta foi suspensa. Contacta a administração.');
+                                    window.auth.signOut().then(() => {
+                                        window.location.href = 'login.html';
+                                    });
+                                }
+                            }
+                        }).catch(err => {
+                            console.warn('Status check failed (non-blocking):', err);
+                        });
+                    }
                 }
             } else {
                 const panel = document.getElementById('admin-panel');
@@ -195,10 +431,20 @@ window.initCMS = function () {
     if (document.getElementById('about-content-form')) {
         document.getElementById('about-content-form').addEventListener('submit', handleAboutSubmit);
     }
+    if (document.getElementById('home-about-form')) {
+        document.getElementById('home-about-form').addEventListener('submit', handleHomeAboutSubmit);
+    }
 
     const serviceForm = document.getElementById('service-form');
     if (serviceForm) {
-        serviceForm.addEventListener('submit', handleServiceSubmit);
+        // Use window.handleServiceSubmit from cms-services.js
+        if (typeof window.handleServiceSubmit === 'function') {
+            serviceForm.addEventListener('submit', window.handleServiceSubmit);
+        } else {
+            console.warn("handleServiceSubmit not found - check loading order.");
+            // Fallback: try to find it on window after a short delay? 
+            // Better to rely on dashboard.html calling initCMS() AFTER scripts load.
+        }
     }
 
     const seedBtn = document.getElementById('seed-services-btn');
@@ -293,8 +539,6 @@ window.initCMS = function () {
         });
     }
 
-
-
     const contactForm = document.getElementById('contact-form');
     if (contactForm) {
         contactForm.addEventListener('submit', (e) => {
@@ -306,6 +550,63 @@ window.initCMS = function () {
     const themeResetBtn = document.getElementById('theme-reset-btn');
     if (themeResetBtn) {
         themeResetBtn.addEventListener('click', resetThemeSettings);
+    }
+
+    // Initialize Dashboard Ordering (SortableJS)
+    if (typeof window.loadDashboardOrder === 'function') {
+        window.loadDashboardOrder();
+    }
+};
+
+// --- SortableJS Dashboard Logic ---
+window.loadDashboardOrder = async function () {
+    const container = document.getElementById('dashboard-cards-container');
+    if (!container || typeof Sortable === 'undefined') return;
+
+    try {
+        // 1. Try to load from Firebase first
+        const docSnap = await window.db.collection('config').doc('cms_layout').get();
+        if (docSnap.exists && docSnap.data().order) {
+            const order = docSnap.data().order;
+            // Append cards in the saved order
+            order.forEach(id => {
+                const card = document.getElementById(id);
+                if (card) {
+                    container.appendChild(card);
+                }
+            });
+        }
+    } catch (error) {
+        console.error("Erro ao carregar ordem do Firebase:", error);
+    }
+
+    // 2. Initialize SortableJS
+    Sortable.create(container, {
+        animation: 150,
+        handle: '.drag-handle', // Movel only by the grip icon
+        ghostClass: 'dragging',
+        onEnd: function (evt) {
+            // Triggered when dragging stops
+            window.saveDashboardOrder();
+        }
+    });
+};
+
+window.saveDashboardOrder = async function () {
+    const container = document.getElementById('dashboard-cards-container');
+    if (!container) return;
+
+    const currentOrder = Array.from(container.children)
+        .filter(el => el.classList.contains('admin-card'))
+        .map(el => el.id);
+
+    try {
+        await window.db.collection('config').doc('cms_layout').set({
+            order: currentOrder
+        }, { merge: true });
+        console.log("Dashboard order saved to Firebase!");
+    } catch (error) {
+        console.error("Erro ao guardar ordem no Firebase:", error);
     }
 };
 
@@ -391,12 +692,17 @@ window.openSection = function (sectionId) {
         // If opening About, Refresh TinyMCE
         if (sectionId === 'panel-about') {
             if (window.tinymce && tinymce.get('about-text')) {
-                // Check if it needs refresh
+                // Already initialized, nothing to do
             } else {
-                // Init if missing (and we have data presumably, or empty)
-                // We might need to fetch current content from the textarea if it was populated via value
                 const currentVal = document.getElementById('about-text').value;
                 initTinyMCE(currentVal, 'about-text');
+            }
+        }
+        // If opening Meditations, ensure TinyMCE for med-desc is initialized
+        if (sectionId === 'panel-meditations') {
+            if (window.tinymce && !tinymce.get('med-desc')) {
+                const currentVal = document.getElementById('med-desc') ? document.getElementById('med-desc').value : '';
+                initTinyMCE(currentVal, 'med-desc');
             }
         }
     }
@@ -429,7 +735,7 @@ async function handleEventSubmit(e) {
         const link = document.getElementById('evt-link').value;
         const fileInput = document.getElementById('evt-image');
 
-        let imageUrl = null;
+        let imageUrl = document.getElementById('evt-image-url') ? document.getElementById('evt-image-url').value : null;
         if (fileInput.files.length > 0) {
             const file = fileInput.files[0];
             const path = `events/${Date.now()}_${file.name}`;
@@ -448,8 +754,8 @@ async function handleEventSubmit(e) {
             updated_at: new Date()
         };
 
-        // Only update image if new one provided
-        if (imageUrl) {
+        // Ensure empty fields or removed URLs are maintained
+        if (imageUrl !== null) {
             eventData.image_url = imageUrl;
         }
 
@@ -528,6 +834,18 @@ window.editEvent = function (id) {
     document.getElementById('evt-desc').value = data.description || '';
     if (window.tinymce && tinymce.get('evt-desc')) tinymce.get('evt-desc').setContent(data.description || '');
     document.getElementById('evt-link').value = data.registration_link || '';
+    if (document.getElementById('evt-image-url')) {
+        const imageUrl = data.image_url || '';
+        document.getElementById('evt-image-url').value = imageUrl;
+        window.renderFilePreview('evt-image-preview', imageUrl, { urlInputId: 'evt-image-url', fileInputId: 'evt-image' });
+
+        // Visual enhancement: Change the URL placeholder to show the filename if it's a firebase url
+        if (imageUrl && imageUrl.includes('firebasestorage')) {
+            document.getElementById('evt-image-url').placeholder = window.extractFilenameFromUrl(imageUrl);
+        } else {
+            document.getElementById('evt-image-url').placeholder = "URL da imagem (auto)";
+        }
+    }
 
     // Update Button Text
     const btn = document.querySelector('#event-form button[type="submit"]');
@@ -1033,146 +1351,9 @@ async function loadServices(retryCount = 0) {
     }
 }
 
-window.editService = async (id) => {
-    try {
-        // Switch to Services Panel
-        window.openSection('panel-services');
-
-        const doc = await window.db.collection("services").doc(id).get();
-        if (!doc.exists) {
-            alert("Serviço não encontrado.");
-            return;
-        }
-        const data = doc.data();
-
-        // Populate Form
-        console.log("Editing Service Data:", data);
-
-        // Populate Form
-        document.getElementById('svc-id').value = id; // FIX: Set hidden ID
-        const titleInput = document.getElementById('svc-title');
-
-        // Sanitize & Decode Title on Load
-        let cleanTitle = data.title || '';
-        cleanTitle = decodeHtmlEntities(cleanTitle);
-        cleanTitle = cleanTitle.replace(/<\/?(p|div|br|h[1-6])[^>]*>/gi, '').trim(); // Strip blocks only
-        if (titleInput) titleInput.value = cleanTitle;
-
-        const imgInput = document.getElementById('svc-image');
-        if (imgInput) imgInput.value = data.headerImage || '';
-
-        // Decode Description as well if needed
-        const descInput = document.getElementById('svc-desc');
-        if (descInput) {
-            let cleanDesc = data.description || '';
-            cleanDesc = decodeHtmlEntities(cleanDesc);
-            // Allow inline tags for description too
-            cleanDesc = cleanDesc.replace(/<\/?(p|div|h[1-6])[^>]*>/gi, '').trim();
-            descInput.value = cleanDesc;
-        }
-
-        // FIX: If TinyMCE somehow attached to Short Description, remove it!
-        if (window.tinymce && tinymce.get('svc-desc')) {
-            console.log("Removing unwanted TinyMCE from svc-desc");
-            tinymce.get('svc-desc').remove();
-        }
-
-        // Re-set value after potential removal (redundant but safe)
-        if (descInput) {
-            let cleanDesc = data.description || ''; // Re-initialize cleanDesc
-            cleanDesc = decodeHtmlEntities(cleanDesc);
-            cleanDesc = cleanDesc.replace(/<\/?(p|div|h[1-6])[^>]*>/gi, '').trim();
-            descInput.value = cleanDesc;
-        }
-
-
-        // Debug
-        // alert("DEBUG DATA:\nID: " + id + "\nTitle: " + data.title + "\nDesc: " + data.description + "\nImg: " + data.headerImage);
-
-
-
-        // Populate Full Description
-        document.getElementById('svc-full-desc').value = data.long_description || '';
-
-        // Sanitize Benefits on Load
-        let cleanBenefits = [];
-        if (data.benefits && Array.isArray(data.benefits)) {
-            cleanBenefits = data.benefits.map(b => {
-                let cb = decodeHtmlEntities(b); // Decode
-                cb = cb.replace(/<\/?(p|div|br|h[1-6])[^>]*>/gi, '').trim(); // Strip blocks only
-                return cb;
-            });
-        }
-        document.getElementById('svc-benefits').value = cleanBenefits.join(', ');
-
-        // Populate Testimonials
-        if (data.testimonial_ids) {
-            const selectedIds = new Set(data.testimonial_ids || []);
-            loadTestimonialsSelector(selectedIds);
-        } else {
-            loadTestimonialsSelector(new Set());
-        }
-
-        // Populate Colors
-        if (data.customColors) {
-            // New Scheme Mapping
-            const cc = data.customColors;
-            document.getElementById('svc-colors-config').classList.remove('hidden');
-
-            // Top Section
-            if (document.getElementById('svc-top-bg-color')) {
-                // Fallback to old 'headerOpacity' or default black if new field missing
-                document.getElementById('svc-top-bg-color').value = cc.topBg || '#000000';
-            }
-            if (document.getElementById('svc-top-opacity')) {
-                // Fallback to old 'headerOpacity'
-                const val = (cc.topOpacity !== undefined) ? cc.topOpacity : (cc.headerOpacity !== undefined ? cc.headerOpacity : 0.5);
-                document.getElementById('svc-top-opacity').value = val;
-                document.getElementById('opacity-val-top').innerText = Math.round(val * 100) + '%';
-            }
-
-            // Bottom Section
-            if (document.getElementById('svc-bottom-bg-color')) {
-                // Fallback to old 'bg'
-                document.getElementById('svc-bottom-bg-color').value = cc.bottomBg || cc.bg || '#4F553D';
-            }
-            if (document.getElementById('svc-bottom-opacity')) {
-                // Fallback to old 'bgOpacity'
-                const val = (cc.bottomOpacity !== undefined) ? cc.bottomOpacity : (cc.bgOpacity !== undefined ? cc.bgOpacity : 1);
-                document.getElementById('svc-bottom-opacity').value = val;
-                document.getElementById('opacity-val-bottom').innerText = Math.round(val * 100) + '%';
-            }
-
-            // Buttons
-            if (document.getElementById('svc-btn-text-color')) {
-                // Fallback to old 'text'
-                document.getElementById('svc-btn-text-color').value = cc.btnText || cc.text || '#ffffff';
-            }
-
-        } else {
-            // Defaults if no data
-            document.getElementById('svc-colors-config').classList.add('hidden');
-            resetColorInputs();
-        }
-
-        // document.getElementById('svc-theme').value = data.styleClass || '';
-        if (imgInput) imgInput.value = data.headerImage || '';
-        document.getElementById('svc-image-file').value = '';
-
-        // UI Changes
-        document.getElementById('svc-submit-btn').innerText = "Atualizar Serviço";
-        document.getElementById('svc-cancel-btn').style.display = 'inline-block';
-        document.getElementById('svc-cancel-btn').classList.remove('hidden');
-
-        // Scroll
-        document.getElementById('service-form').scrollIntoView({ behavior: 'smooth' });
-
-        console.log("Edit Mode Enabled for: ", id);
-
-    } catch (error) {
-        console.error("Error getting service:", error);
-    }
-};
+// --- Services Logic Moved to cms-services.js ---
+// loadServices and editService removed from here to avoid conflicts.
+// Please refer to cms-services.js for the active implementation.
 
 window.resetServiceForm = async () => {
     document.getElementById('service-form').reset();
@@ -1423,16 +1604,7 @@ window.deleteServiceTestimonial = async (id) => {
     }
 };
 
-window.deleteService = async (id) => {
-    if (confirm("Apagar este serviço?")) {
-        try {
-            await window.db.collection("services").doc(id).delete();
-            loadServices();
-        } catch (error) {
-            alert("Erro: " + error.message);
-        }
-    }
-};
+// deleteService removed. See cms-services.js
 
 // Seeding Function (Updated with Static Links)
 window.seedDefaultServices = async () => {
@@ -1568,6 +1740,8 @@ async function handleMeditationSubmit(e) {
         const theme = document.getElementById('med-theme').value;
         const type = document.getElementById('med-type').value;
         let url = document.getElementById('med-url').value;
+        let audioUrlHidden = document.getElementById('med-audio-url-hidden') ? document.getElementById('med-audio-url-hidden').value : '';
+        if (audioUrlHidden && !url) url = audioUrlHidden;
 
         // Fallback: If page title empty, use internal title
         if (!pageTitle) pageTitle = title;
@@ -1584,11 +1758,14 @@ async function handleMeditationSubmit(e) {
         }
 
         // Image Processing (Card Background)
-        let imageUrl = document.getElementById('med-image-url').value;
+        let imageUrl = window.getFileUrlInput('med-image-url');
         const imageFile = document.getElementById('med-image').files[0];
 
         if (imageFile) {
             btn.innerText = "A enviar imagem...";
+            if (imageUrl && imageUrl.includes('firebasestorage')) {
+                await window.deleteFileFromStorage(imageUrl);
+            }
             const path = `meditations/${Date.now()}_${imageFile.name}`;
             imageUrl = await uploadImageToStorage(imageFile, path);
         }
@@ -1597,6 +1774,10 @@ async function handleMeditationSubmit(e) {
         const audioFile = document.getElementById('med-audio-file').files[0];
         if (audioFile) {
             btn.innerText = "A enviar áudio...";
+
+            if (url && url.includes('firebasestorage')) {
+                await window.deleteFileFromStorage(url);
+            }
 
             // Show Progress UI
             const progressContainer = document.getElementById('audio-upload-progress');
@@ -1796,7 +1977,12 @@ window.editMeditation = (id) => {
     document.getElementById('med-type').value = data.type;
     document.getElementById('med-url').value = data.url;
     document.getElementById('med-desc').value = data.description || '';
-    if (window.tinymce && tinymce.get('med-desc')) tinymce.get('med-desc').setContent(data.description || '');
+    if (window.tinymce && tinymce.get('med-desc')) {
+        tinymce.get('med-desc').setContent(data.description || '');
+    } else if (window.tinymce) {
+        // TinyMCE not yet initialized for med-desc (e.g. first edit on mobile) – init it now with the content
+        initTinyMCE(data.description || '', 'med-desc');
+    }
 
     // PRESENTATION
     document.getElementById('med-card-title').value = data.card_title || data.title; // Fallback
@@ -1806,8 +1992,14 @@ window.editMeditation = (id) => {
     document.getElementById('med-card-bg-color-hex').value = data.card_bg_color || '#80864f';
     document.getElementById('med-card-opacity').value = data.card_opacity || '0.6';
 
-    document.getElementById('med-image-url').value = data.image_url || '';
+    window.setFileUrlInput('med-image-url', data.image_url || '');
     document.getElementById('med-image').value = '';
+    window.renderFilePreview('med-image-preview', data.image_url || '', { urlInputId: 'med-image-url', fileInputId: 'med-image' });
+
+    const medAudioInput = document.getElementById('med-audio-url-hidden');
+    const audioUrl = data.url && data.url.includes('firebasestorage') ? data.url : '';
+    if (medAudioInput) window.setFileUrlInput('med-audio-url-hidden', audioUrl);
+    window.renderFilePreview('med-audio-preview', audioUrl, { urlInputId: 'med-audio-url-hidden', fileInputId: 'med-audio-file' });
 
     // Trigger toggle to show correct BG input
     window.toggleMedBgType();
@@ -1856,9 +2048,15 @@ window.editMeditation = (id) => {
 window.resetMeditationForm = () => {
     const form = document.getElementById('meditation-form');
     if (form) form.reset();
-    document.getElementById('med-id').value = "";
-    document.getElementById('med-image-url').value = "";
-    document.getElementById('med-audio-file').value = ""; // Clear audio input
+    window.setFileUrlInput('med-image-url', '');
+    document.getElementById('med-image').value = ''; // Clear image input
+    window.renderFilePreview('med-image-preview', '', { urlInputId: 'med-image-url', fileInputId: 'med-image' });
+
+    document.getElementById('med-audio-file').value = ''; // Clear audio input
+    const medAudioInput = document.getElementById('med-audio-url-hidden');
+    if (medAudioInput) window.setFileUrlInput('med-audio-url-hidden', '');
+    window.renderFilePreview('med-audio-preview', '', { urlInputId: 'med-audio-url-hidden', fileInputId: 'med-audio-file' });
+
 
     // clear tinymce
     if (window.tinymce && tinymce.get('med-desc')) tinymce.get('med-desc').setContent('');
@@ -1887,7 +2085,9 @@ async function loadSiteContent() {
 
             // Populate Service Config Form
             if (data.service_section) {
-                if (document.getElementById('service-bg-url')) document.getElementById('service-bg-url').value = data.service_section.background_image || '';
+                const svcBgUrl = data.service_section.background_image || '';
+                if (document.getElementById('service-bg-url')) window.setFileUrlInput('service-bg-url', svcBgUrl);
+                window.renderFilePreview('service-bg-preview', svcBgUrl, { urlInputId: 'service-bg-url', fileInputId: 'service-bg-file' });
                 if (document.getElementById('service-section-title')) document.getElementById('service-section-title').value = data.service_section.title || '';
                 if (document.getElementById('service-title-highlight-enabled')) document.getElementById('service-title-highlight-enabled').checked = data.service_section.title_highlight_enabled || false;
                 if (document.getElementById('service-title-highlight-color')) document.getElementById('service-title-highlight-color').value = data.service_section.title_highlight_color || '#f7f2e0';
@@ -1906,6 +2106,10 @@ async function loadSiteContent() {
                 if (document.getElementById('home-cta')) document.getElementById('home-cta').value = data.home.cta_text || '';
                 if (document.getElementById('home-text-color')) document.getElementById('home-text-color').value = data.home.text_color || '#f7f2e0';
                 if (document.getElementById('home-text-highlight')) document.getElementById('home-text-highlight').checked = data.home.text_highlight || false;
+                // Hero background image preview
+                const homeImgUrl = data.home.hero_image || '';
+                if (document.getElementById('home-image-url')) window.setFileUrlInput('home-image-url', homeImgUrl);
+                window.renderFilePreview('home-image-preview', homeImgUrl, { urlInputId: 'home-image-url', fileInputId: 'home-image-file' });
             }
 
             // Populate About Form
@@ -1923,15 +2127,30 @@ async function loadSiteContent() {
                 }
 
                 // Images
-                if (document.getElementById('about-image-url')) document.getElementById('about-image-url').value = data.about.image_url || '';
-                if (document.getElementById('about-image-art-url')) document.getElementById('about-image-art-url').value = data.about.image_art_url || '';
+                const aboutImgUrl = data.about.image_url || '';
+                const aboutImgArtUrl = data.about.image_art_url || '';
+                if (document.getElementById('about-image-url')) window.setFileUrlInput('about-image-url', aboutImgUrl);
+                window.renderFilePreview('about-image-preview', aboutImgUrl, { urlInputId: 'about-image-url', fileInputId: 'about-image-file' });
+                if (document.getElementById('about-image-art-url')) window.setFileUrlInput('about-image-art-url', aboutImgArtUrl);
+                window.renderFilePreview('about-image-art-preview', aboutImgArtUrl, { urlInputId: 'about-image-art-url', fileInputId: 'about-image-art-file' });
+
+                // Colors
+                if (document.getElementById('about-intro-bg')) document.getElementById('about-intro-bg').value = data.about.intro_bg || '#ffffff';
+                if (document.getElementById('about-art-bg')) document.getElementById('about-art-bg').value = data.about.art_bg || '#f7f2e0';
+
+                // Update hex inputs for visual feedback
+                if (document.getElementById('about-intro-bg-hex')) document.getElementById('about-intro-bg-hex').value = document.getElementById('about-intro-bg').value;
+                if (document.getElementById('about-art-bg-hex')) document.getElementById('about-art-bg-hex').value = document.getElementById('about-art-bg').value;
+
             }
 
             // Populate Home Summary Form
             if (data.home_about) {
                 if (document.getElementById('home-about-title-input')) document.getElementById('home-about-title-input').value = data.home_about.title || '';
                 if (document.getElementById('home-about-text-input')) document.getElementById('home-about-text-input').value = data.home_about.text || '';
-                if (document.getElementById('home-about-image-url')) document.getElementById('home-about-image-url').value = data.home_about.image_url || '';
+                const homeAboutImgUrl = data.home_about.image_url || '';
+                if (document.getElementById('home-about-image-url')) window.setFileUrlInput('home-about-image-url', homeAboutImgUrl);
+                window.renderFilePreview('home-about-image-preview', homeAboutImgUrl, { urlInputId: 'home-about-image-url', fileInputId: 'home-about-image-file' });
             }
 
             const footerTitle = document.getElementById('footer-title');
@@ -2008,7 +2227,45 @@ async function handleHomeSubmit(e) {
 
 
 
+        // Explicitly check value
+        const isHighlight = document.getElementById('home-text-highlight').checked;
+
         await window.db.collection('site_content').doc('main').set(data, { merge: true });
+
+        // --- SYNC: Auto-Enable Header Transparency if Highlight is ON ---
+        if (isHighlight === true) {
+            try {
+                // FORCE UPDATE regardless of current state to ensure consistency
+                const doc = await window.db.collection('site_content').doc('main').get();
+                let currentHeader = doc.exists ? (doc.data().header || {}) : {};
+
+                // Ensure defaults
+                const defaults = {
+                    bg_color: '#80864f',
+                    text_color: '#f7f2e0',
+                    font_size: 16,
+                    padding: 20
+                };
+                const newHeader = { ...defaults, ...currentHeader, transparent: true };
+
+                // 1. Save to DB
+                await window.db.collection('site_content').doc('main').set({
+                    header: newHeader
+                }, { merge: true });
+
+                // 2. Update Local & UI
+                localStorage.setItem('site_header', JSON.stringify(newHeader));
+                if (typeof applyHeaderSettings === 'function') applyHeaderSettings(newHeader);
+
+                // 3. Update Checkbox if visible
+                const hCheck = document.getElementById('header-transparent');
+                if (hCheck) hCheck.checked = true;
+
+            } catch (err) {
+                console.warn("Auto-header-sync failed:", err);
+            }
+        }
+
         alert("Conteúdo da Página Inicial atualizado!");
 
     } catch (error) {
@@ -2031,21 +2288,27 @@ async function handleAboutSubmit(e) {
 
     try {
         // Image 1 (Intro)
-        let imageUrl = document.getElementById('about-image-url').value;
+        let imageUrl = window.getFileUrlInput('about-image-url');
         const imageFile = document.getElementById('about-image-file').files[0];
 
         if (imageFile) {
             btn.textContent = "A enviar imagem 1...";
+            if (imageUrl && imageUrl.includes('firebasestorage')) {
+                await window.deleteFileFromStorage(imageUrl);
+            }
             const path = `about / ${Date.now()}_${imageFile.name} `;
             imageUrl = await uploadImageToStorage(imageFile, path);
         }
 
         // Image 2 (Art)
-        let imageArtUrl = document.getElementById('about-image-art-url').value;
+        let imageArtUrl = window.getFileUrlInput('about-image-art-url');
         const imageArtFile = document.getElementById('about-image-art-file').files[0];
 
         if (imageArtFile) {
             btn.textContent = "A enviar imagem 2...";
+            if (imageArtUrl && imageArtUrl.includes('firebasestorage')) {
+                await window.deleteFileFromStorage(imageArtUrl);
+            }
             const path = `about / art_${Date.now()}_${imageArtFile.name} `;
             imageArtUrl = await uploadImageToStorage(imageArtFile, path);
         }
@@ -2056,7 +2319,10 @@ async function handleAboutSubmit(e) {
                 text_intro: (window.tinymce && tinymce.get('about-text-intro')) ? tinymce.get('about-text-intro').getContent() : document.getElementById('about-text-intro').value,
                 text_art: (window.tinymce && tinymce.get('about-text-art')) ? tinymce.get('about-text-art').getContent() : document.getElementById('about-text-art').value,
                 image_url: imageUrl,
-                image_art_url: imageArtUrl
+                image_art_url: imageArtUrl,
+                // Colors
+                intro_bg: document.getElementById('about-intro-bg').value,
+                art_bg: document.getElementById('about-art-bg').value
             }
         };
 
@@ -2072,6 +2338,19 @@ async function handleAboutSubmit(e) {
     }
 }
 
+// Image Removal for Home About (Legacy support, now uses removeFileWithUrl in HTML)
+window.removeHomeAboutImage = async function () {
+    const urlInput = document.getElementById('home-about-image-url');
+    if (urlInput && urlInput.value) {
+        await window.removeFileWithUrl('home-about-image-url', 'home-about-image-file');
+    } else {
+        const fileInput = document.getElementById('home-about-image-file');
+        if (urlInput) urlInput.value = '';
+        if (fileInput) fileInput.value = '';
+        alert("Imagem removida do formulário.");
+    }
+};
+
 // New Handler for Home Summary
 async function handleHomeAboutSubmit(e) {
     if (e && e.preventDefault) e.preventDefault();
@@ -2083,12 +2362,15 @@ async function handleHomeAboutSubmit(e) {
     btn.disabled = true;
 
     try {
-        let imageUrl = document.getElementById('home-about-image-url').value;
+        let imageUrl = window.getFileUrlInput('home-about-image-url');
         const imageFile = document.getElementById('home-about-image-file').files[0];
 
         // Upload Image
         if (imageFile) {
             btn.textContent = "A enviar imagem...";
+            if (imageUrl && imageUrl.includes('firebasestorage')) {
+                await window.deleteFileFromStorage(imageUrl);
+            }
             const path = `home_about / ${Date.now()}_${imageFile.name} `;
             imageUrl = await uploadImageToStorage(imageFile, path);
         }
@@ -2328,7 +2610,20 @@ function setupHexListeners() {
         { color: 'theme-header', hex: 'theme-header-hex' },
         { color: 'theme-secondary-1', hex: 'theme-secondary-1-hex' },
         { color: 'theme-secondary-2', hex: 'theme-secondary-2-hex' },
-        { color: 'theme-footer', hex: 'theme-footer-hex' }
+        { color: 'theme-footer', hex: 'theme-footer-hex' },
+        // About Page Colors
+        { color: 'about-intro-bg', hex: 'about-intro-bg-hex' },
+        // Text Color Removed
+        { color: 'about-art-bg', hex: 'about-art-bg-hex' },
+        // Text Color Removed
+        // Service Colors
+        { color: 'svc-sec2-bg', hex: 'svc-sec2-bg-hex' },
+        { color: 'svc-sec2-text', hex: 'svc-sec2-text-hex' },
+        { color: 'svc-testi-bg', hex: 'svc-testi-bg-hex' },
+        { color: 'svc-testi-text', hex: 'svc-testi-text-hex' },
+        { color: 'svc-top-bg-color', hex: 'svc-top-bg-hex' },
+        { color: 'svc-bottom-bg-color', hex: 'svc-bottom-bg-hex' },
+        { color: 'svc-btn-text-color', hex: 'svc-btn-text-hex' }
     ];
 
     pairs.forEach(pair => {
@@ -2753,6 +3048,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadHeaderSettings();
     loadThemeSettings(); // Load Theme Settings on Init
     loadLegalContent();   // Load Legal
+    setupHexListeners(); // Initialize Color Sync
 });
 
 // --- Legal Content Management ---
@@ -2972,6 +3268,14 @@ async function loadContactContent() {
 const homeAboutForm = document.getElementById('home-about-form');
 if (homeAboutForm) homeAboutForm.addEventListener('submit', handleHomeAboutSubmit);
 
+// --- MISSING LISTENERS ADDED ---
+const homeContentForm = document.getElementById('home-content-form');
+if (homeContentForm) homeContentForm.addEventListener('submit', handleHomeSubmit);
+
+const aboutContentForm = document.getElementById('about-content-form');
+if (aboutContentForm) aboutContentForm.addEventListener('submit', handleAboutSubmit);
+// -------------------------------
+
 // Footer Listener
 const footerForm = document.getElementById('footer-form');
 if (footerForm) {
@@ -3010,140 +3314,276 @@ setupHexListeners();
 // Init Admin Panels
 if (window.loadServices) window.loadServices();
 if (window.loadMembers) window.loadMembers();
-// --- Member Management Logic ---
+// =============================================
+// --- Member Management Logic (v2) ---
+// =============================================
 
 window.membersCache = {};
 
-window.loadMembers = async function () {
-    // Wait for DB to initialize
-    if (!window.db) {
-        setTimeout(window.loadMembers, 500);
-        return;
+// --- Helpers ---
+function fmtDate(ts) {
+    if (!ts) return 'N/A';
+    try {
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        return d.toLocaleDateString('pt-PT');
+    } catch { return 'N/A'; }
+}
+
+function fmtSeconds(sec) {
+    if (!sec || sec < 1) return '0m';
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+}
+
+// --- Access Mode Toggle ---
+window.loadAccessMode = async function () {
+    try {
+        const doc = await window.db.collection('config').doc('settings').get();
+        const freeAccess = doc.exists ? (doc.data().freeAccess !== false) : true; // default: free
+        const btn = document.getElementById('access-mode-toggle-btn');
+        if (btn) {
+            btn.textContent = freeAccess ? '🟢 Acesso Livre Ativo' : '🔴 Acesso Restrito Ativo';
+            btn.dataset.mode = freeAccess ? 'free' : 'restricted';
+            btn.style.background = freeAccess ? '#e8f5e9' : '#fff5f5';
+            btn.style.borderColor = freeAccess ? '#4caf50' : '#f44336';
+            btn.style.color = freeAccess ? '#2e7d32' : '#c62828';
+        }
+    } catch (e) {
+        console.error('loadAccessMode error:', e);
     }
-    const listContainer = document.getElementById('admin-members-list');
-    if (!listContainer) return;
-    listContainer.innerHTML = '<p>A carregar membros...</p>';
+};
+
+window.toggleAccessMode = async function () {
+    const btn = document.getElementById('access-mode-toggle-btn');
+    if (!btn) return;
+    const currentlyFree = btn.dataset.mode === 'free';
+    const newFree = !currentlyFree;
+    const modeLabel = newFree ? 'ACESSO LIVRE (qualquer registo acede imediatamente)' : 'ACESSO RESTRITO (novos registos ficam pendentes)';
+    if (!confirm(`Mudar para: ${modeLabel}?`)) return;
 
     try {
-        const querySnapshot = await window.db.collection("users").orderBy("createdAt", "desc").get();
+        await window.db.collection('config').doc('settings').set({ freeAccess: newFree }, { merge: true });
+        await window.loadAccessMode();
+    } catch (e) {
+        alert('Erro ao mudar modo: ' + e.message);
+    }
+};
+
+// --- Load Members (Full Table) ---
+window.loadMembers = async function () {
+    if (!window.db) { setTimeout(window.loadMembers, 500); return; }
+    const listContainer = document.getElementById('admin-members-list');
+    if (!listContainer) return;
+    listContainer.innerHTML = '<p style="color:#888;padding:10px;">A carregar membros...</p>';
+
+    // Also refresh access mode toggle
+    await window.loadAccessMode();
+
+    try {
+        const querySnapshot = await window.db.collection('users').get();
 
         if (querySnapshot.empty) {
-            listContainer.innerHTML = '<p>Sem membros registados.</p>';
+            listContainer.innerHTML = '<p style="padding:10px;">Sem membros registados.</p>';
             return;
         }
 
-        // Table Header
-        let html = `
-                < table style = "width:100%; border-collapse: collapse; font-size:12px;" >
+        // --- Sort: Pendente → Ativo → Bloqueado, then by createdAt desc ---
+        const statusOrder = { pending: 0, active: 1, blocked: 2 };
+        const members = [];
+        querySnapshot.forEach(doc => {
+            members.push({ id: doc.id, ...doc.data() });
+            window.membersCache[doc.id] = doc.data();
+        });
+        members.sort((a, b) => {
+            const so = (statusOrder[a.status] ?? 1) - (statusOrder[b.status] ?? 1);
+            if (so !== 0) return so;
+            const ta = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+            const tb = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+            return tb - ta;
+        });
+
+        // --- Row colors ---
+        const rowBg = { pending: '#fff8e8', active: '#f0fff4', blocked: '#fff5f5' };
+        const statusColor = { pending: '#e65100', active: '#2e7d32', blocked: '#c62828' };
+        const statusLabel = { pending: '⏳ Pendente', active: '✅ Ativo', blocked: '⛔ Bloqueado' };
+
+        let rows = '';
+        members.forEach(data => {
+            const isAdmin = ADMIN_EMAILS.some(a => a.toLowerCase() === (data.email || '').toLowerCase());
+            const bg = isAdmin ? '#f0f4ff' : (rowBg[data.status] || '#fff');
+            const sc = isAdmin ? '#3949ab' : (statusColor[data.status] || '#555');
+            const sl = isAdmin ? '👑 Administrador' : (statusLabel[data.status] || data.status);
+            const incidents = (data.incidents || []).join(' | ') || '—';
+
+            const actionButtons = isAdmin
+                ? `<span style="font-size:10px; color:#9e9e9e; font-style:italic;">Protegido</span>`
+                : `<div style="display:flex; gap:4px; flex-wrap:wrap;">
+                    ${data.status !== 'active'
+                    ? `<button onclick="window.activateMember('${data.email}')"
+                            style="background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;">Ativar</button>`
+                    : ''}
+                    ${data.status !== 'blocked'
+                    ? `<button onclick="window.blockMember('${data.email}')"
+                            style="background:#fff5f5;color:#c62828;border:1px solid #ef9a9a;border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;">Bloquear</button>`
+                    : ''}
+                    <button onclick="window.deleteMember('${data.email}')"
+                        style="background:#f5f5f5;color:#555;border:1px solid #ddd;border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;">🗑</button>
+                </div>`;
+
+            rows += `
+            <tr style="background:${bg}; border-bottom:1px solid #eee; vertical-align:top;">
+                <td style="padding:7px 6px; min-width:100px; font-weight:600; font-size:12px;">${data.name || '<em style="color:#aaa">Sem nome</em>'}</td>
+                <td style="padding:7px 6px; font-size:11px; color:#555; max-width:140px; word-break:break-all;">${data.email || '—'}</td>
+                <td style="padding:7px 6px; font-size:11px; white-space:nowrap;">${fmtDate(data.createdAt)}</td>
+                <td style="padding:7px 6px; font-size:11px; text-align:center;">${data.loginCount || 0}</td>
+                <td style="padding:7px 6px; font-size:11px; text-align:center;">${fmtSeconds(data.totalTimeSeconds)}</td>
+                <td style="padding:7px 4px; font-size:11px;">
+                    <input type="date" id="pay-date-${data.email?.replace(/[@.]/g, '_')}"
+                        value="${data.datePayment || ''}"
+                        style="font-size:10px; border:1px solid #ddd; border-radius:4px; padding:2px 4px; width:110px;"
+                        onchange="window.saveMemberPayment('${data.email}')">
+                </td>
+                <td style="padding:7px 4px; font-size:11px;">
+                    <input type="number" id="pay-val-${data.email?.replace(/[@.]/g, '_')}"
+                        value="${data.paymentValue || ''}"
+                        placeholder="€"
+                        style="font-size:10px; border:1px solid #ddd; border-radius:4px; padding:2px 4px; width:60px;"
+                        onchange="window.saveMemberPayment('${data.email}')">
+                </td>
+                <td style="padding:7px 6px; font-size:11px; white-space:nowrap; font-weight:600; color:${sc};">${sl}</td>
+                <td style="padding:7px 6px; font-size:10px; color:#777; max-width:120px; word-break:break-word;">${incidents}</td>
+                <td style="padding:7px 6px; white-space:nowrap;">
+                    ${actionButtons}
+                </td>
+            </tr>`;
+        });
+
+        listContainer.innerHTML = `
+        <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:12px; min-width:900px;">
             <thead>
-                <tr style="text-align:left; border-bottom:2px solid #eee;">
-                    <th style="padding:8px;">Membro</th>
-                    <th style="padding:8px;">Status</th>
-                    <th style="padding:8px;">Último Login</th>
-                    <th style="padding:8px; text-align:right;">Ações</th>
+                <tr style="background:#f5f5f5; text-align:left; border-bottom:2px solid #ddd; font-size:11px; color:#555;">
+                    <th style="padding:7px 6px;">User</th>
+                    <th style="padding:7px 6px;">Email</th>
+                    <th style="padding:7px 6px; white-space:nowrap;">Data Conta</th>
+                    <th style="padding:7px 6px; text-align:center;">Logins</th>
+                    <th style="padding:7px 6px; text-align:center; white-space:nowrap;">Tempo Site</th>
+                    <th style="padding:7px 6px; white-space:nowrap;">Data Pagamento</th>
+                    <th style="padding:7px 6px;">Valor €</th>
+                    <th style="padding:7px 6px;">Status</th>
+                    <th style="padding:7px 6px;">Incidentes</th>
+                    <th style="padding:7px 6px;">Ações</th>
                 </tr>
             </thead>
-            <tbody>
-        `;
-
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            window.membersCache[doc.id] = data;
-
-            let statusColor = '#666';
-            if (data.status === 'active') statusColor = 'green';
-            if (data.status === 'pending') statusColor = 'orange';
-            if (data.status === 'blocked') statusColor = 'red';
-
-            const statusLabel = {
-                'active': 'Ativo',
-                'pending': 'Pendente',
-                'blocked': 'Bloqueado'
-            }[data.status] || data.status;
-
-            const lastLoginDate = data.lastLogin && data.lastLogin.toDate ? new Date(data.lastLogin.toDate()).toLocaleDateString() : 'N/A';
-            const lastPaymentDate = data.lastPaymentDate && data.lastPaymentDate.toDate ? new Date(data.lastPaymentDate.toDate()).toLocaleDateString() : null;
-
-            html += `
-                <tr style="border-bottom:1px solid #eee;">
-                    <td style="padding:8px;">
-                        <strong>${data.name || 'Sem nome'}</strong><br>
-                        <span style="color:#888;">${data.email}</span>
-                        ${lastPaymentDate ? `<div style="font-size:10px; color:green;">Pagou: ${lastPaymentDate}</div>` : ''}
-                    </td>
-                    <td style="padding:8px;">
-                        <span style="color:${statusColor}; font-weight:600;">● ${statusLabel}</span>
-                    </td>
-                    <td style="padding:8px; color:#666;">
-                        ${lastLoginDate}
-                    </td>
-                    <td style="padding:8px; text-align:right;">
-                         <div style="display:flex; gap:5px; justify-content:flex-end;">
-                            ${data.status !== 'active' ? `<button class="btn-outline" style="color:green; border-color:#d4edda; background:#f0fff4; padding:2px 6px; font-size:11px;" onclick="window.approveMember('${doc.id}')">Aprovar</button>` : ''}
-                            ${data.status !== 'blocked' ? `<button class="btn-outline" style="color:red; border-color:#f8d7da; background:#fff5f5; padding:2px 6px; font-size:11px;" onclick="window.blockMember('${doc.id}')">Bloquear</button>` : ''}
-                            <button class="btn-delete" style="padding:2px 6px; font-size:11px; margin-left:5px;" onclick="window.deleteMember('${doc.id}')"><i data-lucide="trash-2" style="width:12px; height:12px; vertical-align:middle;"></i></button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-        });
-        html += '</tbody></table > ';
-        listContainer.innerHTML = html;
+            <tbody>${rows}</tbody>
+        </table>
+        </div>
+        <p style="font-size:10px; color:#aaa; text-align:right; margin-top:6px;">
+            Total: ${members.length} membros
+            — 🟠 Pendentes: ${members.filter(m => m.status === 'pending').length}
+            &nbsp;🟢 Ativos: ${members.filter(m => m.status === 'active').length}
+            &nbsp;🔴 Bloqueados: ${members.filter(m => m.status === 'blocked').length}
+        </p>`;
 
     } catch (error) {
-        console.error("Error loading members:", error);
-        listContainer.innerHTML = '<p style="color:red">Erro ao carregar membros.</p>';
+        console.error('Error loading members:', error);
+        listContainer.innerHTML = `<p style="color:red;padding:10px;">Erro ao carregar membros: ${error.message}</p>`;
     }
 };
 
-window.approveMember = async function (email) {
-    if (!confirm(`Tem a certeza que quer APROVAR ${email} manualmente? (Isto dá acesso sem pagamento)`)) return;
-
+// --- Save Payment (manual fields) ---
+window.saveMemberPayment = async function (email) {
+    if (!email) return;
+    const key = email.replace(/[@.]/g, '_');
+    const dateInput = document.getElementById(`pay-date-${key}`);
+    const valInput = document.getElementById(`pay-val-${key}`);
     try {
-        await window.db.collection("users").doc(email).update({
-            status: 'active',
-            manualApproval: true,
+        await window.db.collection('users').doc(email).update({
+            datePayment: dateInput ? dateInput.value : '',
+            paymentValue: valInput ? parseFloat(valInput.value) || 0 : 0,
             updatedAt: new Date()
         });
-        alert("Membro aprovado com sucesso! ✅");
-        window.loadMembers();
-    } catch (error) {
-        alert("Erro: " + error.message);
+    } catch (e) {
+        console.error('saveMemberPayment error:', e);
     }
 };
 
+// --- Activate ---
+window.activateMember = async function (email) {
+    if (!confirm(`Ativar acesso de ${email}?`)) return;
+    try {
+        const today = new Date().toLocaleDateString('pt-PT');
+        const ref = window.db.collection('users').doc(email);
+        const doc = await ref.get();
+        const incidents = doc.exists ? (doc.data().incidents || []) : [];
+        incidents.push(`Ativado ${today}`);
+        await ref.update({ status: 'active', incidents, updatedAt: new Date() });
+        alert('Membro ativado! ✅');
+        window.loadMembers();
+    } catch (e) { alert('Erro: ' + e.message); }
+};
+
+// --- Block ---
 window.blockMember = async function (email) {
-    if (!confirm(`Tem a certeza que quer BLOQUEAR o acesso de ${email}?`)) return;
-
-    try {
-        await window.db.collection("users").doc(email).update({
-            status: 'blocked',
-            updatedAt: new Date()
-        });
-        alert("Membro bloqueado. ⛔");
-        window.loadMembers();
-    } catch (error) {
-        alert("Erro: " + error.message);
-    }
-};
-
-window.deleteMember = async function (email) {
-    // Safety Check: Prevent deleting Admins
-    if (ADMIN_EMAILS.some(admin => admin.toLowerCase() === email.toLowerCase())) {
-        alert("⚠️ AÇÃO BLOQUEADA: Não é possível apagar contas de Administrador.");
+    // Hard stop for admin accounts
+    if (ADMIN_EMAILS.some(a => a.toLowerCase() === email.toLowerCase())) {
+        alert('⚠️ Não é possível bloquear contas de Administrador.');
         return;
     }
-
-    if (!confirm(`Tem a certeza que quer APAGAR DEFINITIVAMENTE o registo de ${email} da Base de Dados?\n\nIsto remove os dados do cliente, mas não apaga a conta de Login (Google/Email). Para proteção total, o utilizador perde o acesso imediato.`)) return;
-
     try {
-        await window.db.collection("users").doc(email).delete();
-        alert("Registo apagado da Base de Dados com sucesso. 🗑️");
+        const ref = window.db.collection('users').doc(email);
+        const doc = await ref.get();
+        const userData = doc.exists ? doc.data() : {};
+
+        // Extra warning for 'membro' role
+        if (userData.role === 'membro') {
+            if (!confirm(`⚠️ ATENÇÃO: ${email} tem o papel de "Membro". Tem a certeza que quer bloquear este utilizador?`)) return;
+        } else {
+            if (!confirm(`Bloquear acesso de ${email}?`)) return;
+        }
+
+        const today = new Date().toLocaleDateString('pt-PT');
+        const incidents = userData.incidents || [];
+        incidents.push(`Bloqueado ${today}`);
+        await ref.update({ status: 'blocked', incidents, updatedAt: new Date() });
+        alert('Membro bloqueado. ⛔');
         window.loadMembers();
-    } catch (error) {
-        alert("Erro ao apagar: " + error.message);
-    }
+    } catch (e) { alert('Erro: ' + e.message); }
 };
+
+// --- Delete ---
+window.deleteMember = async function (email) {
+    // Hard stop for admin accounts
+    if (ADMIN_EMAILS.some(a => a.toLowerCase() === email.toLowerCase())) {
+        alert('⚠️ Não é possível apagar contas de Administrador.');
+        return;
+    }
+    try {
+        const ref = window.db.collection('users').doc(email);
+        const doc = await ref.get();
+        const userData = doc.exists ? doc.data() : {};
+
+        // Extra warning for 'membro' role
+        if (userData.role === 'membro') {
+            if (!confirm(`⚠️ ATENÇÃO: ${email} tem o papel de "Membro". Tem a certeza que quer apagar este utilizador? Esta ação é irreversível.`)) return;
+        } else {
+            if (!confirm(`Apagar DEFINITIVAMENTE o registo de ${email}? Esta ação é irreversível.`)) return;
+        }
+
+        await ref.delete();
+        alert('Registo apagado. 🗑️');
+        window.loadMembers();
+    } catch (e) { alert('Erro: ' + e.message); }
+};
+
+// Keep legacy alias for backwards compatibility
+window.approveMember = window.activateMember;
+
+// (Incident cleanup ran once and is now complete)
+
+
 
 // Helper to decode HTML entities (e.g. &atilde; -> ã)
 function decodeHtmlEntities(str) {
@@ -3152,6 +3592,109 @@ function decodeHtmlEntities(str) {
     txt.innerHTML = str;
     return txt.value;
 }
+
+// --- Maintenance Mode Logic ---
+async function loadMaintenanceConfig() {
+    try {
+        const docSnap = await window.db.collection('config').doc('maintenance').get();
+        const toggle = document.getElementById('maintenance-toggle');
+        const passInput = document.getElementById('maintenance-password');
+
+        if (!toggle) return; // Prevent errors on other pages
+
+        if (docSnap.exists) {
+            const data = docSnap.data();
+            toggle.checked = data.isActive || false;
+            if (passInput) passInput.value = data.password || '';
+        } else {
+            toggle.checked = false;
+        }
+
+        // Init visuals
+        window.updateMaintenanceVisuals();
+    } catch (error) {
+        console.error("Erro ao carregar configurações de manutenção:", error);
+    }
+}
+
+function updateMaintenanceVisuals() {
+    const toggle = document.getElementById('maintenance-toggle');
+    const label = document.getElementById('maintenance-status-label');
+    const headerBadge = document.getElementById('maintenance-header-badge');
+    const card = document.getElementById('card-maintenance');
+    const passGroup = document.getElementById('maintenance-password-group');
+
+    if (!toggle || !label || !card) return;
+
+    if (toggle.checked) {
+        label.innerText = 'OFFLINE';
+        label.className = 'maintenance-badge offline';
+        if (headerBadge) {
+            headerBadge.innerText = 'OFFLINE';
+            headerBadge.className = 'maintenance-badge offline maintenance-header-pos';
+        }
+        card.classList.add('offline');
+        if (passGroup) passGroup.classList.remove('d-none');
+    } else {
+        label.innerText = 'ONLINE';
+        label.className = 'maintenance-badge online';
+        if (headerBadge) {
+            headerBadge.innerText = 'ONLINE';
+            headerBadge.className = 'maintenance-badge online maintenance-header-pos';
+        }
+        card.classList.remove('offline');
+        if (passGroup) passGroup.classList.add('d-none');
+    }
+}
+
+async function saveMaintenanceConfig() {
+    const toggle = document.getElementById('maintenance-toggle');
+    const passInput = document.getElementById('maintenance-password');
+    const btn = document.getElementById('maintenance-save-btn');
+    if (!toggle || !btn) return;
+
+    const originalText = btn.innerText;
+
+    if (toggle.checked && passInput && passInput.value.trim().length < 4) {
+        alert("A password de acesso deve ter pelo menos 4 caracteres.");
+        return;
+    }
+
+    try {
+        btn.innerText = 'A Guardar...';
+        btn.disabled = true;
+
+        await window.db.collection('config').doc('maintenance').set({
+            isActive: toggle.checked,
+            password: passInput ? passInput.value.trim() : '',
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        btn.innerText = 'Guardado!';
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }, 2000);
+
+    } catch (error) {
+        console.error("Erro ao guardar definições de manutenção:", error);
+        alert("Erro ao guardar as definições. Verifica a consola.");
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+
+// Attach to window
+window.loadMaintenanceConfig = loadMaintenanceConfig;
+window.saveMaintenanceConfig = saveMaintenanceConfig;
+window.updateMaintenanceVisuals = updateMaintenanceVisuals;
+
+// Add to init routine if on dashboard
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('card-maintenance')) {
+        setTimeout(window.loadMaintenanceConfig, 1000); // Slight delay to ensure firebase is ready
+    }
+});
 
 // --- Services Logic Moved to cms-services.js ---
 

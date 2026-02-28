@@ -692,12 +692,17 @@ window.openSection = function (sectionId) {
         // If opening About, Refresh TinyMCE
         if (sectionId === 'panel-about') {
             if (window.tinymce && tinymce.get('about-text')) {
-                // Check if it needs refresh
+                // Already initialized, nothing to do
             } else {
-                // Init if missing (and we have data presumably, or empty)
-                // We might need to fetch current content from the textarea if it was populated via value
                 const currentVal = document.getElementById('about-text').value;
                 initTinyMCE(currentVal, 'about-text');
+            }
+        }
+        // If opening Meditations, ensure TinyMCE for med-desc is initialized
+        if (sectionId === 'panel-meditations') {
+            if (window.tinymce && !tinymce.get('med-desc')) {
+                const currentVal = document.getElementById('med-desc') ? document.getElementById('med-desc').value : '';
+                initTinyMCE(currentVal, 'med-desc');
             }
         }
     }
@@ -1972,7 +1977,12 @@ window.editMeditation = (id) => {
     document.getElementById('med-type').value = data.type;
     document.getElementById('med-url').value = data.url;
     document.getElementById('med-desc').value = data.description || '';
-    if (window.tinymce && tinymce.get('med-desc')) tinymce.get('med-desc').setContent(data.description || '');
+    if (window.tinymce && tinymce.get('med-desc')) {
+        tinymce.get('med-desc').setContent(data.description || '');
+    } else if (window.tinymce) {
+        // TinyMCE not yet initialized for med-desc (e.g. first edit on mobile) – init it now with the content
+        initTinyMCE(data.description || '', 'med-desc');
+    }
 
     // PRESENTATION
     document.getElementById('med-card-title').value = data.card_title || data.title; // Fallback
