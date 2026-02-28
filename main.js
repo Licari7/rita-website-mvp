@@ -1277,11 +1277,15 @@ window.loadServiceDetail = async function () {
         const showSched1 = cols.show_schedule_1 !== false;
         const showContact1 = cols.show_contact_1 !== false;
 
+        // On mobile, go directly to booking page instead of scrolling to#contact on homepage
+        const scheduleLink = window.matchMedia('(max-width: 768px)').matches
+            ? 'booking.html'
+            : 'index.html#contact';
+
         if (showSched1 || showContact1) {
-            html1 += `<div class="svc-btn-group" style="margin-top: 30px; display: flex; gap: 15px; flex-wrap: wrap;">`;
-            if (showSched1) html1 += `<a href="index.html#contact" class="btn btn-primary">Marcar Sessão</a>`;
+            html1 += `<div class="svc-btn-group">`;
+            if (showSched1) html1 += `<a href="${scheduleLink}" class="btn btn-primary">Marcar Sessão</a>`;
             if (showContact1) {
-                // MATCH ABOUT PAGE STYLE: btn-primary, icon
                 html1 += `<a href="https://wa.me/351913515406" target="_blank" class="btn btn-primary cta-whatsapp-btn">
                             <i data-lucide="message-circle" class="icon-sm"></i> Entra em contacto
                           </a>`;
@@ -1344,10 +1348,9 @@ window.loadServiceDetail = async function () {
             const showContact2 = cols.show_contact_2 !== false; // Default true
 
             if (showSched2 || showContact2) {
-                html2 += `<div class="svc-btn-group" style="margin-top: 30px; display: flex; gap: 15px; flex-wrap: wrap;">`;
-                if (showSched2) html2 += `<a href="index.html#contact" class="btn btn-primary">Marcar Sessão</a>`;
+                html2 += `<div class="svc-btn-group">`;
+                if (showSched2) html2 += `<a href="${scheduleLink}" class="btn btn-primary">Marcar Sessão</a>`;
                 if (showContact2) {
-                    // MATCH ABOUT PAGE STYLE: btn-primary, icon
                     html2 += `<a href="https://wa.me/351913515406" target="_blank" class="btn btn-primary cta-whatsapp-btn">
                                 <i data-lucide="message-circle" class="icon-sm"></i> Entra em contacto
                               </a>`;

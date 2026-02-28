@@ -36,7 +36,8 @@
             display: block !important;
             visibility: visible !important;
             opacity: 1 !important;
-            margin-top: 4px;
+            margin-top: 8px;
+            text-align: center;
         }
     </style>
 </head>
@@ -82,10 +83,8 @@
                 Ainda não és membro? <a href="#" id="toggleSignupBtn">Subscrever agora</a>
                 <br><small class="auth-small-text">CREATED BY CALB</small>
             </p>
-            <p id="forgotPwdWrapper" style="text-align:center; margin-top:8px; display:block;">
-                <a href="#" id="forgotPasswordBtn"
-                    style="color:#e1d7ce; font-size:14px; text-decoration:underline; display:inline-block;">Esqueci a
-                    password</a>
+            <p id="forgotPwdWrapper">
+                <a href="#" id="forgotPasswordBtn" class="forgot-pwd-link">Esqueci a password</a>
             </p>
         </div>
     </div>
@@ -306,8 +305,8 @@
 
                             // 4. AUTO-LOGIN SUCCESS
                             localStorage.setItem('userEmail', user.email);
-                            localStorage.setItem('isMember', 'true');
                             localStorage.setItem('userName', name);
+                            // Note: 'isMember' is only set for active users (see below)
 
                             if (newUserStatus === 'pending') {
                                 // --- Notify Admin: Email ---
@@ -316,20 +315,12 @@
                                         user_name: name,
                                         user_email: email,
                                         registration_date: new Date().toLocaleString('pt-PT'),
-                                        name: name,   // alias for {{name}} in From Name
-                                        email: email  // alias for {{email}} in Reply To
+                                        name: name,
+                                        email: email
                                     });
                                     console.log('Admin email notification sent.');
                                 } catch (emailErr) {
                                     console.warn('Admin email notification failed:', emailErr);
-                                }
-
-                                // --- Notify Admin: WhatsApp ---
-                                try {
-                                    const waMsg = encodeURIComponent(`🔔 Novo registo pendente no site Floresce Terapias!\n\nNome: ${name}\nEmail: ${email}\nData: ${new Date().toLocaleString('pt-PT')}\n\nPor favor aprova ou rejeita o acesso no painel de membros.`);
-                                    window.open(`https://wa.me/351913515406?text=${waMsg}`, '_blank');
-                                } catch (waErr) {
-                                    console.warn('WhatsApp notification failed:', waErr);
                                 }
 
                                 alert("Conta criada com sucesso! ✅\n\nO seu acesso está PENDENTE de aprovação pelo administrador. Receberá confirmação em breve.");
@@ -337,6 +328,8 @@
                                 loginBtn.disabled = false;
                                 return;
                             } else {
+                                // Active user: mark as member and redirect
+                                localStorage.setItem('isMember', 'true');
                                 alert("Conta criada com sucesso! Bem-vindo(a) à família Floresce. 🌿");
                                 window.location.href = 'dashboard.html';
                             }

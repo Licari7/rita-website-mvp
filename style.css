@@ -4495,16 +4495,26 @@ body.auth-page {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
-.mini-card-image {
-    width: 170px !important;
-    height: 170px !important;
-    background-size: cover;
-    background-position: center;
-    position: relative;
-    margin: 0 auto;
+.mini-card-img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    border-radius: 8px 8px 0 0;
 }
 
-/* Hide overlay since we want title below */
+.mini-card-img-placeholder {
+    width: 100%;
+    height: 140px;
+    background: linear-gradient(135deg, #4F553D 0%, #30332E 100%);
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Hide old overlay (kept for safety) */
 .mini-card-overlay {
     display: none !important;
 }
@@ -5458,4 +5468,28 @@ details.admin-card.maintenance-card.offline summary.maintenance-card-header {
 
 .booking-contact-form-wrapper h3 {
     text-align: center;
+}
+
+/* --- Service Detail CTA Button Group --- */
+.svc-btn-group {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .svc-btn-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .svc-btn-group .btn {
+        white-space: nowrap;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        padding: 10px 16px;
+    }
 }

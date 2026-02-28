@@ -23,16 +23,15 @@ window.loadServices = async function () {
             window.servicesCache[doc.id] = data; // Cache for editing
 
             // Card Preview Logic - Image Fallback
-            // Match public site default gradient
-            const defaultGradient = 'linear-gradient(135deg, #4F553D 0%, #30332E 100%)';
             const imgUrl = data.headerImage || data.image || data.img;
-            const bgImage = imgUrl ? `url('${imgUrl}')` : defaultGradient;
+
+            const imageHtml = imgUrl
+                ? `<img src="${imgUrl}" alt="${data.title}" class="mini-card-img">`
+                : `<div class="mini-card-img-placeholder"></div>`;
 
             html += `
             <div class="admin-service-card-mini" draggable="true" ondragstart="drag(event)" id="${doc.id}">
-                <div class="mini-card-image" style="background-image: ${bgImage};">
-                    <!-- Overlay removed/hidden by CSS, title moves below -->
-                </div>
+                ${imageHtml}
                 <div class="mini-card-title">${data.title}</div>
                 <div class="mini-card-actions">
                     <button class="btn-icon-action edit" onclick="window.editService('${doc.id}')" title="Editar">
