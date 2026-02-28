@@ -362,6 +362,15 @@
                                             return;
                                         }
 
+                                        // Pending Check (Acesso Restrito)
+                                        if (userData.status === 'pending') {
+                                            alert("⏳ O teu acesso ainda está pendente de aprovação pelo administrador.\n\nReceberás confirmação assim que for ativado.");
+                                            await window.auth.signOut();
+                                            loginBtn.textContent = originalText;
+                                            loginBtn.disabled = false;
+                                            return;
+                                        }
+
                                         // Update last login and increment login counter
                                         window.db.collection("users").doc(user.email).update({
                                             lastLogin: new Date(),

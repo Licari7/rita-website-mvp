@@ -42,7 +42,8 @@ html {
     height: 100%;
 }
 
-.hidden {
+.hidden,
+.d-none {
     display: none !important;
 }
 

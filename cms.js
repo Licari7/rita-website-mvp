@@ -375,6 +375,29 @@ window.initCMS = function () {
                         loadMeditations();
                         loadSiteContent(); // Load Home & About data
                     }
+                } else {
+                    // --- Non-admin member: verify status in Firestore ---
+                    // This catches users with existing sessions who bypass the login page
+                    if (window.db) {
+                        window.db.collection('users').doc(user.email).get().then(docSnap => {
+                            if (docSnap.exists) {
+                                const status = docSnap.data().status;
+                                if (status === 'pending') {
+                                    alert('⏳ O teu acesso ainda está pendente de aprovação pelo administrador.\n\nReceberás confirmação assim que for ativado.');
+                                    window.auth.signOut().then(() => {
+                                        window.location.href = 'login.html';
+                                    });
+                                } else if (status === 'blocked') {
+                                    alert('Esta conta foi suspensa. Contacta a administração.');
+                                    window.auth.signOut().then(() => {
+                                        window.location.href = 'login.html';
+                                    });
+                                }
+                            }
+                        }).catch(err => {
+                            console.warn('Status check failed (non-blocking):', err);
+                        });
+                    }
                 }
             } else {
                 const panel = document.getElementById('admin-panel');
@@ -3601,7 +3624,7 @@ function updateMaintenanceVisuals() {
             headerBadge.className = 'maintenance-badge offline maintenance-header-pos';
         }
         card.classList.add('offline');
-        if (passGroup) passGroup.style.display = 'block';
+        if (passGroup) passGroup.classList.remove('d-none');
     } else {
         label.innerText = 'ONLINE';
         label.className = 'maintenance-badge online';
@@ -3610,7 +3633,7 @@ function updateMaintenanceVisuals() {
             headerBadge.className = 'maintenance-badge online maintenance-header-pos';
         }
         card.classList.remove('offline');
-        if (passGroup) passGroup.style.display = 'none';
+        if (passGroup) passGroup.classList.add('d-none');
     }
 }
 
