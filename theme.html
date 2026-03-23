@@ -270,7 +270,14 @@
                     // FORCE NATIVE PLAYER for Firebase or Audio Files
                     const shouldShowIframe = (data.type === 'video' || isVideo || isEmbed) && !isFirebase && !isAudioFile;
 
-                    if (shouldShowIframe) {
+                    if (data.type === 'pdf') {
+                        playerHtml = `
+                        <div class="med-player-container" style="text-align: center; padding: 30px 15px; background: transparent;">
+                            <a href="${data.url}" target="_blank" class="cta-button primary" style="display:inline-flex; align-items:center; gap:8px;">
+                                <i data-lucide="file-text"></i> Abrir Documento Completo
+                            </a>
+                        </div>`;
+                    } else if (shouldShowIframe) {
                         let embedUrl = data.url;
 
                         // YouTube Formatting
@@ -332,7 +339,7 @@
                     }
                 } // End URL check
 
-                const iconName = data.type === 'video' ? 'video' : 'music';
+                const iconName = data.type === 'video' ? 'video' : (data.type === 'pdf' ? 'file-text' : 'music');
                 let imageHtml = '';
                 if (data.image_url) {
                     imageHtml = `<div style="margin-bottom:15px; border-radius:8px; overflow:hidden;"><img src="${data.image_url}" style="width:100%; max-height:400px; object-fit:cover;"></div>`;

@@ -135,6 +135,7 @@ class DashboardCarousel {
         // Icon
         let iconName = 'headphones';
         if (data.type === 'video') iconName = 'video';
+        if (data.type === 'pdf') iconName = 'file-text';
         if (data.theme === 'enraizamento') iconName = 'anchor';
         if (data.theme === 'limpeza') iconName = 'droplets';
         if (data.theme === 'protecao') iconName = 'shield';
