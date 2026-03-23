@@ -365,7 +365,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const snapshot = await window.db.collection('events')
                 // .where('date', '>=', now) // Removed to allow manual control
                 .orderBy('date', 'asc')
-                .limit(4) // Show max 4 next events
                 .get();
 
             if (snapshot.empty) {
@@ -375,9 +374,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let html = '';
             const months = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+            let count = 0;
 
             snapshot.forEach(doc => {
                 const data = doc.data();
+                if (data.active === false) return; // Skip hidden events
+                if (count >= 4) return; // Max 4 events
+                count++;
+                
                 const eventDate = new Date(data.date);
                 const day = eventDate.getDate();
                 const month = months[eventDate.getMonth()];
@@ -388,14 +392,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     imageHtml = `<img src="${data.image_url}" alt="${data.title}" style="width: 100%; height: auto; border-radius: 8px; margin-bottom: 15px; display: block;">`;
                 }
 
-                html += `
-                <article class="event-card">
-                    ${imageHtml ? imageHtml : ''}
-                    <div style="display: flex; gap: 15px;">
+                let dateBadgeHtml = '';
+                if (data.dateDisplay && data.dateDisplay.trim() !== '') {
+                    dateBadgeHtml = `
+                        <div class="event-date multi-date">
+                            <span class="multi-text">${data.dateDisplay}</span>
+                        </div>
+                    `;
+                } else {
+                    dateBadgeHtml = `
                         <div class="event-date">
                             <span class="day">${day}</span>
                             <span class="month">${month}</span>
                         </div>
+                    `;
+                }
+
+                html += `
+                <article class="event-card">
+                    ${imageHtml ? imageHtml : ''}
+                    <div style="display: flex; gap: 15px;">
+                        ${dateBadgeHtml}
                         <div class="event-details">
                             <h3>${data.title}</h3>
                             <p class="event-meta"><i data-lucide="map-pin" style="width:14px;"></i> ${data.location} &bull; ${data.time}</p>
@@ -407,7 +424,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             });
 
-            container.innerHTML = html;
+            if (count === 0) {
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--color-text-light);">Não existem eventos agendados para breve.</p>';
+            } else {
+                container.innerHTML = html;
+            }
             if (window.lucide) lucide.createIcons();
 
         } catch (error) {

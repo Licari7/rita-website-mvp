@@ -728,6 +728,7 @@ async function handleEventSubmit(e) {
         const id = document.getElementById('evt-id').value; // Check hidden ID
         const title = document.getElementById('evt-title').value;
         const date = document.getElementById('evt-date').value;
+        const dateDisplay = document.getElementById('evt-date-display') ? document.getElementById('evt-date-display').value : '';
         const time = document.getElementById('evt-time').value;
         const location = document.getElementById('evt-location').value;
         // Get Content from TinyMCE if active
@@ -746,6 +747,7 @@ async function handleEventSubmit(e) {
         const eventData = {
             title,
             date,
+            dateDisplay,
             time,
             location,
             description,
@@ -800,20 +802,32 @@ async function loadEvents() {
             const data = doc.data();
             window.eventsCache[doc.id] = data; // Cache for editing
 
+            const isHidden = data.active === false;
+            const eyeIcon = isHidden ? 'eye-off' : 'eye';
+            const toggleTitle = isHidden ? 'Mostrar evento no site' : 'Ocultar evento do site';
+            const opacityStyle = isHidden ? 'opacity: 0.6;' : '';
+
             html += `
-                <li class="admin-event-item" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:10px; border-bottom:1px solid #eee;">
+                <li class="admin-event-item" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:10px; border-bottom:1px solid #eee; ${opacityStyle}">
                     <div class="event-info">
                         <strong>${data.date}</strong> - ${data.title}
+                        ${isHidden ? '<span style="color:#d32f2f; font-size:0.8rem; margin-left:10px; font-weight:bold;">(Oculto)</span>' : ''}
                     </div>
-                    <div>
-                        <button class="btn btn-outline btn-sm" onclick="window.editEvent('${doc.id}')" style="margin-right:5px;">Editar</button>
-                        <button class="btn-delete" onclick="window.deleteEvent('${doc.id}')" style="color:red; background:none; border:none; cursor:pointer;">Apagar</button>
+                    <div style="display:flex; align-items:center;">
+                        <button type="button" class="btn-icon-sm" onclick="window.toggleEventVisibility('${doc.id}', ${!isHidden})" title="${toggleTitle}" style="margin-right:15px; background:none; border:none; cursor:pointer;">
+                            <i data-lucide="${eyeIcon}"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="window.editEvent('${doc.id}')" style="margin-right:5px;">Editar</button>
+                        <button type="button" class="btn-delete" onclick="window.deleteEvent('${doc.id}')" style="color:red; background:none; border:none; cursor:pointer;">Apagar</button>
                     </div>
                 </li>
             `;
         });
         html += '</ul>';
         listContainer.innerHTML = html;
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
 
     } catch (error) {
         console.error("Error loading events:", error);
@@ -829,6 +843,7 @@ window.editEvent = function (id) {
     document.getElementById('evt-id').value = id;
     document.getElementById('evt-title').value = data.title || '';
     document.getElementById('evt-date').value = data.date || '';
+    if (document.getElementById('evt-date-display')) document.getElementById('evt-date-display').value = data.dateDisplay || '';
     document.getElementById('evt-time').value = data.time || '';
     document.getElementById('evt-location').value = data.location || '';
     document.getElementById('evt-desc').value = data.description || '';
@@ -871,6 +886,31 @@ window.deleteEvent = async (id) => {
             alert("Erro ao apagar: " + error.message);
         }
     }
+};
+
+window.toggleEventVisibility = async (id, currentIsActive) => {
+    try {
+        const newStatus = !currentIsActive;
+        await window.db.collection("events").doc(id).update({ active: newStatus });
+        loadEvents(); // Reload UI
+    } catch (error) {
+        alert("Erro ao alterar visibilidade: " + error.message);
+    }
+};
+
+window.toggleEventsList = function() {
+    const list = document.getElementById('admin-events-list');
+    const icon = document.getElementById('toggle-events-icon');
+    if (!list || !icon) return;
+    
+    if (list.style.display === 'none') {
+        list.style.display = 'block';
+        icon.setAttribute('data-lucide', 'eye-off');
+    } else {
+        list.style.display = 'none';
+        icon.setAttribute('data-lucide', 'eye');
+    }
+    if (window.lucide) lucide.createIcons();
 };
 
 // Color Sync Helper
