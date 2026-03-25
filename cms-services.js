@@ -98,15 +98,15 @@ window.handleServiceSubmit = async function (e) {
         const fullDesc2 = document.getElementById('svc-full-desc-2').value;
 
         // Image Handling (Header)
-        let imageUrl = document.getElementById('svc-image').value;
+        let imageUrl = window.getFileUrlInput('svc-image');
         const imageFile = document.getElementById('svc-image-file').files[0];
 
         // Image Handling (Section 1 - Intro)
-        let image1Url = document.getElementById('svc-image-1').value;
+        let image1Url = window.getFileUrlInput('svc-image-1');
         const image1File = document.getElementById('svc-image-1-file').files[0];
 
         // Image Handling (Section 2 - Bottom)
-        let image2Url = document.getElementById('svc-image-2').value;
+        let image2Url = window.getFileUrlInput('svc-image-2');
         const image2File = document.getElementById('svc-image-2-file').files[0];
 
         // Upload Header Image

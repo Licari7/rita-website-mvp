@@ -126,12 +126,6 @@ window.renderFilePreview = function (containerId, url, opts = {}) {
                 <span class="font-xs text-muted text-truncate" title="${filename}">${filename}</span>
                 <div class="file-preview-actions">
                     <button type="button"
-                        class="file-preview-btn keep active"
-                        id="${containerId}-keep-btn"
-                        onclick="window._previewKeep('${containerId}')">
-                        <i data-lucide="check" class="icon-12"></i> Manter
-                    </button>
-                    <button type="button"
                         class="file-preview-btn remove"
                         id="${containerId}-remove-btn"
                         onclick="window._previewRemove('${containerId}', '${opts.urlInputId || ''}', '${opts.fileInputId || ''}')">
@@ -146,32 +140,65 @@ window.renderFilePreview = function (containerId, url, opts = {}) {
 };
 
 window._previewKeep = function (containerId) {
+    // Deprecated: Kept for backwards compatibility if any active button exists
     const container = document.getElementById(containerId);
     if (!container) return;
     container.dataset.pendingDelete = 'false';
-    const keepBtn = document.getElementById(containerId + '-keep-btn');
     const remBtn = document.getElementById(containerId + '-remove-btn');
     const box = document.getElementById(containerId + '-box');
-    if (keepBtn) keepBtn.classList.add('active');
-    if (remBtn) remBtn.classList.remove('active');
+    if (remBtn) {
+        remBtn.classList.remove('active');
+        remBtn.innerHTML = '<i data-lucide="trash-2" class="icon-12"></i> Remover';
+    }
     if (box) box.classList.remove('pending-delete');
+    if (window.lucide) window.lucide.createIcons();
 };
 
 window._previewRemove = function (containerId, urlInputId, fileInputId) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    container.dataset.pendingDelete = 'true';
-    const keepBtn = document.getElementById(containerId + '-keep-btn');
+    
+    const isPendingDelete = container.dataset.pendingDelete === 'true';
     const remBtn = document.getElementById(containerId + '-remove-btn');
     const box = document.getElementById(containerId + '-box');
-    if (keepBtn) keepBtn.classList.remove('active');
-    if (remBtn) remBtn.classList.add('active');
-    if (box) box.classList.add('pending-delete');
-    // Clear the URL input so the save logic treats it as empty
-    if (urlInputId) {
-        const urlInput = document.getElementById(urlInputId);
-        if (urlInput) { urlInput.value = ''; urlInput.dataset.originalUrl = ''; }
+    
+    if (isPendingDelete) {
+        // Undo Remove
+        container.dataset.pendingDelete = 'false';
+        if (remBtn) {
+            remBtn.classList.remove('active');
+            remBtn.innerHTML = '<i data-lucide="trash-2" class="icon-12"></i> Remover';
+        }
+        if (box) box.classList.remove('pending-delete');
+        
+        // Restore original URL
+        if (urlInputId) {
+            const urlInput = document.getElementById(urlInputId);
+            if (urlInput) {
+                const original = container.dataset.existingUrl;
+                urlInput.value = window.extractFilenameFromUrl(original);
+                urlInput.dataset.originalUrl = original;
+            }
+        }
+    } else {
+        // Do Remove
+        container.dataset.pendingDelete = 'true';
+        if (remBtn) {
+            remBtn.classList.add('active');
+            remBtn.innerHTML = '<i data-lucide="undo" class="icon-12"></i> Desfazer';
+        }
+        if (box) box.classList.add('pending-delete');
+        
+        // Clear the URL input so the save logic treats it as empty
+        if (urlInputId) {
+            const urlInput = document.getElementById(urlInputId);
+            if (urlInput) { 
+                urlInput.value = ''; 
+                urlInput.dataset.originalUrl = ''; 
+            }
+        }
     }
+    if (window.lucide) window.lucide.createIcons();
 };
 
 /**
@@ -736,7 +763,7 @@ async function handleEventSubmit(e) {
         const link = document.getElementById('evt-link').value;
         const fileInput = document.getElementById('evt-image');
 
-        let imageUrl = document.getElementById('evt-image-url') ? document.getElementById('evt-image-url').value : null;
+        let imageUrl = document.getElementById('evt-image-url') ? window.getFileUrlInput('evt-image-url') : null;
         if (fileInput.files.length > 0) {
             const file = fileInput.files[0];
             const path = `events/${Date.now()}_${file.name}`;
@@ -2235,7 +2262,7 @@ async function handleHomeSubmit(e) {
     btn.disabled = true;
 
     try {
-        let imageUrl = document.getElementById('home-image-url').value;
+        let imageUrl = window.getFileUrlInput('home-image-url');
         const imageFile = document.getElementById('home-image-file').files[0];
 
         // Upload Image if selected
