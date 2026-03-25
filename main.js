@@ -417,7 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <h3>${data.title}</h3>
                             <p class="event-meta"><i data-lucide="map-pin" style="width:14px;"></i> ${data.location} &bull; ${data.time}</p>
                             <p>${data.description}</p>
-                            <a href="${data.registration_link || 'index.html#contact'}" class="link-arrow">Inscrever <i data-lucide="arrow-right"></i></a>
+                            <a href="${data.registration_link || 'booking.html'}" class="link-arrow">Inscrever <i data-lucide="arrow-right"></i></a>
                         </div>
                     </div>
                 </article>
