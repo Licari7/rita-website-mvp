@@ -31,47 +31,74 @@
     {
       "@context": "https://schema.org",
       "@graph": [
+    
         {
           "@type": "Person",
+          "@id": "https://floresceterapias.pt/#rita",
           "name": "Rita Barata",
           "jobTitle": "Terapeuta Holística",
+          "description": "Terapeuta holística em Portugal especializada em leitura de aura, innerdance e constelações familiares.",
           "url": "https://floresceterapias.pt/",
           "sameAs": [
             "https://www.instagram.com/floresceterapias"
-          ] 
+          ]
         },
-        {
-          "@type": "Service",
-          "name": "Leitura de Aura",
-          "description": "A aura é o campo energético que envolve cada ser vivo. Uma sessão de Leitura de Aura permite trazer à consciência padrões recorrentes, bloqueios energéticos e potenciais ainda por integrar. Indicada para momentos em que existe necessidade de clareza sobre o momento atual e desejo de reconexão com a própria essência.",
-          "provider": {
-            "@type": "Person",
-            "name": "Rita Barata"
-          }
-        },
-        {
-          "@type": "Service",
-          "name": "Innerdance",
-          "description": "Innerdance é a inteligência inata do corpo a movimentar-se internamente através da imersão na música e no campo energético. Num espaço seguro sustentado pelo facilitador e com sequências sonoras específicas, promove estados ampliados de consciência, libertação de tensões emocionais e reconexão com a capacidade de autocura do corpo. Fundado por Pi Villaraza.",
-          "provider": {
-            "@type": "Person",
-            "name": "Rita Barata"
-          }
-        },
-        {
-          "@type": "Service",
-          "name": "Constelações Familiares",
-          "description": "As Constelações Familiares são uma abordagem terapêutica sistémica que permite observar dinâmicas inconscientes herdadas do sistema familiar. Através desta terapia torna-se possível ver dinâmicas outrora ocultas, trazendo à consciência padrões repetitivos e lealdades inconscientes, permitindo um novo olhar sobre bloqueios na vida pessoal, profissional ou afetiva.",
-          "provider": {
-            "@type": "Person",
-            "name": "Rita Barata"
-          }
-        },
+    
         {
           "@type": "WebSite",
+          "@id": "https://floresceterapias.pt/#website",
           "name": "Floresce Terapias",
-          "url": "https://floresceterapias.pt/"
+          "url": "https://floresceterapias.pt/",
+          "publisher": {
+            "@id": "https://floresceterapias.pt/#rita"
+          }
+        },
+    
+        {
+          "@type": "Service",
+          "@id": "https://floresceterapias.pt/#leitura-aura",
+          "name": "Leitura de Aura",
+          "serviceType": "Terapia energética",
+          "description": "A aura é o campo energético que envolve cada ser vivo. Uma sessão de Leitura de Aura permite trazer à consciência padrões recorrentes, bloqueios energéticos e potenciais ainda por integrar. Indicada para momentos em que existe necessidade de clareza sobre o momento atual e desejo de reconexão com a própria essência.",
+          "provider": {
+            "@id": "https://floresceterapias.pt/#rita"
+          },
+          "areaServed": {
+            "@type": "Country",
+            "name": "Portugal"
+          }
+        },
+    
+        {
+          "@type": "Service",
+          "@id": "https://floresceterapias.pt/#innerdance",
+          "name": "Innerdance",
+          "serviceType": "Terapia energética",
+          "description": "Innerdance é a inteligência inata do corpo a movimentar-se internamente através da imersão na música e no campo energético. Num espaço seguro sustentado pelo facilitador e com sequências sonoras específicas, promove estados ampliados de consciência, libertação de tensões emocionais e reconexão com a capacidade de autocura do corpo. Fundado por Pi Villaraza.",
+          "provider": {
+            "@id": "https://floresceterapias.pt/#rita"
+          },
+          "areaServed": {
+            "@type": "Country",
+            "name": "Portugal"
+          }
+        },
+    
+        {
+          "@type": "Service",
+          "@id": "https://floresceterapias.pt/#constelacoes",
+          "name": "Constelações Familiares",
+          "serviceType": "Terapia sistémica",
+          "description": "As Constelações Familiares são uma abordagem terapêutica sistémica que permite observar dinâmicas inconscientes herdadas do sistema familiar. Através desta terapia torna-se possível ver dinâmicas outrora ocultas, trazendo à consciência padrões repetitivos e lealdades inconscientes, permitindo um novo olhar sobre bloqueios na vida pessoal, profissional ou afetiva.",
+          "provider": {
+            "@id": "https://floresceterapias.pt/#rita"
+          },
+          "areaServed": {
+            "@type": "Country",
+            "name": "Portugal"
+          }
         }
+    
       ]
     }
     </script>
