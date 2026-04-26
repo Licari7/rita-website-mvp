@@ -11,7 +11,7 @@
 
     <!-- Privacy / Construction Mode -->
     <meta name="robots" content="index, follow">
-    <script src="access-control.js"></script>
+    <script src="access-control.js" defer></script>
 
     <!-- SEO Meta Tags -->
     <meta name="description"
@@ -26,7 +26,7 @@
     <meta property="og:url" content="https://floresceterapias.pt/termos.html">
     <meta property="og:title" content="Floresce Terapias | Espiritualidade e Cura">
     <meta property="og:description" content="Junte-se a nós numa jornada de autodescoberta e cura interior.">
-    <!-- <meta property="og:image" content="LINK_PARA_IMAGEM_HERO.jpg"> -->
+    <meta property="og:image" content="https://floresceterapias.pt/assets/images/og-image.jpg">
 
     <!-- Schema.org (JSON-LD) for AI/Google -->
     <script type="application/ld+json">
@@ -35,24 +35,37 @@
       "@graph": [
         {
           "@type": "Person",
+          "@id": "https://floresceterapias.pt/#rita",
           "name": "Rita Barata",
           "jobTitle": "Terapeuta Holística",
+          "description": "Terapeuta holística em Portugal especializada em leitura de aura, innerdance e constelações familiares.",
           "url": "https://floresceterapias.pt/",
-          "sameAs": [] 
-        },
-        {
-          "@type": "Service",
-          "name": "Leitura de Aura",
-          "description": "Terapia energética para limpeza e leitura do campo energético.",
-          "provider": {
-            "@type": "Person",
-            "name": "Rita Barata"
-          }
+          "sameAs": [
+            "https://www.instagram.com/floresceterapias"
+          ]
         },
         {
           "@type": "WebSite",
+          "@id": "https://floresceterapias.pt/#website",
           "name": "Floresce Terapias",
-          "url": "https://floresceterapias.pt/"
+          "url": "https://floresceterapias.pt/",
+          "publisher": {
+            "@id": "https://floresceterapias.pt/#rita"
+          }
+        },
+        {
+          "@type": "Service",
+          "@id": "https://floresceterapias.pt/#leitura-aura",
+          "name": "Leitura de Aura",
+          "serviceType": "Terapia energética",
+          "description": "A aura é o campo energético que envolve cada ser vivo. Uma sessão de Leitura de Aura permite trazer à consciência padrões recorrentes, bloqueios energéticos e potenciais ainda por integrar.",
+          "provider": {
+            "@id": "https://floresceterapias.pt/#rita"
+          },
+          "areaServed": {
+            "@type": "Country",
+            "name": "Portugal"
+          }
         }
       ]
     }
@@ -267,6 +280,7 @@
                     <a href="termos.html">Termos e Privacidade</a>
                 </div>
                 <p class="copyright" id="footer-copyright"></p>
+                <p class="footer-location" style="margin-top: 5px; font-size: 0.9em; opacity: 0.8;">Sessões online e presenciais em Portugal</p>
                 <p class="developer-credit" id="footer-credit"></p>
             </div>
         </div>
