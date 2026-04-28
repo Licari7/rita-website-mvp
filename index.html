@@ -183,11 +183,11 @@
     <section id="about" class="section about-section">
         <div class="container">
             <div class="section-header">
-                <h2 id="home-about-title-display" class="section-title"></h2>
+                <h2 id="home-about-title-display" class="section-title">Rita Barata — Terapeuta Holística</h2>
             </div>
             <div class="about-grid">
                 <div class="about-text">
-                    <p id="home-about-bio-display"></p>
+                    <p id="home-about-bio-display">Facilitadora de Leitura de Aura, Innerdance e Constelações Familiares em Portugal. Dedico-me a guiar pessoas num caminho de autoconhecimento, cura energética e reconexão com a sua essência, através de terapias holísticas e ferramentas práticas de transformação pessoal.</p>
 
                     <a href="about-new.html" class="btn btn-primary mt-20">Saber Mais</a>
                 </div>
@@ -207,9 +207,27 @@
             <div class="services-carousel-wrapper">
                 <button class="carousel-arrow prev" onclick="moveCarousel(-1)">&#10094;</button>
                 <div class="services-carousel" id="dynamic-services-container">
-                    <!-- Loading State -->
-                    <p class="text-center loading-placeholder">A carregar
-                        serviços...</p>
+                    <!-- Static fallback content visible to crawlers and users before JS loads -->
+                    <div class="seo-fallback" id="services-seo-fallback">
+                        <article class="seo-service-card">
+                            <h3>Leitura de Aura</h3>
+                            <p>A aura é o campo energético que envolve cada ser vivo. Uma sessão de Leitura de Aura permite trazer à consciência padrões recorrentes, bloqueios energéticos e potenciais ainda por integrar. Indicada para momentos de clareza, alinhamento e reconexão com a própria essência.</p>
+                            <p><strong>Formato:</strong> online, à distância · <strong>Duração:</strong> 30 a 60 minutos</p>
+                            <a href="service-detail.html#aura">Saber Mais sobre Leitura de Aura</a>
+                        </article>
+                        <article class="seo-service-card">
+                            <h3>Innerdance</h3>
+                            <p>Innerdance é a inteligência inata do corpo a movimentar-se internamente através da imersão na música e no campo energético. Promove estados ampliados de consciência, libertação de tensões emocionais e reconexão com a capacidade de autocura do corpo. Fundado por Pi Villaraza.</p>
+                            <p><strong>Formato:</strong> online ou presencial · <strong>Duração:</strong> 90 min a 2 horas</p>
+                            <a href="service-detail.html#innerdance">Saber Mais sobre Innerdance</a>
+                        </article>
+                        <article class="seo-service-card">
+                            <h3>Constelações Familiares e Sistémicas</h3>
+                            <p>As Constelações Familiares são uma abordagem terapêutica sistémica que permite observar dinâmicas inconscientes herdadas do sistema familiar, trazendo à consciência padrões repetitivos e lealdades inconscientes, permitindo um novo olhar sobre bloqueios na vida pessoal, profissional ou afetiva.</p>
+                            <p><strong>Formato:</strong> em grupo, online ou presencial · <strong>Duração:</strong> 60 a 90 minutos</p>
+                            <a href="service-detail.html#constelacoes">Saber Mais sobre Constelações Familiares</a>
+                        </article>
+                    </div>
                 </div>
                 <button class="carousel-arrow next" onclick="moveCarousel(1)">&#10095;</button>
             </div>
@@ -224,8 +242,10 @@
                 <h2 class="section-title">Próximos Eventos</h2>
             </div>
             <div class="events-grid" id="dynamic-events-container">
-                <!-- Loading State -->
-                <p class="text-center width-full col-span-2">A carregar eventos...</p>
+                <!-- Static fallback for SEO crawlers (replaced by JS) -->
+                <div class="seo-fallback" id="events-seo-fallback">
+                    <p class="text-center width-full col-span-2">Consulte os próximos eventos de Innerdance, Constelações Familiares e outras terapias holísticas com Rita Barata em Portugal. Para inscrições, entre em contacto via <a href="https://wa.me/351913515406">WhatsApp</a> ou <a href="mailto:floresceterapias@gmail.com">email</a>.</p>
+                </div>
             </div>
         </div>
     </section>
@@ -248,8 +268,10 @@
                         data-lucide="chevron-left"></i></button>
 
                 <div class="carousel-container" id="dynamic-testimonials-container">
-                    <!-- Loading State -->
-                    <p class="text-center width-full min-w-full">A carregar testemunhos...</p>
+                    <!-- Static fallback for SEO crawlers (replaced by JS) -->
+                    <div class="seo-fallback" id="testimonials-seo-fallback">
+                        <p class="text-center width-full min-w-full">Testemunhos de quem já experimentou sessões de Leitura de Aura, Innerdance e Constelações Familiares com Rita Barata. Experiências reais de autoconhecimento e transformação pessoal em Portugal.</p>
+                    </div>
                 </div>
 
                 <button class="nav-btn next-btn" aria-label="Seguinte" onclick="moveTestimonials(1)"><i

@@ -1,23 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+   <!-- Homepage -->
    <url>
       <loc>https://floresceterapias.pt/</loc>
-      <changefreq>weekly</changefreq>
-      <priority>1.0</priority>
+      <lastmod>2026-04-28</lastmod>
    </url>
+
+   <!-- Sobre -->
    <url>
       <loc>https://floresceterapias.pt/about-new.html</loc>
-      <changefreq>monthly</changefreq>
-      <priority>0.8</priority>
+      <lastmod>2026-04-28</lastmod>
    </url>
-   <url>
-      <loc>https://floresceterapias.pt/service-detail.html</loc>
-      <changefreq>monthly</changefreq>
-      <priority>0.8</priority>
-   </url>
+
+   <!-- Agendar Sessão -->
    <url>
       <loc>https://floresceterapias.pt/booking.html</loc>
-      <changefreq>monthly</changefreq>
-      <priority>0.9</priority>
+      <lastmod>2026-04-28</lastmod>
    </url>
+
+   <!-- Sessão: Leitura de Aura -->
+   <url>
+      <loc>https://floresceterapias.pt/service-detail.html#aura</loc>
+      <lastmod>2026-04-28</lastmod>
+   </url>
+
+   <!-- Sessão: Innerdance -->
+   <url>
+      <loc>https://floresceterapias.pt/service-detail.html#innerdance</loc>
+      <lastmod>2026-04-28</lastmod>
+   </url>
+
+   <!-- Sessão: Constelações Familiares -->
+   <url>
+      <loc>https://floresceterapias.pt/service-detail.html#constelacoes</loc>
+      <lastmod>2026-04-28</lastmod>
+   </url>
+
+   <!-- Termos e Privacidade -->
+   <url>
+      <loc>https://floresceterapias.pt/termos.html</loc>
+      <lastmod>2026-04-28</lastmod>
+   </url>
+
 </urlset>
