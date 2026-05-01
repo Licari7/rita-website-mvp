@@ -1292,7 +1292,7 @@ window.handleServiceSubmit = async function (e) {
             // Let's use set() to force the slug as ID, so service.html?id=slug works!
             await window.db.collection("services").doc(slug).set(serviceData);
 
-            alert(`Serviço adicionado! Link gerado: service-detail.html?id=${slug}`);
+            alert(`Serviço adicionado com sucesso. Crie uma página individual para publicar o link "Saber Mais" deste serviço.`);
         } else {
             // Update existing
             await window.db.collection("services").doc(id).update(serviceData);
@@ -1686,7 +1686,7 @@ window.seedDefaultServices = async () => {
             long_description: `<p>A Leitura de Aura é uma ferramenta poderosa de autoconhecimento. Ao aceder ao teu campo energético, é possível identificar padrões, bloqueios e potenciais que estão presentes na tua vida neste momento.</p>
             <p><strong>Como funciona?</strong><br>A sessão começa com uma meditação de enraizamento. De seguida, é feita a leitura das cores e imagens da tua aura (campo energético), passando pelos 7 chakras principais.</p>
             <p>Esta terapia permite trazer ao consciente o que está no inconsciente, promovendo a cura e o equilíbrio.</p>`,
-            link: "service-detail.html?id=aura",
+            link: "leitura-aura.html",
             benefits: ["Presenciais", "Online (Zoom)", "À Distância"],
             styleClass: "",
             order: 1
@@ -1701,7 +1701,7 @@ window.seedDefaultServices = async () => {
             - Ativação da energia Kundalini.<br>
             - Visões e insights profundos.</p>
             <p>É uma experiência visceral onde o corpo pode mover-se espontaneamente para libertar energia estagnada.</p>`,
-            link: "service-detail.html?id=innerdance",
+            link: "innerdance.html",
             benefits: ["Desbloqueio Emocional", "Activação Energética", "Estado Alterado de Consciência"],
             styleClass: "innerdance",
             order: 2
@@ -1713,7 +1713,7 @@ window.seedDefaultServices = async () => {
             long_description: `<p>As Constelações Familiares olham para o indivíduo como parte de um sistema maior (a família). Muitas vezes, carregamos lealdades invisíveis, destinos ou traumas dos nossos antepassados.</p>
             <p>Nesta sessão, utilizamos bonecos ou marcadores (online ou presencial) para representar os membros da família e observar a dinâmica oculta.</p>
             <p>Ao reconhecer e honrar o que foi, podemos encontrar o nosso lugar de força e seguir em frente com amor.</p>`,
-            link: "service-detail.html?id=constelacoes",
+            link: "constelacoes.html",
             benefits: ["Presenciais", "Online"],
             styleClass: "constellations",
             order: 3
@@ -1729,7 +1729,7 @@ window.seedDefaultServices = async () => {
             - Apoio via WhatsApp/Telegram.<br>
             - Acesso a uma comunidade de suporte.</p>
             <p>Ideal para quem está numa fase de transição de vida e precisa de suporte estruturado.</p>`,
-            link: "service-detail.html?id=expansao",
+            link: "booking.html",
             benefits: ["Mentoria Contínua", "Grupo de Apoio", "Acesso a Recursos"],
             styleClass: "expansion",
             order: 4

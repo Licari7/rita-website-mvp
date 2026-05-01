@@ -5179,6 +5179,29 @@ body.auth-page {
 /* --- Service Detail Hero Layout (Parallax Style) --- */
 
 /* Full-width Section with Background Image */
+.svc-section {
+    padding: 60px 20px;
+}
+
+.svc-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.svc-container h2 {
+    margin-top: 40px;
+    margin-bottom: 16px;
+}
+
+.svc-container h2:first-child {
+    margin-top: 0;
+}
+
+.svc-container p,
+.svc-container li {
+    line-height: 1.8;
+}
+
 .svc-hero-section {
     position: relative;
     width: 100%;

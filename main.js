@@ -1,4 +1,4 @@
-// Main Script (Loaded)
+﻿// Main Script (Loaded)
 console.log("DEBUG: main.js v7.1.1 LOADED - Debug Enabled");
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -565,6 +565,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Bottom Card Style
                 bottomStyle = `background-color: ${botRgba}; color: white;`;
 
+                const serviceUrl = window.servicePageMap && window.servicePageMap[doc.id] ? window.servicePageMap[doc.id] : '';
+
                 html += `
                 <div class="premium-card">
                     <div class="premium-card-top" style="${topStyle}">
@@ -582,7 +584,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="premium-desc">${descText}</div>
                         <div class="premium-actions">
                             <a href="booking.html" class="btn-premium-outline" style="${btnStyle}">Agendar</a>
-                            <a href="service-detail.html#${doc.id}" class="btn-premium-outline" style="${btnStyle}">Saber Mais</a>
+                            ${serviceUrl ? `<a href="${serviceUrl}" class="btn-premium-outline" style="${btnStyle}">Saber Mais</a>` : ''}
                         </div>
                     </div>
                 </div>
@@ -892,8 +894,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     const heroSubtitle = document.getElementById('hero-subtitle-display');
                     const heroCta = document.getElementById('hero-cta-display');
 
-                    if (heroTitle && data.home.title) heroTitle.textContent = data.home.title;
-                    if (heroSubtitle && data.home.subtitle) heroSubtitle.textContent = data.home.subtitle;
+                    if (heroTitle && data.home.title) {
+                        heroTitle.textContent = data.home.title;
+                        heroTitle.classList.remove('cms-pending');
+                    }
+                    if (heroSubtitle && data.home.subtitle) {
+                        heroSubtitle.textContent = data.home.subtitle;
+                        heroSubtitle.classList.remove('cms-pending');
+                    }
                     if (heroCta && data.home.cta_text) heroCta.textContent = data.home.cta_text;
 
                     // Text Color & Highlight
@@ -980,7 +988,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Update Page Title
                     const pageTitle = document.getElementById('about-title');
-                    if (pageTitle && data.about.title) pageTitle.textContent = data.about.title;
+                    if (pageTitle && data.about.title) {
+                        pageTitle.textContent = data.about.title;
+                        pageTitle.classList.remove('cms-pending');
+                    }
                 }
 
                 // Footer Content
@@ -1078,16 +1089,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Text
                 const titleEl = document.getElementById('about-title');
-                if (titleEl) titleEl.innerText = about.title || about.page_title || about.intro?.title || 'Sobre Mim';
+                const aboutTitle = about.title || about.page_title || about.intro?.title || '';
+                if (titleEl && aboutTitle) {
+                    titleEl.innerText = aboutTitle;
+                    titleEl.classList.remove('cms-pending');
+                }
 
                 const introTextEl = document.getElementById('about-text-intro-display');
                 // Keys based on typical CMS patterns: text_intro, intro_text, or nested intro.text
                 const introText = about.text_intro || about.intro_text || about.intro?.text;
-                if (introTextEl) introTextEl.innerHTML = introText || '<p>Conteúdo não disponível.</p>';
+                if (introTextEl && introText) {
+                    introTextEl.innerHTML = introText;
+                    introTextEl.classList.remove('cms-pending');
+                }
 
                 const artTextEl = document.getElementById('about-text-art-display');
                 const artText = about.text_art || about.art_text || about.art?.text;
-                if (artTextEl) artTextEl.innerHTML = artText || '<p>Conteúdo não disponível.</p>';
+                if (artTextEl && artText) {
+                    artTextEl.innerHTML = artText;
+                    artTextEl.classList.remove('cms-pending');
+                }
 
                 // Images
                 const imgIntro = document.getElementById('author-img-display');
@@ -1208,205 +1229,140 @@ window.hexToRgba = function (hex, alpha) {
     return hex; // Fallback
 };
 
-// --- Service Detail Page Logic ---
-// Note: This needs to be available globally too or attached to window
-window.loadServiceDetail = async function () {
-    // Only run on service-detail page
-    if (!window.location.pathname.includes('service-detail')) return;
+// --- Individual Service Pages (static SEO pages + CMS/Firebase visuals) ---
+window.servicePageMap = window.servicePageMap || {
+    aura: 'leitura-aura.html',
+    innerdance: 'innerdance.html',
+    constelacoes: 'constelacoes.html'
+};
 
-    const loadMsg = document.getElementById('loading-msg');
-    if (loadMsg) loadMsg.innerText = "A iniciar carregamento..."; // Trace 1
+window.loadIndividualServicePage = async function () {
+    const serviceId = window.SERVICE_PAGE_ID;
+    if (!serviceId) return;
 
-    const hash = window.location.hash;
-    if (!hash) {
-        if (loadMsg) loadMsg.innerText = "Serviço não especificado (sem ID).";
-        const titleEl = document.getElementById('svc-title');
-        if (titleEl) titleEl.innerText = "Serviço não especificado.";
-        return;
-    }
-    const serviceId = hash.substring(1);
-    console.log("Loading Service Detail for ID:", serviceId);
-
-    // WAIT FOR DB
     if (!window.db) {
-        if (loadMsg) loadMsg.innerText = "A aguardar base de dados...";
-        console.log("Waiting for DB...");
-        setTimeout(window.loadServiceDetail, 500); // Retry global
+        setTimeout(window.loadIndividualServicePage, 500);
         return;
     }
 
     try {
-        if (loadMsg) loadMsg.innerText = "A ler dados do serviço..."; // Trace 2
         const doc = await window.db.collection('services').doc(serviceId).get();
-        if (!doc.exists) {
-            console.error("Service not found in DB");
-            document.getElementById('svc-title').innerText = "Serviço não encontrado.";
-            return;
-        }
+        if (!doc.exists) return;
+
         const data = doc.data();
-        console.log("Service Data Loaded:", data); // DEBUG
-
-        // 1. Header (Hidden Title for SEO)
-        document.getElementById('svc-title').innerText = data.title;
-        document.title = `${data.title} | Floresce Terapias`;
-
-        // --- SECTION 1 (Hero) ---
-        const sec1 = document.getElementById('svc-section-1');
-        const box1 = document.getElementById('svc-content-1-container'); // The overlay box
-        const content1 = document.getElementById('svc-content-1');
         const cols = data.customColors || {};
 
-        if (sec1) {
-            // Background Image on Section
-            if (data.section1_image) {
-                sec1.style.backgroundImage = `url('${data.section1_image}')`;
-                sec1.style.backgroundSize = 'cover';
-                sec1.style.backgroundPosition = 'center';
-            } else {
-                sec1.style.backgroundImage = 'none';
-                sec1.style.backgroundColor = '#f0f0f0'; // Default gray backing
-            }
+        const hero = document.getElementById('svc-ind-hero');
+        if (hero && data.headerImage) {
+            hero.style.backgroundImage = `linear-gradient(135deg, rgba(255,255,255,0.78), rgba(255,255,255,0.62)), url('${data.headerImage}')`;
+            hero.style.backgroundSize = 'cover';
+            hero.style.backgroundPosition = 'center';
         }
 
-        if (box1) {
-            // BG Color + Opacity on the BOX
-            // FIX: Match keys from cms-services.js (section1_card_bg, section1_card_opacity)
-            const bgColor = cols.section1_card_bg || cols.section1_bg || '#ffffff';
-            const opacity = cols.section1_card_opacity !== undefined ? cols.section1_card_opacity : (cols.section1_opacity !== undefined ? cols.section1_opacity : 0.9);
+        renderIndividualServiceSection({
+            sectionId: 'svc-section-1',
+            boxId: 'svc-content-1-container',
+            contentId: 'svc-content-1',
+            title: data.section1_title || data.title,
+            headingTag: 'h1',
+            html: data.long_description,
+            image: data.section1_image,
+            sectionBg: cols.section1_bg,
+            cardBg: cols.section1_card_bg,
+            cardOpacity: cols.section1_card_opacity,
+            textColor: cols.section1_text,
+            showSchedule: cols.show_schedule_1 !== false,
+            showContact: cols.show_contact_1 !== false
+        });
 
-            const rgbaVal = hexToRgba(bgColor, opacity);
+        renderIndividualServiceSection({
+            sectionId: 'svc-section-2',
+            boxId: 'svc-content-2-container',
+            contentId: 'svc-content-2',
+            headingTag: 'h2',
+            html: data.long_description_2,
+            image: data.section2_image,
+            sectionBg: cols.section2_bg,
+            cardBg: cols.section2_card_bg,
+            cardOpacity: cols.section2_card_opacity,
+            textColor: cols.section2_text,
+            showSchedule: cols.show_schedule_2 === true,
+            showContact: cols.show_contact_2 !== false,
+            visible: cols.show_section_2 !== false
+        });
 
-            // Use setProperty to enforce important
-            box1.style.setProperty('background-color', rgbaVal, 'important');
-
-            // Text Color
-            if (cols.section1_text) {
-                box1.style.color = cols.section1_text;
-            }
-        }
-
-        // Content Injection (Title + Text)
-        // Use New Title if available, fallback to main title
-        const displayTitle = data.section1_title || data.title;
-        let html1 = `<h1>${displayTitle}</h1>`;
-
-        if (data.long_description) {
-            html1 += `<div class="svc-text">${data.long_description}</div>`;
-        }
-
-        // Section 1 CTAs
-        const showSched1 = cols.show_schedule_1 !== false;
-        const showContact1 = cols.show_contact_1 !== false;
-
-        // On mobile, go directly to booking page instead of scrolling to#contact on homepage
-        const scheduleLink = window.matchMedia('(max-width: 768px)').matches
-            ? 'booking.html'
-            : 'index.html#contact';
-
-        if (showSched1 || showContact1) {
-            html1 += `<div class="svc-btn-group">`;
-            if (showSched1) html1 += `<a href="${scheduleLink}" class="btn btn-primary">Marcar Sessão</a>`;
-            if (showContact1) {
-                html1 += `<a href="https://wa.me/351913515406" target="_blank" class="btn btn-primary cta-whatsapp-btn">
-                            <i data-lucide="message-circle" class="icon-sm"></i> Entra em contacto
-                          </a>`;
-            }
-            html1 += `</div>`;
-        }
-
-        content1.innerHTML = html1;
-        // lucide.createIcons() moved to bottom of try block
-
-        // Remove loader
-        if (loadMsg) loadMsg.remove();
-
-
-        // --- SECTION 2 (Detail) ---
-        const sec2 = document.getElementById('svc-section-2');
-        const box2 = document.getElementById('svc-content-2-container');
-        const content2 = document.getElementById('svc-content-2');
-
-        // Check availability (either content or specific field)
-        // AND check explicit visibility toggle (default true)
-        const isSec2Visible = (cols.show_section_2 !== false);
-        const hasSec2Content = data.long_description_2 || data.section2_image;
-
-        if (hasSec2Content && isSec2Visible) {
-            sec2.style.display = 'flex'; // Turn it on (flex for centering)
-            sec2.classList.remove('hidden'); // Ensure hidden class is gone
-
-            // Background Image on Section
-            if (data.section2_image) {
-                sec2.style.backgroundImage = `url('${data.section2_image}')`;
-                sec2.style.backgroundSize = 'cover';
-                sec2.style.backgroundPosition = 'center';
-            } else {
-                sec2.style.backgroundImage = 'none';
-                sec2.style.backgroundColor = cols.section2_bg || '#f7f2e0'; // Use configured BG or default
-            }
-
-            // BG Color + Opacity on the BOX
-            if (box2) {
-                // FIX: Match keys from cms-services.js (section2_card_bg, section2_card_opacity)
-                const bgColor2 = cols.section2_card_bg || cols.section2_bg || '#ffffff';
-                const opacity2 = cols.section2_card_opacity !== undefined ? cols.section2_card_opacity : (cols.section2_opacity !== undefined ? cols.section2_opacity : 0.9);
-
-                const rgbaVal2 = hexToRgba(bgColor2, opacity2);
-
-                box2.style.setProperty('background-color', rgbaVal2, 'important');
-
-                if (cols.section2_text) box2.style.color = cols.section2_text;
-            }
-
-            // Content
-            let html2 = '';
-            if (data.long_description_2) {
-                html2 += `<div class="svc-text">${data.long_description_2}</div>`;
-            }
-
-            // Section 2 CTAs
-            const showSched2 = cols.show_schedule_2 === true; // Default false
-            const showContact2 = cols.show_contact_2 !== false; // Default true
-
-            if (showSched2 || showContact2) {
-                html2 += `<div class="svc-btn-group">`;
-                if (showSched2) html2 += `<a href="${scheduleLink}" class="btn btn-primary">Marcar Sessão</a>`;
-                if (showContact2) {
-                    html2 += `<a href="https://wa.me/351913515406" target="_blank" class="btn btn-primary cta-whatsapp-btn">
-                                <i data-lucide="message-circle" class="icon-sm"></i> Entra em contacto
-                              </a>`;
-                }
-                html2 += `</div>`;
-            }
-
-            content2.innerHTML = html2;
-        } else {
-            // Hide if absolutely no content
-            sec2.style.display = 'none';
-        }
-
-        // 4. Testimonials (Filtered)
         const secTesti = document.getElementById('svc-testimonials-section');
-        if (data.testimonial_ids && data.testimonial_ids.length > 0) {
-            secTesti.style.display = 'block';
-            secTesti.classList.remove('svc-testimonials-section-hidden'); // Force show CSS override
+        if (secTesti) {
+            if (data.testimonial_ids && data.testimonial_ids.length > 0) {
+                secTesti.style.display = 'block';
+                secTesti.classList.remove('svc-testimonials-section-hidden');
 
-            if (cols.testimonials_bg) secTesti.style.backgroundColor = cols.testimonials_bg;
-            if (cols.testimonials_text) {
-                secTesti.style.color = cols.testimonials_text;
-                const tTitle = document.getElementById('svc-testi-title');
-                if (tTitle) tTitle.style.color = cols.testimonials_text;
+                if (cols.testimonials_bg) secTesti.style.backgroundColor = cols.testimonials_bg;
+                if (cols.testimonials_text) {
+                    secTesti.style.color = cols.testimonials_text;
+                    const tTitle = document.getElementById('svc-testi-title');
+                    if (tTitle) tTitle.style.color = cols.testimonials_text;
+                }
+
+                loadServiceTestimonials(data.testimonial_ids);
+            } else {
+                secTesti.style.display = 'none';
             }
-
-            loadServiceTestimonials(data.testimonial_ids);
-        } else {
-            secTesti.style.display = 'none';
         }
 
         if (window.lucide) window.lucide.createIcons();
     } catch (err) {
-        console.error("Error loading service detail:", err);
+        console.error("Error loading individual service page:", err);
     }
+};
+
+function renderIndividualServiceSection(config) {
+    const section = document.getElementById(config.sectionId);
+    const box = document.getElementById(config.boxId);
+    const content = document.getElementById(config.contentId);
+    const hasContent = Boolean(config.html || config.image);
+
+    if (!section || !content || !hasContent || config.visible === false) {
+        if (section) section.style.display = 'none';
+        return;
+    }
+
+    section.style.display = 'flex';
+    section.classList.remove('hidden');
+
+    if (config.image) {
+        section.style.backgroundImage = `url('${config.image}')`;
+        section.style.backgroundSize = 'cover';
+        section.style.backgroundPosition = 'center';
+    } else if (config.sectionBg) {
+        section.style.backgroundImage = 'none';
+        section.style.backgroundColor = config.sectionBg;
+    }
+
+    if (box) {
+        const bgColor = config.cardBg || config.sectionBg || '#ffffff';
+        const opacity = config.cardOpacity !== undefined ? config.cardOpacity : 0.9;
+        box.style.setProperty('background-color', hexToRgba(bgColor, opacity), 'important');
+        if (config.textColor) box.style.color = config.textColor;
+    }
+
+    let html = '';
+    const headingTag = config.headingTag || 'h2';
+    if (config.title) html += `<${headingTag}>${config.title}</${headingTag}>`;
+    if (config.html) html += `<div class="svc-text">${config.html}</div>`;
+
+    if (config.showSchedule || config.showContact) {
+        html += '<div class="svc-btn-group">';
+        if (config.showSchedule) html += '<a href="booking.html" class="btn btn-primary">Marcar Sessão</a>';
+        if (config.showContact) {
+            html += `<a href="https://wa.me/351913515406" target="_blank" rel="noopener noreferrer" class="btn btn-primary cta-whatsapp-btn">
+                        <i data-lucide="message-circle" class="icon-sm"></i> Entra em contacto
+                     </a>`;
+        }
+        html += '</div>';
+    }
+
+    content.innerHTML = html;
 }
 
 async function loadServiceTestimonials(ids) {
@@ -1474,14 +1430,6 @@ async function loadServiceTestimonials(ids) {
     }
 }
 
-// Trigger load
-function initServiceDetail() {
-    if (window.location.pathname.includes('service-detail')) {
-        loadServiceDetail();
-    }
-}
-window.addEventListener('hashchange', initServiceDetail);
-initServiceDetail();
 // window.hexToRgba = hexToRgba; // Moved to top
 
 // =============================================

@@ -4,21 +4,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sessão | Floresce Terapias</title>
+    <title>Sessões Terapêuticas | Floresce Terapias — Leitura de Aura, Innerdance, Constelações</title>
 
-    <!-- Privacy / Construction Mode -->
+    <!-- SEO / Indexing -->
     <meta name="robots" content="noindex, nofollow">
-    <script src="access-control.js"></script>
+    <script src="access-control.js" defer></script>
     <script src="theme-loader.js"></script>
 
-    <meta name="description" content="Detalhes da sessão terapêutica.">
+    <meta name="description" content="Descubra as sessões terapêuticas de Leitura de Aura, Innerdance e Constelações Familiares com Rita Barata. Terapias holísticas para autoconhecimento e transformação pessoal em Portugal.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://floresceterapias.pt/service-detail.html">
+    <meta property="og:title" content="Sessões Terapêuticas | Floresce Terapias">
+    <meta property="og:description" content="Descubra as sessões terapêuticas de Leitura de Aura, Innerdance e Constelações Familiares com Rita Barata em Portugal.">
+    <meta name="keywords" content="Sessão Terapêutica, Rita Barata, Leitura de Aura, Innerdance, Constelações familiares e Sistémicas, Meditação das Rosas, Floresce Terapias">
+    <meta property="og:image" content="https://floresceterapias.pt/assets/images/og-image.jpg">
+    <link rel="canonical" href="https://floresceterapias.pt/service-detail.html">
     <link rel="stylesheet" href="style.css?v=7.1.5">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap"
         rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.292.0"></script>
     <style>
         /* Service Sections */
         .svc-section {
@@ -58,6 +65,19 @@
             .svc-split-image {
                 width: 100%;
                 max-width: 100%;
+            }
+
+            /* Stack buttons vertically and make them full width to match about-new */
+            .svc-btn-group {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .svc-btn-group .btn {
+                width: 100%;
+                text-align: center;
+                display: block;
+                box-sizing: border-box;
             }
         }
     </style>
@@ -103,7 +123,7 @@
     <div class="mobile-menu"></div>
 
     <!-- Hidden Header Title (Used for SEO/Compatibility but hidden in new layout) -->
-    <h1 id="svc-title" class="visually-hidden-seo">Detalhe do Serviço</h1>
+    <h1 id="svc-title" class="visually-hidden-seo">Sessões e Terapias Holísticas | Floresce Terapias</h1>
 
     <!-- Main Content -->
     <main class="main-full-width"> <!-- Remove default padding to allow full-width sections -->
@@ -111,7 +131,7 @@
         <!-- Section 1 (Hero / Intro) -->
         <section id="svc-section-1" class="svc-hero-section">
             <div class="svc-overlay-container" id="svc-content-1-container">
-                <div id="loading-msg">A carregar detalhes...</div>
+                <div id="loading-msg">Sessões terapêuticas para autoconhecimento e bem-estar em Portugal. Leitura de Aura, Innerdance e Constelações Familiares com Rita Barata. Formato online e presencial. <a href="booking.html">Agendar sessão</a></div>
                 <div id="svc-content-1">
                     <!-- Title and Text injected here -->
                 </div>
@@ -149,10 +169,11 @@
             </div>
         </section>
 
-        <!-- CTA Buttons (Floating or Bottom) -->
         <div class="cta-actions cta-actions-container">
-            <a href="https://wa.me/351913515406" class="btn btn-primary" target="_blank"
-                rel="noopener noreferrer">Agendar via WhatsApp</a>
+            <a href="https://wa.me/351913515406" class="btn btn-primary cta-whatsapp-btn" target="_blank"
+                rel="noopener noreferrer">
+                <i data-lucide="message-circle" class="icon-sm"></i> Agendar via WhatsApp
+            </a>
         </div>
     </main>
 
@@ -164,6 +185,7 @@
                 <a href="termos.html">Termos e Privacidade</a>
             </div>
             <p class="copyright" id="footer-copyright"></p>
+
             <p class="footer-credits" id="footer-credit"></p>
         </div>
     </footer>
@@ -175,22 +197,11 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <script src="init-firebase.js"></script>
 
-    <script src="main.js?v=4.9.9"></script>
     <script src="carousel.js"></script>
+    <script src="main.js?v=4.9.9"></script>
     <script src="sidebar.js"></script>
     <script>
         lucide.createIcons();
-
-        // Use global function from main.js
-        if (window.loadServiceDetail) {
-            window.loadServiceDetail();
-        } else {
-            console.error("loadServiceDetail validation failed: main.js not loaded?");
-            // Fallback just in case
-            window.addEventListener('load', () => {
-                if (window.loadServiceDetail) window.loadServiceDetail();
-            });
-        }
     </script>
 </body>
 
