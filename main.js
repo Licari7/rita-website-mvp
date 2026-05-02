@@ -947,8 +947,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     const aboutText = document.getElementById('home-about-bio-display');
                     const aboutImg = document.getElementById('home-about-image-display');
 
-                    if (aboutTitle && data.home_about.title) aboutTitle.textContent = data.home_about.title;
-                    if (aboutText && data.home_about.text) aboutText.innerHTML = data.home_about.text;
+                    if (aboutTitle && data.home_about.title) {
+                        aboutTitle.textContent = data.home_about.title;
+                        aboutTitle.classList.remove('cms-pending');
+                    }
+                    if (aboutText && data.home_about.text) {
+                        aboutText.innerHTML = data.home_about.text;
+                        aboutText.classList.remove('cms-pending');
+                    }
 
                     if (aboutImg && data.home_about.image_url) {
                         aboutImg.innerHTML = `<img src="${data.home_about.image_url}" alt="Sobre Mim - Resumo">`;

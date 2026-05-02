@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt">
 
 <head>
@@ -67,7 +67,7 @@
             margin-bottom: 5px;
             font-size: 1.2rem;
             color: #333333;
-            /* Forçar uma cor escura para fazer contraste com o fundo branco do cartão */
+            /* ForÃ§ar uma cor escura para fazer contraste com o fundo branco do cartÃ£o */
             font-weight: 600;
         }
 
@@ -130,7 +130,7 @@
 
             <!-- Full Nav Links (Desktop) -->
             <ul class="nav-links">
-                <li><a href="index.html">Início</a></li>
+                <li><a href="index.html">InÃ­cio</a></li>
                 <li><a href="dashboard.html">Voltar</a></li>
             </ul>
 
@@ -147,14 +147,12 @@
 
 
     <header class="theme-header">
-        <h1 class="section-title" id="theme-title">A carregar...</h1>
-        <p id="theme-subtitle"></p>
+        <h1 class="section-title cms-pending" id="theme-title"></h1>
+        <p id="theme-subtitle" class="cms-pending"></p>
     </header>
 
     <main class="container">
-        <div class="meditation-list text-center" id="dynamic-meditations">
-            <p>A carregar recursos...</p>
-        </div>
+        <div class="meditation-list text-center cms-pending" id="dynamic-meditations"></div>
     </main>
 
     <script>
@@ -169,10 +167,6 @@
                 window.location.href = 'dashboard.html';
                 return;
             }
-
-            // Initial Loading State
-            document.getElementById('theme-title').innerText = "A carregar...";
-            document.title = "A carregar... | Floresce Terapias";
 
             // Wait for DB (Firebase initialization)
             const MAX_RETRIES = 50; // 5 seconds
@@ -189,12 +183,13 @@
                         if (container) {
                             container.innerHTML = `
                                 <div style="text-align:center; padding:20px; color:red; border:1px solid red; margin-top:20px;">
-                                    <h3 style="margin-bottom:10px;">Erro de Conexão</h3>
-                                    <p>Não foi possível conectar ao banco de dados.</p>
-                                    <p style="font-size:0.8rem;">O Firebase não inicializou a tempo.</p>
+                                    <h3 style="margin-bottom:10px;">Erro de ConexÃ£o</h3>
+                                    <p>NÃ£o foi possÃ­vel conectar ao banco de dados.</p>
+                                    <p style="font-size:0.8rem;">O Firebase nÃ£o inicializou a tempo.</p>
                                     <button onclick="window.location.reload()" style="padding:10px 20px; margin-top:10px; cursor:pointer;">Tentar Novamente</button>
                                 </div>
                             `;
+                            container.classList.remove('cms-pending');
                         }
                         return;
                     }
@@ -214,10 +209,11 @@
                     container.innerHTML = `
                         <div style="text-align: center; padding: 40px; background: whitesmoke; border-radius: 8px;">
                             <i data-lucide="file-warning" style="margin-bottom: 15px; color: #999;"></i>
-                            <p>Recurso não encontrado ou removido.</p>
+                            <p>Recurso nÃ£o encontrado ou removido.</p>
                             <a href="dashboard.html" class="cta-button outline small" style="margin-top:20px; display:inline-block;">Voltar</a>
                         </div>
                     `;
+                    container.classList.remove('cms-pending');
                     lucide.createIcons();
                     return;
                 }
@@ -228,12 +224,17 @@
                 const pageTitle = data.page_title || data.title;
                 const pageSubtitle = data.page_subtitle || '';
 
-                document.getElementById('theme-title').innerHTML = pageTitle;
+                const titleEl = document.getElementById('theme-title');
+                titleEl.innerHTML = pageTitle;
+                titleEl.classList.remove('cms-pending');
                 document.title = `${pageTitle.replace(/<[^>]*>?/gm, '')} | Floresce Terapias`;
 
                 // Add Subtitle to Header
                 const headerP = document.getElementById('theme-subtitle');
-                if (headerP) headerP.innerHTML = pageSubtitle;
+                if (headerP) {
+                    headerP.innerHTML = pageSubtitle;
+                    headerP.classList.remove('cms-pending');
+                }
 
                 // 2. UPDATE VISUALS (Background Color based on 'Theme' tag)
                 // Map themes to colors (using CSS variables or hex)
@@ -333,7 +334,7 @@
                     <div class="med-player-container">
                         <audio controls controlsList="nodownload" oncontextmenu="return false;" style="width: 100%;">
                             <source src="${data.url}" type="audio/mpeg">
-                            O teu navegador não suporta o elemento de áudio.
+                            O teu navegador nÃ£o suporta o elemento de Ã¡udio.
                         </audio>
                     </div>`;
                     }
@@ -365,11 +366,13 @@
                     </div>
                 </div>`;
 
+                container.classList.remove('cms-pending');
                 lucide.createIcons();
 
             } catch (error) {
                 console.error("Error loading meditation:", error);
                 container.innerHTML = '<p style="text-align:center; color:red;">Erro ao carregar recurso.</p>';
+                container.classList.remove('cms-pending');
             }
         }
 
