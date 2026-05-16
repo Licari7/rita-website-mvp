@@ -50,14 +50,74 @@
       "url": "https://floresceterapias.pt/innerdance"
     }
     </script>
-    <link rel="stylesheet" href="style.css?v=7.1.7">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Início",
+          "item": "https://floresceterapias.pt/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Innerdance",
+          "item": "https://floresceterapias.pt/innerdance"
+        }
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "O que é Innerdance?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Innerdance é uma experiência de autoconhecimento que usa música, presença e campo energético para favorecer estados ampliados de consciência, autorregulação e reconexão com a inteligência do corpo."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Preciso de saber dançar para participar?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Não. Apesar do nome, Innerdance não exige saber dançar nem seguir passos. O processo acontece de forma interna e cada pessoa vive a experiência ao seu próprio ritmo."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "A sessão pode ser online?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "As sessões podem acontecer online ou presencialmente, conforme o formato disponível. Recomenda-se confirmar as condições antes de marcar."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Innerdance substitui acompanhamento psicológico ou médico?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Não. Innerdance é uma ferramenta complementar de autoconhecimento e desenvolvimento pessoal, não substituindo psicoterapia, acompanhamento psicológico ou acompanhamento médico."
+          }
+        }
+      ]
+    }
+    </script>
+    <link rel="stylesheet" href="style.css?v=8.4.4">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@0.292.0"></script>
 </head>
 
-<body>
+<body class="service-page-loading">
     <nav class="navbar">
         <div class="container nav-content">
             <div class="brand-container">
@@ -106,6 +166,98 @@
             </div>
         </section>
 
+        <section id="svc-event-memories-section" class="svc-section svc-event-memories-section hidden" style="display:none;">
+            <div class="svc-container">
+                <header class="memory-section-header">
+                    <p class="svc-kicker">Momentos Recentes</p>
+                    <h2>Registos de encontros e partilhas</h2>
+                </header>
+                <div id="svc-event-memories-grid" class="memory-grid memory-grid-service"></div>
+                <div class="memory-section-actions">
+                    <a href="/encontros-realizados" class="btn btn-primary">Explorar a partilha completa</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- TODO CMS: mover esta secção editorial para campos editáveis no CMS depois da aprovação da Rita.
+             Deve permitir editar fundo/cor/foto/opacidade, cores e fonte dos textos, todos os textos, links relacionados,
+             cartões "Para quem é indicado" e FAQs com possibilidade de adicionar, remover e reordenar itens. -->
+        <section class="svc-section svc-editorial-section" id="innerdance-guia">
+            <div class="svc-container svc-editorial-container">
+                <header class="svc-editorial-header">
+                    <p class="svc-kicker">Innerdance em Portugal</p>
+                    <h2>Uma viagem interior através da música, do corpo e da consciência</h2>
+                    <p>Innerdance é uma experiência de autoconhecimento que convida o corpo a regressar à sua inteligência natural. Através da música, da presença e de um campo energético sustentado, a sessão cria espaço para estados ampliados de consciência, libertação interna e autorregulação.</p>
+                    <p>Mais do que uma prática de movimento, Innerdance é uma viagem interior. Cada pessoa vive o processo de forma única, permitindo que sensações, imagens, emoções ou movimentos espontâneos surjam ao ritmo do próprio corpo.</p>
+                </header>
+
+                <h2>Para quem é indicado</h2>
+                <p>Uma sessão de Innerdance pode fazer sentido para quem procura aprofundar a relação com o corpo, aceder a estados de maior presença ou abrir espaço para transformação interior. Alguns temas comuns são:</p>
+                <ul class="svc-topic-grid">
+                    <li>necessidade de desacelerar e escutar o corpo com mais presença;</li>
+                    <li>procura de autorregulação, autocura e consciência corporal;</li>
+                    <li>vontade de explorar estados ampliados de consciência;</li>
+                    <li>sensação de bloqueio emocional, mental ou energético;</li>
+                    <li>fase de mudança, expansão pessoal ou reconexão interior;</li>
+                    <li>curiosidade por práticas terapêuticas com música e campo energético.</li>
+                </ul>
+
+                <h2>Como funciona uma sessão</h2>
+                <p>A sessão decorre num ambiente seguro e cuidado, com música e orientação energética. Normalmente, a pessoa permanece deitada ou em repouso, permitindo que o corpo responda naturalmente ao que está a acontecer. Não há passos a seguir nem uma forma certa de viver a experiência.</p>
+                <p>Podem surgir sensações físicas, memórias, emoções, movimentos espontâneos, imagens internas ou momentos de silêncio profundo. No final, há espaço para integrar a experiência e regressar com calma ao quotidiano.</p>
+
+                <h2>O que podes esperar</h2>
+                <p>Innerdance não promete resultados iguais para todas as pessoas. Pode apoiar processos de relaxamento, autorregulação, clareza, libertação emocional e reconexão com a inteligência do corpo. Cada sessão é vivida ao ritmo de quem participa.</p>
+
+                <h2>Sobre Rita Barata</h2>
+                <p>As sessões são acompanhadas por Rita Barata, terapeuta holística e criadora da Floresce Terapias. O seu trabalho integra presença, escuta e ferramentas energéticas para apoiar processos de consciência, expansão e transformação interior.</p>
+                <nav class="svc-related-links" aria-label="Conteúdos relacionados">
+                    <a href="/about-new">
+                        <span>Sobre Rita Barata</span>
+                        <strong>Conhecer percurso</strong>
+                    </a>
+                    <a href="/leitura-aura">
+                        <span>Serviço complementar</span>
+                        <strong>Leitura de Aura</strong>
+                    </a>
+                    <a href="/constelacoes">
+                        <span>Serviço complementar</span>
+                        <strong>Constelações Familiares</strong>
+                    </a>
+                </nav>
+
+                <div class="svc-faq-list">
+                    <h2>Perguntas frequentes</h2>
+                    <article>
+                        <h3>O que é Innerdance?</h3>
+                        <p>Innerdance é uma experiência de autoconhecimento que usa música, presença e campo energético para favorecer estados ampliados de consciência, autorregulação e reconexão com a inteligência do corpo.</p>
+                    </article>
+
+                    <article>
+                        <h3>Preciso de saber dançar para participar?</h3>
+                        <p>Não. Apesar do nome, Innerdance não exige saber dançar nem seguir passos. O processo acontece de forma interna e cada pessoa vive a experiência ao seu próprio ritmo.</p>
+                    </article>
+
+                    <article>
+                        <h3>A sessão pode ser online?</h3>
+                        <p>As sessões podem acontecer online ou presencialmente, conforme o formato disponível. Recomenda-se confirmar as condições antes de marcar.</p>
+                    </article>
+
+                    <article>
+                        <h3>Innerdance substitui acompanhamento psicológico ou médico?</h3>
+                        <p>Não. Innerdance é uma ferramenta complementar de autoconhecimento e desenvolvimento pessoal, não substituindo psicoterapia, acompanhamento psicológico ou acompanhamento médico.</p>
+                    </article>
+                </div>
+
+                <div class="svc-btn-group">
+                    <a href="/booking" class="btn btn-primary">Agendar sessão</a>
+                    <a href="https://wa.me/351913515406" class="btn btn-primary cta-whatsapp-btn" target="_blank" rel="noopener noreferrer">
+                        <i data-lucide="message-circle" class="icon-sm"></i> Falar por WhatsApp
+                    </a>
+                </div>
+            </div>
+        </section>
+
         <section id="svc-testimonials-section" class="svc-testimonials-section-hidden svc-section">
             <div class="svc-container">
                 <h3 class="font-serif text-center section-title custom-primary mb-40" id="svc-testi-title">Testemunhos</h3>
@@ -117,11 +269,6 @@
             </div>
         </section>
 
-        <div class="cta-actions cta-actions-container">
-            <a href="https://wa.me/351913515406" class="btn btn-primary cta-whatsapp-btn" target="_blank" rel="noopener noreferrer">
-                <i data-lucide="message-circle" class="icon-sm"></i> Agendar via WhatsApp
-            </a>
-        </div>
     </main>
 
     <footer class="footer">
@@ -137,9 +284,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
-    <script src="init-firebase.js"></script>
+    <script src="init-firebase.js?v=3.1.8"></script>
     <script src="carousel.js"></script>
-    <script src="main.js?v=7.1.1"></script>
+    <script src="main.js?v=7.4.6"></script>
     <script src="sidebar.js"></script>
     <script>
         lucide.createIcons();

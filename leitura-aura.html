@@ -50,14 +50,74 @@
       "url": "https://floresceterapias.pt/leitura-aura"
     }
     </script>
-    <link rel="stylesheet" href="style.css?v=7.1.7">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Início",
+          "item": "https://floresceterapias.pt/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Leitura de Aura",
+          "item": "https://floresceterapias.pt/leitura-aura"
+        }
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "O que é uma Leitura de Aura?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A Leitura de Aura é uma sessão de escuta energética e intuitiva que procura trazer clareza sobre o momento presente, padrões internos, bloqueios e potenciais de desenvolvimento pessoal."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "A Leitura de Aura prevê o futuro?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Não. A Leitura de Aura não é futurologia. O foco está em observar o momento presente, apoiar clareza interior e favorecer um contacto mais consciente com a própria essência."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "A sessão pode ser online?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A Leitura de Aura pode ser realizada online, quando esse formato estiver disponível. Recomenda-se confirmar as condições antes de marcar."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Uma Leitura de Aura substitui acompanhamento psicológico ou médico?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Não. A Leitura de Aura é uma ferramenta complementar de autoconhecimento e não substitui psicoterapia, acompanhamento psicológico ou acompanhamento médico."
+          }
+        }
+      ]
+    }
+    </script>
+    <link rel="stylesheet" href="style.css?v=8.4.4">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@0.292.0"></script>
 </head>
 
-<body>
+<body class="service-page-loading">
     <nav class="navbar">
         <div class="container nav-content">
             <div class="brand-container">
@@ -108,6 +168,98 @@
             </div>
         </section>
 
+        <section id="svc-event-memories-section" class="svc-section svc-event-memories-section hidden" style="display:none;">
+            <div class="svc-container">
+                <header class="memory-section-header">
+                    <p class="svc-kicker">Momentos Recentes</p>
+                    <h2>Registos de encontros e partilhas</h2>
+                </header>
+                <div id="svc-event-memories-grid" class="memory-grid memory-grid-service"></div>
+                <div class="memory-section-actions">
+                    <a href="/encontros-realizados" class="btn btn-primary">Explorar a partilha completa</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- TODO CMS: mover esta secção editorial para campos editáveis no CMS depois da aprovação da Rita.
+             Deve permitir editar fundo/cor/foto/opacidade, cores e fonte dos textos, todos os textos, links relacionados,
+             cartões "Para quem é indicado" e FAQs com possibilidade de adicionar, remover e reordenar itens. -->
+        <section class="svc-section svc-editorial-section" id="leitura-aura-guia">
+            <div class="svc-container svc-editorial-container">
+                <header class="svc-editorial-header">
+                    <p class="svc-kicker">Leitura de Aura em Portugal</p>
+                    <h2>Um encontro de clareza, escuta energética e reconexão interior</h2>
+                    <p>A Leitura de Aura é um espaço de escuta profunda da energia presente, das camadas emocionais e dos movimentos internos que podem estar a pedir atenção. Mais do que procurar respostas fora, esta sessão convida a observar o que já vive em ti com mais presença, clareza e consciência.</p>
+                    <p>Ao olhar para o campo energético, a sessão pode ajudar a reconhecer padrões, bloqueios, potenciais e temas que estão ativos no momento atual. É uma ferramenta de autoconhecimento, alinhamento e reconexão com a própria essência.</p>
+                </header>
+
+                <h2>Para quem é indicado</h2>
+                <p>Uma sessão de Leitura de Aura pode fazer sentido para quem procura clareza interior, orientação energética ou um momento de pausa para se escutar com mais profundidade. Alguns temas comuns são:</p>
+                <ul class="svc-topic-grid">
+                    <li>necessidade de clareza sobre um momento de vida ou decisão importante;</li>
+                    <li>sensação de bloqueio, peso energético ou desalinhamento interior;</li>
+                    <li>vontade de compreender padrões emocionais ou relacionais;</li>
+                    <li>procura de reconexão com a própria essência e voz interior;</li>
+                    <li>curiosidade sobre leitura energética, chakras ou campo áurico;</li>
+                    <li>fase de mudança, crescimento pessoal ou transição interior.</li>
+                </ul>
+
+                <h2>Como funciona uma sessão</h2>
+                <p>A sessão começa com uma breve conversa para acolher o momento presente e a intenção que trazes. A partir daí, a leitura desenvolve-se como uma escuta do campo energético, observando informações, sensações e mensagens que possam apoiar maior consciência sobre o tema ou fase atual.</p>
+                <p>O processo é individual e pode ser adaptado ao formato disponível. No final, há espaço para integrar o que foi partilhado, colocar questões e regressar ao quotidiano com mais clareza e presença.</p>
+
+                <h2>O que podes esperar</h2>
+                <p>A Leitura de Aura não é futurologia nem promete soluções imediatas. Pode apoiar um processo de clareza, autoconhecimento e alinhamento interior, ajudando a pessoa a reconhecer o que está presente e a relacionar-se com a sua própria energia de forma mais consciente.</p>
+
+                <h2>Sobre Rita Barata</h2>
+                <p>As sessões são acompanhadas por Rita Barata, terapeuta holística e criadora da Floresce Terapias. O seu trabalho integra presença, escuta e ferramentas energéticas para apoiar processos de consciência, expansão e transformação interior.</p>
+                <nav class="svc-related-links" aria-label="Conteúdos relacionados">
+                    <a href="/about-new">
+                        <span>Sobre Rita Barata</span>
+                        <strong>Conhecer percurso</strong>
+                    </a>
+                    <a href="/innerdance">
+                        <span>Serviço complementar</span>
+                        <strong>Innerdance</strong>
+                    </a>
+                    <a href="/constelacoes">
+                        <span>Serviço complementar</span>
+                        <strong>Constelações Familiares</strong>
+                    </a>
+                </nav>
+
+                <div class="svc-faq-list">
+                    <h2>Perguntas frequentes</h2>
+                    <article>
+                        <h3>O que é uma Leitura de Aura?</h3>
+                        <p>É uma sessão de escuta energética e intuitiva que procura trazer clareza sobre o momento presente, padrões internos, bloqueios e potenciais de desenvolvimento pessoal.</p>
+                    </article>
+
+                    <article>
+                        <h3>A Leitura de Aura prevê o futuro?</h3>
+                        <p>Não. A Leitura de Aura não é futurologia. O foco está em observar o momento presente, apoiar clareza interior e favorecer um contacto mais consciente com a própria essência.</p>
+                    </article>
+
+                    <article>
+                        <h3>A sessão pode ser online?</h3>
+                        <p>A Leitura de Aura pode ser realizada online, quando esse formato estiver disponível. Recomenda-se confirmar as condições antes de marcar.</p>
+                    </article>
+
+                    <article>
+                        <h3>Uma Leitura de Aura substitui acompanhamento psicológico ou médico?</h3>
+                        <p>Não. A Leitura de Aura é uma ferramenta complementar de autoconhecimento e não substitui psicoterapia, acompanhamento psicológico ou acompanhamento médico.</p>
+                    </article>
+                </div>
+
+                <div class="svc-btn-group">
+                    <a href="/booking" class="btn btn-primary">Agendar sessão</a>
+                    <a href="https://wa.me/351913515406" class="btn btn-primary cta-whatsapp-btn" target="_blank" rel="noopener noreferrer">
+                        <i data-lucide="message-circle" class="icon-sm"></i> Falar por WhatsApp
+                    </a>
+                </div>
+            </div>
+        </section>
+
         <section id="svc-testimonials-section" class="svc-testimonials-section-hidden svc-section">
             <div class="svc-container">
                 <h3 class="font-serif text-center section-title custom-primary mb-40" id="svc-testi-title">Testemunhos</h3>
@@ -119,11 +271,6 @@
             </div>
         </section>
 
-        <div class="cta-actions cta-actions-container">
-            <a href="https://wa.me/351913515406" class="btn btn-primary cta-whatsapp-btn" target="_blank" rel="noopener noreferrer">
-                <i data-lucide="message-circle" class="icon-sm"></i> Agendar via WhatsApp
-            </a>
-        </div>
     </main>
 
     <footer class="footer">
@@ -139,9 +286,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
-    <script src="init-firebase.js"></script>
+    <script src="init-firebase.js?v=3.1.8"></script>
     <script src="carousel.js"></script>
-    <script src="main.js?v=7.1.1"></script>
+    <script src="main.js?v=7.4.6"></script>
     <script src="sidebar.js"></script>
     <script>
         lucide.createIcons();
