@@ -11,9 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <li><a href="index.html">Início</a></li>
             <li><a href="index.html#about">Sobre</a></li>
             <li><a href="index.html#services">Serviços</a></li>
-            <li><a href="index.html#events">Eventos</a></li>
+            <li><a href="index.html#events">Próximos Eventos</a></li>
+            <li data-event-memories-mobile-item class="hidden"><a href="encontros-realizados.html">Eventos Realizados</a></li>
             <li><a href="booking.html">Agendar</a></li>
-            <li><a href="dashboard.html" class="mobile-member-link">Área de Membros</a></li>
+            <li><a href="area-membros.html" class="mobile-member-link">Área de Membros</a></li>
         </ul>
 
         <div class="mobile-socials">
@@ -92,7 +93,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 6. Logout Button & Admin Link Logic
+    // 6. Conditional content links, logout button & admin link logic
+    const updateEventMemoriesLink = async (retryCount = 0) => {
+        const item = mobileMenu.querySelector('[data-event-memories-mobile-item]');
+        if (!item) return;
+        if (!window.db) {
+            if (retryCount < 10) setTimeout(() => updateEventMemoriesLink(retryCount + 1), 500);
+            return;
+        }
+
+        let shouldShow = false;
+        if (typeof window.hasPublicEventMemories === 'function') {
+            shouldShow = await window.hasPublicEventMemories();
+        } else {
+            try {
+                const snapshot = await window.db.collection('event_memories').get();
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.show_on_archive !== false) shouldShow = true;
+                });
+            } catch (err) {
+                console.warn('Sidebar event memories check failed:', err);
+            }
+        }
+        item.classList.toggle('hidden', !shouldShow);
+    };
+
     const updateAuthVisibility = () => {
         const userName = localStorage.getItem('userName');
         const isAdmin = localStorage.getItem('isAdmin') === 'true';
@@ -144,8 +170,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Expose for external updates (e.g. from init-firebase.js)
     window.updateSidebarAuth = updateAuthVisibility;
+    window.updateSidebarEventMemoriesLink = updateEventMemoriesLink;
 
     // Run immediately and listen for changes
+    updateEventMemoriesLink();
     updateAuthVisibility();
     window.addEventListener('storage', (e) => {
         if (e.key === 'userName' || e.key === 'isMember' || e.key === 'isAdmin') updateAuthVisibility();

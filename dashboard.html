@@ -10,7 +10,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@300;400;500&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=7.1.5">
+    <link rel="stylesheet" href="style.css?v=8.4.3">
     <script src="https://unpkg.com/lucide@0.292.0"></script>
 
     <!-- Firebase SDKs (Compat) -->
@@ -18,8 +18,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
-    <script src="init-firebase.js?v=3.1.0"></script>
-    <script src="cms.js?v=7.2.1"></script>
+    <script src="init-firebase.js?v=3.1.8"></script>
+    <script src="cms.js?v=7.4.5"></script>
     <script src="cms-services.js?v=2.3.0"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
@@ -353,6 +353,118 @@
             </button>
         </header>
 
+        <section id="member-profile-panel" class="member-profile-panel" hidden>
+            <div class="member-profile-heading">
+                <div>
+                    <span class="eyebrow">Perfil de membro</span>
+                    <h2>A minha conta</h2>
+                </div>
+                <div class="member-profile-heading-actions">
+                    <p>Atualiza os teus dados pessoais, foto e password de acesso.</p>
+                    <button type="button" id="member-profile-close" class="btn btn-outline btn-sm member-profile-close-button">
+                        <i data-lucide="x"></i> Sair
+                    </button>
+                </div>
+            </div>
+
+            <div class="member-profile-layout">
+                <form id="member-profile-form" class="member-profile-card">
+                    <div class="profile-photo-zone">
+                        <div id="member-profile-photo-preview" class="profile-photo-preview" aria-label="Foto do membro">
+                            <span id="member-profile-initials">FT</span>
+                        </div>
+                        <div class="profile-photo-actions">
+                            <label for="member-profile-photo" class="btn btn-outline btn-sm">
+                                <i data-lucide="image-plus"></i> Alterar foto
+                            </label>
+                            <input type="file" id="member-profile-photo" accept="image/*" class="visually-hidden">
+                            <button type="button" id="member-profile-photo-remove" class="btn btn-outline btn-sm">
+                                <i data-lucide="trash-2"></i> Remover
+                            </button>
+                            <small>JPG, PNG ou WEBP. Arrasta a foto no circulo para ajustar o enquadramento.</small>
+                        </div>
+                    </div>
+                    <div class="profile-photo-controls">
+                        <label for="member-profile-photo-zoom">Zoom</label>
+                        <input type="range" id="member-profile-photo-zoom" min="1" max="2" step="0.01" value="1">
+                        <button type="button" id="member-profile-photo-center" class="btn btn-outline btn-sm">Centrar</button>
+                    </div>
+
+                    <div class="member-profile-fields">
+                        <div class="form-group">
+                            <label for="member-profile-name">Nome publico</label>
+                            <input type="text" id="member-profile-name" class="admin-input" placeholder="Como queres aparecer no site">
+                        </div>
+                        <div class="form-group">
+                            <label for="member-profile-nickname">Alcunha / nome curto</label>
+                            <input type="text" id="member-profile-nickname" class="admin-input" placeholder="Opcional">
+                        </div>
+                        <div class="form-group">
+                            <label for="member-profile-email">Email</label>
+                            <input type="email" id="member-profile-email" class="admin-input" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="member-profile-phone">Telefone</label>
+                            <input type="tel" id="member-profile-phone" class="admin-input" placeholder="Opcional">
+                        </div>
+                        <div class="form-group">
+                            <label for="member-profile-city">Localidade</label>
+                            <input type="text" id="member-profile-city" class="admin-input" placeholder="Opcional">
+                        </div>
+                        <div class="form-group">
+                            <label for="member-profile-contact">Preferencia de contacto</label>
+                            <select id="member-profile-contact" class="admin-input">
+                                <option value="">Sem preferencia</option>
+                                <option value="email">Email</option>
+                                <option value="phone">Telefone</option>
+                                <option value="whatsapp">WhatsApp</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="member-profile-status" class="profile-status-message" aria-live="polite"></div>
+                    <button type="submit" class="cta-button profile-save-button">
+                        <i data-lucide="save"></i> Guardar perfil
+                    </button>
+                </form>
+
+                <form id="member-password-form" class="member-profile-card profile-password-card">
+                    <h3>Alterar password</h3>
+                    <div class="form-group">
+                        <label for="member-current-password">Password atual</label>
+                        <div class="profile-password-input">
+                            <input type="password" id="member-current-password" class="admin-input" autocomplete="current-password">
+                            <button type="button" class="profile-password-toggle" data-password-toggle="member-current-password" aria-label="Mostrar password atual">
+                                <i data-lucide="eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="member-new-password">Nova password</label>
+                        <div class="profile-password-input">
+                            <input type="password" id="member-new-password" class="admin-input" autocomplete="new-password" minlength="6">
+                            <button type="button" class="profile-password-toggle" data-password-toggle="member-new-password" aria-label="Mostrar nova password">
+                                <i data-lucide="eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="member-confirm-password">Confirmar nova password</label>
+                        <div class="profile-password-input">
+                            <input type="password" id="member-confirm-password" class="admin-input" autocomplete="new-password" minlength="6">
+                            <button type="button" class="profile-password-toggle" data-password-toggle="member-confirm-password" aria-label="Mostrar confirmacao da password">
+                                <i data-lucide="eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="member-password-status" class="profile-status-message" aria-live="polite"></div>
+                    <button type="submit" class="btn btn-outline">
+                        <i data-lucide="key-round"></i> Alterar password
+                    </button>
+                </form>
+            </div>
+        </section>
+
         <!-- ADMIN PANEL (Hidden by Default) -->
         <section id="admin-panel" class="admin-panel-container">
             <h2 class="admin-panel-title">
@@ -477,6 +589,154 @@
                     </div>
                 </details>
 
+                <!-- 1.1 EVENT MEMORIES ACCORDION -->
+                <details class="admin-card draggable-card" id="card-event-memories">
+                    <summary class="admin-card-header">
+                        <div class="drag-handle"><i data-lucide="grip-vertical"></i></div>
+                        <span><i data-lucide="images" class="admin-icon"></i> Encontros Realizados</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <div class="admin-grid-layout">
+                            <div>
+                                <h3 class="admin-section-title">Adicionar Registo / Partilha</h3>
+                                <form id="memory-form" class="auth-form">
+                                    <input type="hidden" id="mem-id">
+                                    <div class="form-group">
+                                        <label>Título</label>
+                                        <input type="text" id="mem-title" required placeholder="Ex: Innerdance em Lisboa">
+                                    </div>
+                                    <div class="form-group-row">
+                                        <div class="form-group form-group-half">
+                                            <label>Data</label>
+                                            <input type="date" id="mem-date" required>
+                                        </div>
+                                        <div class="form-group form-group-half">
+                                            <label>Data visível (Opc.)</label>
+                                            <input type="text" id="mem-date-display" placeholder="Ex: Abril 2026">
+                                        </div>
+                                    </div>
+                                    <div class="form-group-row">
+                                        <div class="form-group form-group-half">
+                                            <label>Serviço relacionado</label>
+                                            <select id="mem-service-id" required>
+                                                <option value="innerdance">Innerdance</option>
+                                                <option value="aura">Leitura de Aura</option>
+                                                <option value="constelacoes">Constelações</option>
+                                                <option value="geral">Geral</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group form-group-half">
+                                            <label>Local</label>
+                                            <input type="text" id="mem-location" placeholder="Ex: Lisboa">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Resumo</label>
+                                        <textarea id="mem-summary" rows="3" class="admin-textarea" placeholder="Breve descrição do encontro..."></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Imagem principal</label>
+                                        <div class="flex-align-center gap-5">
+                                            <input type="text" id="mem-image-url" class="admin-file-url-input margin-0 flex-grow-1" placeholder="URL da imagem (auto)" readonly>
+                                            <button type="button" class="btn-text-danger font-xs"
+                                                onclick="window.removeFileWithUrl('mem-image-url', 'mem-image')">Remover</button>
+                                        </div>
+                                        <div id="mem-image-preview" class="mb-5"></div>
+                                        <input type="file" id="mem-image" accept="image/*">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Fotos já carregadas</label>
+                                        <div id="mem-gallery-existing" class="memory-admin-gallery-existing">
+                                            <p class="field-help">Ainda sem fotos carregadas neste registo.</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Adicionar novas fotos à galeria</label>
+                                        <input type="file" id="mem-gallery-files" accept="image/*" multiple onchange="window.validateMemoryGallerySelection && window.validateMemoryGallerySelection()">
+                                        <p class="field-help">Máximo por registo: 12 fotos no total. Nas páginas de serviço aparecem até 8; na página geral aparecem até 12.</p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Adicionar fotos por URL (Opcional, uma por linha)</label>
+                                        <textarea id="mem-gallery-urls" rows="3" class="admin-textarea" placeholder="https://..."></textarea>
+                                        <p class="field-help">Usar apenas para imagens já publicadas noutro local. Para fotos locais, preferir o upload acima.</p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Vídeos (YouTube/Vimeo/URL, um por linha)</label>
+                                        <textarea id="mem-video-urls" rows="3" class="admin-textarea" placeholder="https://..."></textarea>
+                                        <p class="field-help">Preferir YouTube/Vimeo. Visibilidade por registo: até 2 vídeos nas páginas de serviço e até 3 vídeos na página geral; vídeos extra ficam como links.</p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Mensagens / Partilhas</label>
+                                        <textarea id="mem-messages" rows="4" class="admin-textarea" placeholder="Separar partilhas com uma linha em branco..."></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Testemunhos</label>
+                                        <textarea id="mem-testimonials" rows="4" class="admin-textarea" placeholder="Separar testemunhos com uma linha em branco..."></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Autores dos testemunhos (Opc., um por linha)</label>
+                                        <textarea id="mem-testimonial-authors" rows="2" class="admin-textarea" placeholder="Ex: Participante"></textarea>
+                                    </div>
+                                    <div class="form-group-row">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="mem-show-service" checked>
+                                            Mostrar na página do serviço
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="mem-show-archive" checked>
+                                            Mostrar na página geral
+                                        </label>
+                                    </div>
+                                    <button type="submit" class="cta-button primary full-width">Guardar Registo</button>
+                                </form>
+                            </div>
+
+                            <div class="admin-list-container">
+                                <div class="admin-header-flex align-items-center">
+                                    <div class="flex align-items-center gap-10">
+                                        <h3 class="font-serif margin-0">Registos Publicados</h3>
+                                    </div>
+                                    <button type="button" onclick="window.resetMemoryForm()"
+                                        class="btn btn-outline btn-sm font-sm">+ Novo</button>
+                                </div>
+                                <div id="admin-memories-list">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- 1.2 STORAGE AUDIT ACCORDION -->
+                <details class="admin-card draggable-card" id="card-storage-audit">
+                    <summary class="admin-card-header">
+                        <div class="drag-handle"><i data-lucide="grip-vertical"></i></div>
+                        <span><i data-lucide="folder-search" class="admin-icon"></i> Auditoria de Ficheiros</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <div class="admin-header-flex align-items-center mb-15">
+                            <div>
+                                <h3 class="font-serif margin-0">Fotos e ficheiros no Firebase Storage</h3>
+                                <p class="field-help">Compara ficheiros guardados no Storage com URLs usados no Firestore. Apagar definitivamente remove o ficheiro do Firebase Storage.</p>
+                            </div>
+                            <button type="button" class="cta-button primary small" onclick="window.auditStorageFiles()">
+                                Analisar Storage
+                            </button>
+                        </div>
+                        <div class="storage-usage-card">
+                            <div class="storage-usage-header">
+                                <strong>Espaço analisado</strong>
+                                <span id="storage-usage-label">0 MB usados de 10 GB</span>
+                            </div>
+                            <div class="storage-usage-bar">
+                                <span id="storage-usage-fill" style="width:0%;"></span>
+                            </div>
+                        </div>
+                        <div id="storage-audit-summary" class="field-help mb-15">Ainda não foi feita nenhuma análise.</div>
+                        <div id="storage-audit-list" class="storage-audit-list"></div>
+                    </div>
+                </details>
+
                 <!-- 2. HOME HERO ACCORDION -->
                 <details class="admin-card draggable-card" id="card-home-hero">
                     <summary class="admin-card-header">
@@ -554,6 +814,133 @@
                     </div>
                 </details>
 
+                <!-- 3. MEMBERS SHOWCASE ACCORDION -->
+                <details class="admin-card draggable-card" id="card-members-showcase">
+                    <summary class="admin-card-header">
+                        <div class="drag-handle"><i data-lucide="layout-template" class="admin-icon"></i></div>
+                        <span><i data-lucide="lock-keyhole" class="admin-icon"></i> Página Área de Membros (Montra)</span>
+                    </summary>
+                    <div class="admin-card-body">
+                        <form id="members-showcase-form" class="auth-form">
+                            <h4 class="font-serif admin-section-header">Hero</h4>
+                            <div class="grid-2-col-gap-15">
+                                <div class="form-group">
+                                    <label>Etiqueta pequena</label>
+                                    <input type="text" id="members-hero-kicker-input">
+                                </div>
+                                <div class="form-group">
+                                    <label>Título principal</label>
+                                    <input type="text" id="members-hero-title-input">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Texto introdutório</label>
+                                <textarea id="members-hero-text-input" rows="3" class="admin-textarea"></textarea>
+                            </div>
+                            <div class="grid-2-col-gap-15">
+                                <div class="form-group">
+                                    <label>Botão principal</label>
+                                    <input type="text" id="members-hero-primary-input">
+                                </div>
+                                <div class="form-group">
+                                    <label>Botão secundário</label>
+                                    <input type="text" id="members-hero-secondary-input">
+                                </div>
+                            </div>
+
+                            <hr class="admin-section-divider">
+                            <h4 class="font-serif admin-section-header">Introdução</h4>
+                            <label class="checkbox-label mb-10">
+                                <input type="checkbox" id="members-preview-visible-input" checked>
+                                Mostrar secção Introdução
+                            </label>
+                            <div class="grid-2-col-gap-15">
+                                <div class="form-group">
+                                    <label>Etiqueta</label>
+                                    <input type="text" id="members-preview-kicker-input">
+                                </div>
+                                <div class="form-group">
+                                    <label>Título</label>
+                                    <input type="text" id="members-preview-title-input">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Texto</label>
+                                <textarea id="members-preview-text-input" rows="3" class="admin-textarea"></textarea>
+                            </div>
+
+                            <hr class="admin-section-divider">
+                            <h4 class="font-serif admin-section-header">Resumo rápido</h4>
+                            <label class="checkbox-label mb-10">
+                                <input type="checkbox" id="members-summary-visible-input" checked>
+                                Mostrar secção Resumo rápido
+                            </label>
+                            <div class="grid-2-col-gap-15">
+                                <input type="text" id="members-summary-1-label-input" placeholder="Etiqueta 1">
+                                <input type="text" id="members-summary-1-text-input" placeholder="Texto 1">
+                                <input type="text" id="members-summary-2-label-input" placeholder="Etiqueta 2">
+                                <input type="text" id="members-summary-2-text-input" placeholder="Texto 2">
+                                <input type="text" id="members-summary-3-label-input" placeholder="Etiqueta 3">
+                                <input type="text" id="members-summary-3-text-input" placeholder="Texto 3">
+                            </div>
+
+                            <hr class="admin-section-divider">
+                            <h4 class="font-serif admin-section-header">Cartões bloqueados</h4>
+                            <label class="checkbox-label mb-10">
+                                <input type="checkbox" id="members-locker-visible-input" checked>
+                                Mostrar secção Cartões bloqueados
+                            </label>
+                            <div class="grid-2-col-gap-15">
+                                <input type="text" id="members-card-1-type-input" placeholder="Tipo 1">
+                                <input type="text" id="members-card-1-title-input" placeholder="Título 1">
+                            </div>
+                            <textarea id="members-card-1-text-input" rows="2" class="admin-textarea mb-15" placeholder="Texto 1"></textarea>
+                            <div class="grid-2-col-gap-15">
+                                <input type="text" id="members-card-2-type-input" placeholder="Tipo 2">
+                                <input type="text" id="members-card-2-title-input" placeholder="Título 2">
+                            </div>
+                            <textarea id="members-card-2-text-input" rows="2" class="admin-textarea mb-15" placeholder="Texto 2"></textarea>
+                            <div class="grid-2-col-gap-15">
+                                <input type="text" id="members-card-3-type-input" placeholder="Tipo 3">
+                                <input type="text" id="members-card-3-title-input" placeholder="Título 3">
+                            </div>
+                            <textarea id="members-card-3-text-input" rows="2" class="admin-textarea mb-15" placeholder="Texto 3"></textarea>
+
+                            <hr class="admin-section-divider">
+                            <h4 class="font-serif admin-section-header">Como funciona</h4>
+                            <label class="checkbox-label mb-10">
+                                <input type="checkbox" id="members-access-visible-input" checked>
+                                Mostrar secção Como funciona
+                            </label>
+                            <div class="grid-2-col-gap-15">
+                                <input type="text" id="members-access-kicker-input" placeholder="Etiqueta">
+                                <input type="text" id="members-access-title-input" placeholder="Título">
+                            </div>
+                            <textarea id="members-step-0-text-input" rows="2" class="admin-textarea mb-10"></textarea>
+                            <textarea id="members-step-1-text-input" rows="2" class="admin-textarea mb-10"></textarea>
+                            <textarea id="members-step-2-text-input" rows="2" class="admin-textarea mb-10"></textarea>
+                            <textarea id="members-step-3-text-input" rows="2" class="admin-textarea mb-15"></textarea>
+
+                            <hr class="admin-section-divider">
+                            <h4 class="font-serif admin-section-header">Convite final</h4>
+                            <label class="checkbox-label mb-10">
+                                <input type="checkbox" id="members-cta-visible-input" checked>
+                                Mostrar secção Convite final
+                            </label>
+                            <div class="grid-2-col-gap-15">
+                                <input type="text" id="members-cta-kicker-input" placeholder="Etiqueta">
+                                <input type="text" id="members-cta-title-input" placeholder="Título">
+                            </div>
+                            <div class="form-group">
+                                <label>Botão final</label>
+                                <input type="text" id="members-cta-primary-input">
+                            </div>
+
+                            <button type="submit" id="members-showcase-save-btn" class="cta-button primary full-width">Guardar Montra</button>
+                        </form>
+                    </div>
+                </details>
+
                 <!-- 3. MEMBER MANAGEMENT ACCORDION (NEW) -->
                 <details class="admin-card draggable-card" id="card-members">
                     <summary class="admin-card-header">
@@ -602,6 +989,16 @@
                                 <div id="about-image-preview" class="mb-5"></div>
                                 <input type="file" id="about-image-file" accept="image/*">
                             </div>
+                            <div class="grid-2-col-gap-15">
+                                <div class="form-group">
+                                    <label>Etiqueta pequena (Intro)</label>
+                                    <input type="text" id="about-intro-kicker-input" placeholder="Autoconhecimento">
+                                </div>
+                                <div class="form-group">
+                                    <label>Título da Secção Intro</label>
+                                    <input type="text" id="about-intro-title-input" placeholder="A cara e o coração da Floresce">
+                                </div>
+                            </div>
                             <div class="form-group">
                                 <label>Texto Autoconhecimento</label>
                                 <textarea id="about-text-intro" rows="6" placeholder="Texto da primeira secção..."
@@ -616,12 +1013,122 @@
                                 <div id="about-image-art-preview" class="mb-5"></div>
                                 <input type="file" id="about-image-art-file" accept="image/*">
                             </div>
+                            <div class="grid-2-col-gap-15">
+                                <div class="form-group">
+                                    <label>Etiqueta pequena (Arte)</label>
+                                    <input type="text" id="about-art-kicker-input" placeholder="Expressão criativa">
+                                </div>
+                                <div class="form-group">
+                                    <label>Título da Secção Arte</label>
+                                    <input type="text" id="about-art-title-input" placeholder="A arte & a expressão criativa">
+                                </div>
+                            </div>
                             <div class="form-group">
                                 <label>Texto Arte</label>
                                 <textarea id="about-text-art" rows="6" placeholder="Texto da secção Arte..."
                                     class="admin-textarea"></textarea>
                             </div>
                             <small class="admin-help-text">Aceita HTML básico.</small>
+
+                            <hr class="admin-divider">
+
+                            <details class="sub-accordion mb-15">
+                                <summary class="font-serif font-weight-600 cursor-pointer p-10 bg-gray-light">
+                                    <span><i data-lucide="music-2" class="icon-sm"></i> Música autoral</span>
+                                </summary>
+                                <div class="p-10 mt-10">
+                                    <div class="form-group flex-align-center-gap-10">
+                                        <input type="checkbox" id="about-music-enabled" class="w-auto">
+                                        <label for="about-music-enabled" class="margin-0 cursor-pointer">Mostrar bloco de música na página Sobre</label>
+                                    </div>
+                                    <div class="grid-2-col-gap-15">
+                                        <div class="form-group">
+                                            <label>Etiqueta pequena</label>
+                                            <input type="text" id="about-music-kicker-input" placeholder="Música autoral">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Título</label>
+                                            <input type="text" id="about-music-title-input" placeholder="A voz como extensão do caminho criativo">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Texto</label>
+                                        <textarea id="about-music-text-input" rows="4" class="admin-textarea" placeholder="Texto curto sobre a faceta musical da Rita..."></textarea>
+                                        <small class="admin-help-text">Texto simples ou HTML básico. Mantém curto para não transformar a página num catálogo.</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Frase em destaque</label>
+                                        <input type="text" id="about-music-quote-input" placeholder="Que a voz encontre casa no corpo, no silêncio e na expressão.">
+                                    </div>
+                                    <div class="grid-2-col-gap-15">
+                                        <div class="form-group">
+                                            <label>Link YouTube</label>
+                                            <input type="url" id="about-music-youtube-input" placeholder="https://www.youtube.com/@_ritabarata/videos">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Link Spotify</label>
+                                            <input type="url" id="about-music-spotify-input" placeholder="https://open.spotify.com/artist/...">
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <hr class="admin-divider">
+
+                            <details class="sub-accordion mb-15 mt-20">
+                                <summary class="font-serif font-weight-600 cursor-pointer p-10 bg-gray-light">
+                                    <span><i data-lucide="book-open" class="icon-sm"></i> Livro publicado</span>
+                                </summary>
+                                <div class="p-10 mt-10">
+                                    <div class="form-group flex-align-center-gap-10">
+                                        <input type="checkbox" id="about-book-enabled" class="w-auto">
+                                        <label for="about-book-enabled" class="margin-0 cursor-pointer">Mostrar secao do livro na pagina Sobre</label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Etiqueta pequena</label>
+                                        <input type="text" id="about-book-kicker-input" placeholder="Livro publicado">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Titulo do livro</label>
+                                        <input type="text" id="about-book-title-input" placeholder="Um dia acordei e nao sabia quem era">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Subtitulo / descricao curta</label>
+                                        <input type="text" id="about-book-subtitle-input" placeholder="diario de bordo de uma viagem interna">
+                                    </div>
+                                    <div class="grid-2-col-gap-15">
+                                        <div class="form-group">
+                                            <label>Editora</label>
+                                            <input type="text" id="about-book-publisher-input" placeholder="Moonlight Edicoes">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Ano</label>
+                                            <input type="text" id="about-book-year-input" placeholder="2021">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Capa do livro</label>
+                                        <input type="text" id="about-book-cover-url" class="admin-file-url-input margin-0">
+                                        <div id="about-book-cover-preview" class="mb-5"></div>
+                                        <input type="file" id="about-book-cover-file" accept="image/*">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Sinopse curta</label>
+                                        <textarea id="about-book-synopsis-input" rows="4" class="admin-textarea" placeholder="Texto curto para apresentar o livro..."></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Preco / nota de encomenda</label>
+                                        <input type="text" id="about-book-paper-price-input" placeholder="14 EUR">
+                                        <small class="admin-help-text">O botao Encomendar abre um formulario na pagina e prepara email para floresceterapias@gmail.com.</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>URL do Book Trailer</label>
+                                        <input type="url" id="about-book-trailer-url-input" placeholder="YouTube, Vimeo ou ficheiro de video">
+                                        <small class="admin-help-text">Se estiver preenchido, a pagina mostra o player embutido.</small>
+                                    </div>
+                                    <small class="admin-help-text">Secao reversivel: se desligares esta opcao, o livro deixa de aparecer no site sem apagar os dados.</small>
+                                </div>
+                            </details>
 
                             <!-- Colors for About Sections -->
                             <details class="sub-accordion mb-15 mt-20">
@@ -687,7 +1194,7 @@
                             <!-- RE-DESIGNED LAYOUT: SINGLE COLUMN, CENTERED -->
 
                             <!-- 1. HEADER & NEW BTN -->
-                            <div class="flex-column-center mb-20 width-100">
+                            <div class="flex-column-center mb-20 width-100 d-none" aria-hidden="true">
                                 <button type="button" onclick="window.resetServiceForm()"
                                     class="cta-button outline small">+
                                     Novo Serviço</button>
@@ -774,6 +1281,23 @@
                                 <h3 class="font-serif mb-15 text-center">Dados do Serviço</h3>
                                 <form id="service-form" onsubmit="event.preventDefault();">
                                     <input type="hidden" id="svc-id">
+                                    <div class="service-edit-toolbar">
+                                        <div>
+                                            <span class="service-edit-mode" id="svc-edit-mode">Novo serviço</span>
+                                            <strong id="svc-current-name">Ainda sem nome</strong>
+                                            <p>Este botão guarda toda a informação do serviço, incluindo imagens,
+                                                testemunhos e Secção 3.</p>
+                                        </div>
+                                        <label class="service-active-toggle" title="Oculta ou mostra este serviço no carrossel público da página inicial. Não apaga a página SEO individual.">
+                                            <input type="checkbox" id="svc-active-toggle" checked>
+                                            <span>Mostrar serviço na página inicial</span>
+                                        </label>
+                                        <button type="button" id="svc-toolbar-save-btn"
+                                            onclick="window.handleServiceSubmit(event)"
+                                            class="cta-button primary min-w-200">
+                                            <i data-lucide="save"></i> Guardar serviço completo
+                                        </button>
+                                    </div>
 
                                     <div>
                                         <!-- ROW 1: GENERAL INFO & TESTIMONIALS (2 COLUMNS) -->
@@ -1042,6 +1566,192 @@
                                                     </div>
                                                 </div>
 
+                                            </div>
+                                        </div>
+
+                                        <!-- ROW 3: EDITORIAL / SEO SECTION -->
+                                        <div class="admin-col-card service-editorial-card mt-20">
+                                            <div class="admin-col-header flex-between-center">
+                                                <span>Secção 3 (Editorial / SEO)</span>
+                                                <button type="button" class="cta-button primary small"
+                                                    onclick="window.handleServiceSubmit(event)">Atualizar</button>
+                                            </div>
+
+                                            <div class="service-editorial-layout">
+                                                <div class="service-editorial-main">
+                                                    <div class="flex-align-center-gap-10 mb-15 border-bottom-light pb-10">
+                                                        <input type="checkbox" id="svc-editorial-enabled" checked>
+                                                        <label for="svc-editorial-enabled"
+                                                            class="font-sm cursor-pointer mb-0 font-weight-600">Mostrar
+                                                            Secção 3 na página do serviço</label>
+                                                    </div>
+
+                                                    <div class="admin-grid-2-col mb-15">
+                                                        <div class="form-group">
+                                                            <label class="block-mb-5 font-sm">Etiqueta pequena</label>
+                                                            <input type="text" id="svc-editorial-kicker"
+                                                                class="admin-input full-width"
+                                                                placeholder="Ex: Innerdance em Portugal"
+                                                                title="Texto pequeno acima do título. Idealmente curto, com 3 a 6 palavras.">
+                                                            <p class="field-help">Texto pequeno acima do título. Ex:
+                                                                “Leitura de Aura em Portugal”.</p>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label class="block-mb-5 font-sm">Título principal</label>
+                                                            <input type="text" id="svc-editorial-title"
+                                                                class="admin-input full-width"
+                                                                placeholder="Título editorial da secção"
+                                                                title="Título principal da Secção 3. Deve ser claro, humano e específico do serviço.">
+                                                            <p class="field-help">Título visível da Secção 3. Evitar
+                                                                títulos demasiado longos.</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group mb-15">
+                                                        <label class="block-mb-5 font-sm">Introdução</label>
+                                                        <textarea id="svc-editorial-intro"
+                                                            class="admin-textarea input-sand full-width font-xs" rows="4"
+                                                            placeholder="Texto introdutório..."
+                                                            title="Aceita texto simples ou HTML. Para texto simples, separar parágrafos com linhas em branco."></textarea>
+                                                        <p class="field-help">Aceita texto simples ou HTML. Pode colar
+                                                            HTML vindo do Gerador de Estilos. Em texto simples, separar
+                                                            parágrafos com linhas em branco.</p>
+                                                    </div>
+
+                                                    <div class="admin-grid-3-col mb-15">
+                                                        <div class="form-group">
+                                                            <label class="block-mb-5 font-sm">Como funciona</label>
+                                                            <textarea id="svc-editorial-how"
+                                                                class="admin-textarea input-sand full-width font-xs"
+                                                                rows="5"
+                                                                title="Aceita texto simples ou HTML. Pode usar listas, negritos ou links se colar HTML."></textarea>
+                                                            <p class="field-help">Texto simples ou HTML. Bom lugar para
+                                                                explicar o formato da sessão.</p>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label class="block-mb-5 font-sm">O que esperar</label>
+                                                            <textarea id="svc-editorial-expect"
+                                                                class="admin-textarea input-sand full-width font-xs"
+                                                                rows="5"
+                                                                title="Aceita texto simples ou HTML. Manter linguagem cuidadosa, sem promessas absolutas."></textarea>
+                                                            <p class="field-help">Texto simples ou HTML. Evitar prometer
+                                                                resultados garantidos.</p>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label class="block-mb-5 font-sm">Sobre Rita Barata</label>
+                                                            <textarea id="svc-editorial-about"
+                                                                class="admin-textarea input-sand full-width font-xs"
+                                                                rows="5"
+                                                                title="Aceita texto simples ou HTML. Pode incluir links internos se necessário."></textarea>
+                                                            <p class="field-help">Texto simples ou HTML. Pode incluir
+                                                                links internos, por exemplo
+                                                                <code>&lt;a href="/about-new"&gt;...&lt;/a&gt;</code>.
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <aside class="service-editorial-style">
+                                                    <h4 class="font-serif mb-10 margin-0">Aparência</h4>
+                                                    <div class="admin-grid-2-col mb-10">
+                                                        <div class="form-group">
+                                                            <label class="font-xs text-muted">Fundo</label>
+                                                            <input type="color" id="svc-editorial-bg-color"
+                                                                value="#f7f2e0" class="color-preview-box">
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label class="font-xs text-muted">Opacidade</label>
+                                                            <span id="svc-editorial-bg-opacity-val"
+                                                                class="font-xs text-muted">95%</span>
+                                                            <input type="range" id="svc-editorial-bg-opacity" min="0"
+                                                                max="1" step="0.05" value="0.95"
+                                                                class="input-range-full"
+                                                                oninput="document.getElementById('svc-editorial-bg-opacity-val').innerText = Math.round(this.value * 100) + '%'">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group mb-10">
+                                                        <label class="font-xs text-muted">Imagem de fundo</label>
+                                                        <div class="flex-align-center gap-5">
+                                                            <input type="text" id="svc-editorial-bg-url"
+                                                                placeholder="URL da imagem..."
+                                                                class="admin-input-select font-xs flex-grow-1"
+                                                                title="Pode colar uma URL de imagem ou fazer upload abaixo. Preferir imagens horizontais, com boa compressão.">
+                                                            <button type="button" class="btn-text-danger font-xs"
+                                                                onclick="window.removeFileWithUrl('svc-editorial-bg-url', 'svc-editorial-bg-file')">Remover</button>
+                                                        </div>
+                                                        <input type="file" id="svc-editorial-bg-file" accept="image/*"
+                                                            class="font-xs mt-5"
+                                                            title="Recomendado: imagem horizontal com largura mínima de 1600 px, idealmente WebP/JPG comprimido. DPI não é relevante para web; o que importa são pixels e peso do ficheiro.">
+                                                        <p class="field-help">Imagem recomendada: horizontal, pelo menos
+                                                            1600 px de largura, WebP/JPG comprimido. Para web, DPI não é
+                                                            importante; pixels e peso do ficheiro importam mais.</p>
+                                                        <div id="svc-editorial-bg-preview" class="mt-5"></div>
+                                                    </div>
+                                                    <div class="admin-grid-3-col mb-10">
+                                                        <div class="form-group">
+                                                            <label class="font-xs text-muted">Título</label>
+                                                            <input type="color" id="svc-editorial-title-color"
+                                                                value="#80864f" class="color-preview-box">
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label class="font-xs text-muted">Texto</label>
+                                                            <input type="color" id="svc-editorial-body-color"
+                                                                value="#333333" class="color-preview-box">
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label class="font-xs text-muted">Destaque</label>
+                                                            <input type="color" id="svc-editorial-accent-color"
+                                                                value="#BF897F" class="color-preview-box">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="font-xs text-muted">Fonte</label>
+                                                        <select id="svc-editorial-font" class="admin-input-select font-xs">
+                                                            <option value="default">Fonte do site</option>
+                                                            <option value="serif">Serifada</option>
+                                                            <option value="sans">Sans-serif</option>
+                                                        </select>
+                                                    </div>
+                                                </aside>
+                                            </div>
+
+                                            <div class="admin-grid-3-col mt-20">
+                                                <div class="service-repeater-panel">
+                                                    <div class="flex-between-center mb-10">
+                                                        <h4 class="font-serif margin-0">Cartões “Para quem é indicado”</h4>
+                                                        <button type="button" class="btn-text-primary font-xs"
+                                                            onclick="window.addServiceEditorialItem('topics')"><i
+                                                                data-lucide="plus-circle" class="icon-14"></i> Adicionar</button>
+                                                    </div>
+                                                    <p class="field-help">Cada cartão aceita texto simples ou HTML.
+                                                        Usar frases curtas para manter o layout equilibrado.</p>
+                                                    <div id="svc-editorial-topics-list" class="service-repeater-list"></div>
+                                                </div>
+
+                                                <div class="service-repeater-panel">
+                                                    <div class="flex-between-center mb-10">
+                                                        <h4 class="font-serif margin-0">Links relacionados</h4>
+                                                        <button type="button" class="btn-text-primary font-xs"
+                                                            onclick="window.addServiceEditorialItem('links')"><i
+                                                                data-lucide="plus-circle" class="icon-14"></i> Adicionar</button>
+                                                    </div>
+                                                    <p class="field-help">URLs internas começam com <code>/</code>, por
+                                                        exemplo <code>/about-new</code>. Links externos devem começar
+                                                        com <code>https://</code>.</p>
+                                                    <div id="svc-editorial-links-list" class="service-repeater-list"></div>
+                                                </div>
+
+                                                <div class="service-repeater-panel">
+                                                    <div class="flex-between-center mb-10">
+                                                        <h4 class="font-serif margin-0">Perguntas frequentes</h4>
+                                                        <button type="button" class="btn-text-primary font-xs"
+                                                            onclick="window.addServiceEditorialItem('faqs')"><i
+                                                                data-lucide="plus-circle" class="icon-14"></i> Adicionar</button>
+                                                    </div>
+                                                    <p class="field-help">As respostas aceitam texto simples ou HTML. As
+                                                        perguntas devem ser diretas e pesquisáveis.</p>
+                                                    <div id="svc-editorial-faqs-list" class="service-repeater-list"></div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1795,8 +2505,16 @@
                 const groupArray = Object.values(groupedMeditations);
 
                 // clear loader
+                const wrapper = document.querySelector('.content-section .carousel-wrapper');
                 const container = document.getElementById('themes-carousel-container');
                 if (container) container.innerHTML = '';
+                const prevBtn = document.getElementById('themes-prev-btn');
+                const nextBtn = document.getElementById('themes-next-btn');
+
+                if (wrapper) wrapper.classList.toggle('is-static-meditations', groupArray.length <= 3);
+                if (container) container.classList.toggle('is-static-meditations', groupArray.length <= 3);
+                if (prevBtn) prevBtn.classList.toggle('hidden', groupArray.length <= 3);
+                if (nextBtn) nextBtn.classList.toggle('hidden', groupArray.length <= 3);
 
                 // Instantiate Carousel with GROUP Data
                 new DashboardCarousel({
@@ -1804,7 +2522,7 @@
                     prevBtnId: 'themes-prev-btn',
                     nextBtnId: 'themes-next-btn',
                     data: groupArray, // Pass pre-processed groups
-                    enableLoop: false, // User requested static view for few items
+                    enableLoop: groupArray.length >= 4,
                     renderCard: (group) => {
                         // Custom Card Renderer for Groups
                         const count = group.items.length;
@@ -1891,6 +2609,9 @@
             // 3. Render Grid Items
             const gridContent = document.getElementById('meditations-grid-content');
             let html = '';
+            if (gridContent) {
+                gridContent.classList.toggle('is-static-meditations', group.items.length <= 3);
+            }
 
             group.items.forEach(item => {
                 // Item Card Logic (300x300 style)
@@ -2133,6 +2854,7 @@
                 welcomeDisplay.style.display = 'inline-block';
             }
 
+            if (window.updateMemberAvatarUI) window.updateMemberAvatarUI();
             ensureMobileLogoutButton();
         }
 

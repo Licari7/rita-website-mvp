@@ -6,8 +6,7 @@ if (typeof ADMIN_EMAILS === 'undefined') {
     var ADMIN_EMAILS = [
         "floresceterapias@gmail.com",
         "barata.rita@outlook.com",
-        "baratacarlos65@gmail.com",
-        "carlos.barata@example.com"
+        "baratacarlos65@gmail.com"
     ];
 }
 
@@ -85,6 +84,531 @@ window.extractFilenameFromUrl = function (url) {
         return "Link ativo";
     }
 };
+
+const memberProfileState = {
+    loaded: false,
+    photoUrl: '',
+    removePhoto: false,
+    photoPositionX: 50,
+    photoPositionY: 50,
+    photoZoom: 1,
+    compressedPhotoFile: null,
+    previewObjectUrl: ''
+};
+
+function getMemberInitials(name = '', email = '') {
+    const base = (name || email || 'FT').trim();
+    const words = base.split(/[\s._-]+/).filter(Boolean);
+    if (words.length >= 2) return `${words[0][0]}${words[1][0]}`.toUpperCase();
+    return base.slice(0, 2).toUpperCase();
+}
+
+function setProfileStatus(targetId, message, type = '') {
+    const el = document.getElementById(targetId);
+    if (!el) return;
+    el.textContent = message || '';
+    el.classList.toggle('is-error', type === 'error');
+    el.classList.toggle('is-success', type === 'success');
+}
+
+function renderMemberPhotoPreview(url, name, email) {
+    const preview = document.getElementById('member-profile-photo-preview');
+    if (!preview) return;
+    const initials = getMemberInitials(name, email);
+    preview.innerHTML = url
+        ? `<img src="${url}" alt="Foto de perfil" onload="window.applyProfilePhotoTransform && window.applyProfilePhotoTransform();" onerror="this.remove(); this.parentElement.innerHTML='<span>${initials}</span>';">`
+        : `<span id="member-profile-initials">${initials}</span>`;
+    applyProfilePhotoTransform(preview);
+}
+
+function safeProfileFileName(fileName = 'foto-perfil') {
+    return fileName
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9._-]/g, '-')
+        .replace(/-+/g, '-')
+        .slice(0, 90);
+}
+
+function compressProfilePhoto(file, maxSize = 720, quality = 0.82) {
+    return new Promise((resolve, reject) => {
+        const image = new Image();
+        const objectUrl = URL.createObjectURL(file);
+        image.onload = () => {
+            const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.round(image.width * scale));
+            canvas.height = Math.max(1, Math.round(image.height * scale));
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob((blob) => {
+                URL.revokeObjectURL(objectUrl);
+                if (!blob) {
+                    reject(new Error('Nao foi possivel comprimir a foto.'));
+                    return;
+                }
+                const compressed = new File(
+                    [blob],
+                    `${safeProfileFileName(file.name).replace(/\.[^.]+$/, '') || 'perfil'}.jpg`,
+                    { type: 'image/jpeg', lastModified: Date.now() }
+                );
+                resolve(compressed);
+            }, 'image/jpeg', quality);
+        };
+        image.onerror = () => {
+            URL.revokeObjectURL(objectUrl);
+            reject(new Error('Nao foi possivel ler a foto escolhida.'));
+        };
+        image.src = objectUrl;
+    });
+}
+
+function clearProfilePreviewObjectUrl() {
+    if (memberProfileState.previewObjectUrl) {
+        URL.revokeObjectURL(memberProfileState.previewObjectUrl);
+        memberProfileState.previewObjectUrl = '';
+    }
+}
+
+function getProfileCropMetrics(preview = document.getElementById('member-profile-photo-preview')) {
+    const image = preview?.querySelector('img');
+    const rect = preview?.getBoundingClientRect();
+    if (!preview || !image || !rect?.width || !image.naturalWidth || !image.naturalHeight) {
+        return { image, size: rect?.width || 0, width: 0, height: 0, maxX: 0, maxY: 0 };
+    }
+
+    const frameSize = rect.width;
+    const imageRatio = image.naturalWidth / image.naturalHeight;
+    let width = frameSize;
+    let height = frameSize;
+
+    if (imageRatio >= 1) {
+        height = frameSize;
+        width = frameSize * imageRatio;
+    } else {
+        width = frameSize;
+        height = frameSize / imageRatio;
+    }
+
+    width *= memberProfileState.photoZoom || 1;
+    height *= memberProfileState.photoZoom || 1;
+
+    return {
+        image,
+        size: frameSize,
+        width,
+        height,
+        maxX: Math.max(0, (width - frameSize) / 2),
+        maxY: Math.max(0, (height - frameSize) / 2)
+    };
+}
+
+function applyProfilePhotoTransform(preview = document.getElementById('member-profile-photo-preview')) {
+    const metrics = getProfileCropMetrics(preview);
+    if (!preview || !metrics.image) return;
+
+    const offsetX = metrics.maxX ? ((memberProfileState.photoPositionX - 50) / 50) * metrics.maxX : 0;
+    const offsetY = metrics.maxY ? ((memberProfileState.photoPositionY - 50) / 50) * metrics.maxY : 0;
+
+    preview.style.setProperty('--profile-photo-width', `${metrics.width}px`);
+    preview.style.setProperty('--profile-photo-height', `${metrics.height}px`);
+    preview.style.setProperty('--profile-photo-offset-x', `${offsetX}px`);
+    preview.style.setProperty('--profile-photo-offset-y', `${offsetY}px`);
+}
+window.applyProfilePhotoTransform = applyProfilePhotoTransform;
+
+function updateProfilePhotoPosition(x, y) {
+    memberProfileState.photoPositionX = Math.max(0, Math.min(100, Math.round(x)));
+    memberProfileState.photoPositionY = Math.max(0, Math.min(100, Math.round(y)));
+    applyProfilePhotoTransform();
+}
+
+function showMemberProfilePanel() {
+    const panel = document.getElementById('member-profile-panel');
+    if (!panel) return;
+    panel.classList.remove('is-hidden-after-save');
+    panel.hidden = false;
+    if (typeof window.loadMemberProfile === 'function') {
+        window.loadMemberProfile();
+    }
+    requestAnimationFrame(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+}
+
+function hideMemberProfilePanel() {
+    const panel = document.getElementById('member-profile-panel');
+    if (!panel) return;
+    panel.classList.add('is-hidden-after-save');
+    panel.hidden = true;
+    setProfileStatus('member-profile-status', '');
+    setProfileStatus('member-password-status', '');
+    if (window.location.hash === '#member-profile-panel') {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+}
+
+function hideMemberProfilePanelAfterSave() {
+    hideMemberProfilePanel();
+}
+
+window.showMemberProfilePanel = showMemberProfilePanel;
+window.hideMemberProfilePanel = hideMemberProfilePanel;
+
+window.loadMemberProfile = async function () {
+    const form = document.getElementById('member-profile-form');
+    if (!form || !window.auth || !window.db) return;
+
+    const user = window.auth.currentUser;
+    if (!user || !user.email) return;
+
+    try {
+        const docSnap = await window.db.collection('users').doc(user.email).get();
+        const data = docSnap.exists ? docSnap.data() : {};
+        const name = data.name || user.displayName || user.email.split('@')[0];
+        const photoUrl = docSnap.exists ? (data.photo_url || '') : (user.photoURL || '');
+        const position = data.photo_position || {};
+        const photoZoom = Number(data.photo_zoom);
+
+        document.getElementById('member-profile-name').value = name || '';
+        document.getElementById('member-profile-nickname').value = data.nickname || '';
+        document.getElementById('member-profile-email').value = user.email;
+        document.getElementById('member-profile-phone').value = data.phone || '';
+        document.getElementById('member-profile-city').value = data.city || '';
+        document.getElementById('member-profile-contact').value = data.contact_preference || '';
+
+        memberProfileState.loaded = true;
+        memberProfileState.photoUrl = photoUrl;
+        memberProfileState.removePhoto = false;
+        memberProfileState.compressedPhotoFile = null;
+        memberProfileState.photoPositionX = Number.isFinite(position.x) ? position.x : 50;
+        memberProfileState.photoPositionY = Number.isFinite(position.y) ? position.y : 50;
+        memberProfileState.photoZoom = Number.isFinite(photoZoom) ? Math.max(1, Math.min(2, photoZoom)) : 1;
+        const zoomInput = document.getElementById('member-profile-photo-zoom');
+        if (zoomInput) zoomInput.value = memberProfileState.photoZoom;
+        clearProfilePreviewObjectUrl();
+        renderMemberPhotoPreview(photoUrl, name, user.email);
+        setProfileStatus('member-profile-status', '');
+    } catch (error) {
+        console.error('loadMemberProfile error:', error);
+        setProfileStatus('member-profile-status', `Nao foi possivel carregar o perfil: ${error.message}`, 'error');
+    }
+};
+
+window.handleMemberProfileSubmit = async function (event) {
+    event.preventDefault();
+    if (!window.auth || !window.db || !window.storage) return;
+
+    const user = window.auth.currentUser;
+    if (!user || !user.email) {
+        setProfileStatus('member-profile-status', 'Sessao expirada. Volta a entrar na conta.', 'error');
+        return;
+    }
+
+    const saveBtn = event.target.querySelector('button[type="submit"]');
+    const fileInput = document.getElementById('member-profile-photo');
+    const name = (document.getElementById('member-profile-name')?.value || '').trim();
+    const nickname = (document.getElementById('member-profile-nickname')?.value || '').trim();
+    const phone = (document.getElementById('member-profile-phone')?.value || '').trim();
+    const city = (document.getElementById('member-profile-city')?.value || '').trim();
+    const contactPreference = document.getElementById('member-profile-contact')?.value || '';
+
+    if (!name) {
+        setProfileStatus('member-profile-status', 'Indica pelo menos o nome publico.', 'error');
+        return;
+    }
+    if ((contactPreference === 'phone' || contactPreference === 'whatsapp') && !phone) {
+        setProfileStatus('member-profile-status', 'Para escolher telefone ou WhatsApp como preferencia, preenche primeiro o telefone.', 'error');
+        document.getElementById('member-profile-phone')?.focus();
+        return;
+    }
+
+    try {
+        if (saveBtn) saveBtn.disabled = true;
+        setProfileStatus('member-profile-status', 'A guardar perfil...');
+
+        const previousPhotoUrl = memberProfileState.photoUrl;
+        let photoUrl = memberProfileState.removePhoto ? '' : previousPhotoUrl;
+        const selectedFile = memberProfileState.compressedPhotoFile || fileInput?.files?.[0];
+        if (selectedFile) {
+            if (!selectedFile.type.startsWith('image/')) {
+                throw new Error('Escolhe um ficheiro de imagem valido.');
+            }
+            if (selectedFile.size > 5 * 1024 * 1024) {
+                throw new Error('A foto deve ter no maximo 5 MB.');
+            }
+            const path = `users/${user.uid}/profile/${Date.now()}_${safeProfileFileName(selectedFile.name)}`;
+            photoUrl = await uploadImageToStorage(selectedFile, path);
+        }
+
+        await window.db.collection('users').doc(user.email).set({
+            name,
+            nickname,
+            phone,
+            city,
+            contact_preference: contactPreference,
+            photo_url: photoUrl,
+            photo_position: {
+                x: memberProfileState.photoPositionX,
+                y: memberProfileState.photoPositionY
+            },
+            photo_zoom: memberProfileState.photoZoom,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        await user.updateProfile({
+            displayName: name,
+            photoURL: photoUrl || null
+        });
+
+        if (previousPhotoUrl && previousPhotoUrl !== photoUrl && previousPhotoUrl.includes('firebasestorage')) {
+            window.deleteFileFromStorage(previousPhotoUrl).catch(() => { });
+        }
+
+        localStorage.setItem('userName', name);
+        if (photoUrl) localStorage.setItem('userPhotoUrl', photoUrl);
+        else localStorage.removeItem('userPhotoUrl');
+
+        memberProfileState.photoUrl = photoUrl;
+        memberProfileState.removePhoto = false;
+        memberProfileState.compressedPhotoFile = null;
+        if (fileInput) fileInput.value = '';
+        clearProfilePreviewObjectUrl();
+        renderMemberPhotoPreview(photoUrl, name, user.email);
+        localStorage.setItem('userPhotoPositionX', String(memberProfileState.photoPositionX));
+        localStorage.setItem('userPhotoPositionY', String(memberProfileState.photoPositionY));
+        localStorage.setItem('userPhotoZoom', String(memberProfileState.photoZoom));
+        if (typeof updateUserDisplay === 'function') updateUserDisplay(name);
+        if (window.updateWelcomeUI) window.updateWelcomeUI();
+        if (window.updateMemberAvatarUI) window.updateMemberAvatarUI({ photoUrl });
+        setProfileStatus('member-profile-status', 'Perfil guardado com sucesso.', 'success');
+        setTimeout(hideMemberProfilePanelAfterSave, 650);
+    } catch (error) {
+        console.error('handleMemberProfileSubmit error:', error);
+        setProfileStatus('member-profile-status', error.message || 'Nao foi possivel guardar o perfil.', 'error');
+    } finally {
+        if (saveBtn) saveBtn.disabled = false;
+    }
+};
+
+window.handleMemberPasswordSubmit = async function (event) {
+    event.preventDefault();
+    if (!window.auth) return;
+
+    const user = window.auth.currentUser;
+    const currentPassword = document.getElementById('member-current-password')?.value || '';
+    const newPassword = document.getElementById('member-new-password')?.value || '';
+    const confirmPassword = document.getElementById('member-confirm-password')?.value || '';
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+
+    if (!user || !user.email) {
+        setProfileStatus('member-password-status', 'Sessao expirada. Volta a entrar na conta.', 'error');
+        return;
+    }
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        setProfileStatus('member-password-status', 'Preenche os tres campos de password.', 'error');
+        return;
+    }
+    if (newPassword.length < 6) {
+        setProfileStatus('member-password-status', 'A nova password deve ter pelo menos 6 caracteres.', 'error');
+        return;
+    }
+    if (newPassword !== confirmPassword) {
+        setProfileStatus('member-password-status', 'A confirmacao nao coincide com a nova password.', 'error');
+        return;
+    }
+
+    try {
+        if (submitBtn) submitBtn.disabled = true;
+        setProfileStatus('member-password-status', 'A atualizar password...');
+        const credential = firebase.auth.EmailAuthProvider.credential(user.email, currentPassword);
+        await user.reauthenticateWithCredential(credential);
+        await user.updatePassword(newPassword);
+        event.target.reset();
+        setProfileStatus('member-password-status', 'Password alterada com sucesso.', 'success');
+    } catch (error) {
+        console.error('handleMemberPasswordSubmit error:', error);
+        const message = error.code === 'auth/wrong-password'
+            ? 'A password atual nao esta correta.'
+            : 'Nao foi possivel alterar a password. Confirma a password atual e tenta novamente.';
+        setProfileStatus('member-password-status', message, 'error');
+    } finally {
+        if (submitBtn) submitBtn.disabled = false;
+    }
+};
+
+function setupMemberProfileListeners() {
+    const form = document.getElementById('member-profile-form');
+    if (form && !form.dataset.bound) {
+        form.addEventListener('submit', window.handleMemberProfileSubmit);
+        form.dataset.bound = 'true';
+    }
+
+    const passwordForm = document.getElementById('member-password-form');
+    if (passwordForm && !passwordForm.dataset.bound) {
+        passwordForm.addEventListener('submit', window.handleMemberPasswordSubmit);
+        passwordForm.dataset.bound = 'true';
+    }
+
+    const closeBtn = document.getElementById('member-profile-close');
+    if (closeBtn && !closeBtn.dataset.bound) {
+        closeBtn.addEventListener('click', () => {
+            hideMemberProfilePanel();
+        });
+        closeBtn.dataset.bound = 'true';
+    }
+
+    const photoInput = document.getElementById('member-profile-photo');
+    if (photoInput && !photoInput.dataset.bound) {
+        photoInput.addEventListener('change', async () => {
+            const file = photoInput.files?.[0];
+            const user = window.auth?.currentUser;
+            const name = document.getElementById('member-profile-name')?.value || '';
+            if (!file) return;
+            try {
+                setProfileStatus('member-profile-status', 'A preparar e comprimir a foto...');
+                memberProfileState.compressedPhotoFile = await compressProfilePhoto(file);
+                memberProfileState.removePhoto = false;
+                memberProfileState.photoPositionX = 50;
+                memberProfileState.photoPositionY = 50;
+                memberProfileState.photoZoom = 1.15;
+                const zoomInput = document.getElementById('member-profile-photo-zoom');
+                if (zoomInput) zoomInput.value = memberProfileState.photoZoom;
+                clearProfilePreviewObjectUrl();
+                memberProfileState.previewObjectUrl = URL.createObjectURL(memberProfileState.compressedPhotoFile);
+                renderMemberPhotoPreview(memberProfileState.previewObjectUrl, name, user?.email || '');
+                setProfileStatus(
+                    'member-profile-status',
+                    `Foto comprimida (${Math.round(memberProfileState.compressedPhotoFile.size / 1024)} KB). Arrasta no circulo e guarda o perfil.`,
+                    ''
+                );
+            } catch (error) {
+                console.error('profile photo compression error:', error);
+                setProfileStatus('member-profile-status', error.message || 'Nao foi possivel preparar a foto.', 'error');
+            }
+        });
+        photoInput.dataset.bound = 'true';
+    }
+
+    const removeBtn = document.getElementById('member-profile-photo-remove');
+    if (removeBtn && !removeBtn.dataset.bound) {
+        removeBtn.addEventListener('click', () => {
+            const user = window.auth?.currentUser;
+            const name = document.getElementById('member-profile-name')?.value || '';
+            const fileInput = document.getElementById('member-profile-photo');
+            if (fileInput) fileInput.value = '';
+            memberProfileState.removePhoto = true;
+            memberProfileState.compressedPhotoFile = null;
+            clearProfilePreviewObjectUrl();
+            renderMemberPhotoPreview('', name, user?.email || '');
+            setProfileStatus('member-profile-status', 'Foto removida. Guarda o perfil para confirmar.', '');
+        });
+        removeBtn.dataset.bound = 'true';
+    }
+
+    const zoomInput = document.getElementById('member-profile-photo-zoom');
+    if (zoomInput && !zoomInput.dataset.bound) {
+        zoomInput.addEventListener('input', () => {
+            memberProfileState.photoZoom = Math.max(1, Math.min(2, Number(zoomInput.value) || 1));
+            applyProfilePhotoTransform();
+        });
+        zoomInput.dataset.bound = 'true';
+    }
+
+    const centerBtn = document.getElementById('member-profile-photo-center');
+    if (centerBtn && !centerBtn.dataset.bound) {
+        centerBtn.addEventListener('click', () => {
+            memberProfileState.photoPositionX = 50;
+            memberProfileState.photoPositionY = 50;
+            applyProfilePhotoTransform();
+        });
+        centerBtn.dataset.bound = 'true';
+    }
+
+    const contactSelect = document.getElementById('member-profile-contact');
+    if (contactSelect && !contactSelect.dataset.bound) {
+        contactSelect.addEventListener('change', () => {
+            const phone = (document.getElementById('member-profile-phone')?.value || '').trim();
+            if ((contactSelect.value === 'phone' || contactSelect.value === 'whatsapp') && !phone) {
+                setProfileStatus('member-profile-status', 'Preenche o telefone para usar esta preferencia de contacto.', 'error');
+                document.getElementById('member-profile-phone')?.focus();
+            }
+        });
+        contactSelect.dataset.bound = 'true';
+    }
+
+    const preview = document.getElementById('member-profile-photo-preview');
+    if (preview && !preview.dataset.bound) {
+        let dragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let startPositionX = 50;
+        let startPositionY = 50;
+        let startOffsetX = 0;
+        let startOffsetY = 0;
+        let maxOffsetX = 0;
+        let maxOffsetY = 0;
+
+        const moveFromPointer = (event) => {
+            const nextOffsetX = Math.max(-maxOffsetX, Math.min(maxOffsetX, startOffsetX + event.clientX - dragStartX));
+            const nextOffsetY = Math.max(-maxOffsetY, Math.min(maxOffsetY, startOffsetY + event.clientY - dragStartY));
+            updateProfilePhotoPosition(
+                maxOffsetX ? 50 + (nextOffsetX / maxOffsetX) * 50 : 50,
+                maxOffsetY ? 50 + (nextOffsetY / maxOffsetY) * 50 : 50
+            );
+        };
+
+        preview.addEventListener('pointerdown', (event) => {
+            if (!preview.querySelector('img')) return;
+            event.preventDefault();
+            const metrics = getProfileCropMetrics(preview);
+            dragging = true;
+            dragStartX = event.clientX;
+            dragStartY = event.clientY;
+            startPositionX = memberProfileState.photoPositionX;
+            startPositionY = memberProfileState.photoPositionY;
+            maxOffsetX = metrics.maxX;
+            maxOffsetY = metrics.maxY;
+            startOffsetX = maxOffsetX ? ((startPositionX - 50) / 50) * maxOffsetX : 0;
+            startOffsetY = maxOffsetY ? ((startPositionY - 50) / 50) * maxOffsetY : 0;
+            preview.classList.add('is-dragging');
+            preview.setPointerCapture(event.pointerId);
+        });
+        preview.addEventListener('pointermove', (event) => {
+            if (!dragging) return;
+            moveFromPointer(event);
+        });
+        preview.addEventListener('pointerup', () => {
+            dragging = false;
+            preview.classList.remove('is-dragging');
+        });
+        preview.addEventListener('pointercancel', () => {
+            dragging = false;
+            preview.classList.remove('is-dragging');
+        });
+        preview.dataset.bound = 'true';
+    }
+
+    document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+        if (button.dataset.bound) return;
+        button.addEventListener('click', () => {
+            const input = document.getElementById(button.dataset.passwordToggle);
+            if (!input) return;
+            const show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            button.setAttribute('aria-label', show ? 'Esconder password' : 'Mostrar password');
+            button.innerHTML = `<i data-lucide="${show ? 'eye-off' : 'eye'}"></i>`;
+            if (window.lucide) window.lucide.createIcons();
+        });
+        button.dataset.bound = 'true';
+    });
+
+    if (!window.memberProfileHashListenerBound) {
+        const openFromHash = () => {
+            if (window.location.hash === '#member-profile-panel') showMemberProfilePanel();
+        };
+        window.addEventListener('hashchange', openFromHash);
+        openFromHash();
+        window.memberProfileHashListenerBound = true;
+    }
+}
 
 /**
  * Renders a file preview card inside a container element.
@@ -255,28 +779,22 @@ window.removeFileWithUrl = async function (urlInputId, fileInputId) {
     const fileInput = document.getElementById(fileInputId);
     if (!urlInput) return;
 
+    const preview = Array.from(document.querySelectorAll('[data-existing-url]')).find(container => {
+        const btn = container.querySelector('button[onclick*="' + urlInputId + '"]');
+        return Boolean(btn);
+    });
+
+    if (preview && preview.dataset.existingUrl) {
+        window._previewRemove(preview.id, urlInputId, fileInputId);
+        return;
+    }
+
     if (urlInput.dataset.originalUrl || urlInput.value) {
         const realUrl = urlInput.dataset.originalUrl || urlInput.value;
-        if (confirm('Tem a certeza que quer remover este ficheiro permanentemente?')) {
-            const btn = window.event ? window.event.currentTarget : null;
-            let originalHtml = '';
-            if (btn) {
-                originalHtml = btn.innerHTML;
-                btn.innerHTML = '...';
-                btn.disabled = true;
-            }
-
-            if (realUrl.includes('firebasestorage')) {
-                await window.deleteFileFromStorage(realUrl);
-            }
+        if (confirm('Remover este ficheiro do formulário?\n\nSó será apagado do armazenamento quando guardar as alterações.')) {
             urlInput.value = '';
             urlInput.dataset.originalUrl = '';
             if (fileInput) fileInput.value = '';
-
-            if (btn) {
-                btn.innerHTML = originalHtml;
-                btn.disabled = false;
-            }
         }
     } else {
         if (fileInput) fileInput.value = '';
@@ -362,6 +880,9 @@ window.initCMS = function () {
             console.log("CMS Auth State:", user ? user.email : "No User");
 
             if (user) {
+                setupMemberProfileListeners();
+                window.loadMemberProfile();
+
                 const lowerEmail = user.email.toLowerCase();
                 // Strict Admin Check: Only allow emails in the ADMIN_EMAILS list
                 const isAdmin = ADMIN_EMAILS.some(e => e && e.toLowerCase() === lowerEmail);
@@ -397,6 +918,7 @@ window.initCMS = function () {
 
                         // Pre-load other data
                         loadEvents();
+                        loadEventMemories();
                         loadReviews();
                         loadServices(); // Services restored
                         loadMeditations();
@@ -439,6 +961,11 @@ window.initCMS = function () {
     const eventForm = document.getElementById('event-form');
     if (eventForm) {
         eventForm.addEventListener('submit', handleEventSubmit);
+    }
+
+    const memoryForm = document.getElementById('memory-form');
+    if (memoryForm) {
+        memoryForm.addEventListener('submit', handleMemorySubmit);
     }
 
     // Listener for Testimonials
@@ -938,6 +1465,489 @@ window.toggleEventsList = function() {
         icon.setAttribute('data-lucide', 'eye');
     }
     if (window.lucide) lucide.createIcons();
+};
+
+// --- Event Memories / Completed Events Logic ---
+window.memoriesCache = {};
+const MEMORY_GALLERY_MAX_PHOTOS = 12;
+
+function memoryLines(value = '') {
+    return String(value || '').split(/\n+/).map(item => item.trim()).filter(Boolean);
+}
+
+function memoryBlocks(value = '') {
+    return String(value || '').split(/\n\s*\n+/).map(item => item.trim()).filter(Boolean);
+}
+
+function memoryAdminText(value = '') {
+    return String(value || '').replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function escapeCmsAttr(value = '') {
+    return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+window.renderMemoryGalleryExisting = function (urls = []) {
+    const container = document.getElementById('mem-gallery-existing');
+    if (!container) return;
+    const cleanUrls = Array.isArray(urls) ? urls.filter(Boolean) : [];
+    if (!cleanUrls.length) {
+        container.innerHTML = '<p class="field-help">Ainda sem fotos carregadas neste registo.</p>';
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="memory-admin-gallery-grid">
+            ${cleanUrls.map((url, index) => `
+                <div class="memory-admin-gallery-item" data-gallery-url="${escapeCmsAttr(url)}">
+                    <img src="${escapeCmsAttr(url)}" alt="Foto da galeria ${index + 1}">
+                    <button type="button" class="btn-text-danger font-xs" onclick="window.removeMemoryGalleryPhoto('${escapeCmsAttr(url)}')">Remover</button>
+                </div>
+            `).join('')}
+        </div>
+    `;
+};
+
+window.removeMemoryGalleryPhoto = function (url) {
+    const input = document.getElementById('mem-gallery-urls');
+    if (!input || !url) return;
+    const remaining = memoryLines(input.value).filter(item => item !== url);
+    input.value = remaining.join('\n');
+    window.renderMemoryGalleryExisting(remaining);
+};
+
+// --- Firebase Storage Audit ---
+function extractStoragePathFromUrl(url = '') {
+    const value = String(url || '');
+    const match = value.match(/\/o\/([^?]+)/);
+    if (!match) return '';
+    try {
+        return decodeURIComponent(match[1]);
+    } catch (error) {
+        return match[1];
+    }
+}
+
+function collectUrlsDeep(value, urls = new Set()) {
+    if (!value) return urls;
+    if (typeof value === 'string') {
+        if (value.includes('firebasestorage.googleapis.com')) urls.add(value);
+        return urls;
+    }
+    if (Array.isArray(value)) {
+        value.forEach(item => collectUrlsDeep(item, urls));
+        return urls;
+    }
+    if (typeof value === 'object') {
+        Object.values(value).forEach(item => collectUrlsDeep(item, urls));
+    }
+    return urls;
+}
+
+async function collectUsedStorageReferences() {
+    const urls = new Set();
+    const collections = ['events', 'event_memories', 'services', 'meditations', 'testimonials', 'site_content'];
+
+    for (const collectionName of collections) {
+        try {
+            const snapshot = await window.db.collection(collectionName).get();
+            snapshot.forEach(doc => collectUrlsDeep(doc.data(), urls));
+        } catch (error) {
+            console.warn(`Storage audit skipped collection ${collectionName}:`, error);
+        }
+    }
+
+    const paths = new Set();
+    urls.forEach(url => {
+        const path = extractStoragePathFromUrl(url);
+        if (path) paths.add(path);
+    });
+
+    return { urls, paths };
+}
+
+async function listStorageFilesRecursive(ref = window.storage.ref(), prefix = '') {
+    const files = [];
+    const result = await ref.listAll();
+
+    for (const itemRef of result.items) {
+        let url = '';
+        let size = 0;
+        let contentType = '';
+        try {
+            url = await itemRef.getDownloadURL();
+        } catch (error) {
+            console.warn('Could not get download URL for', itemRef.fullPath, error);
+        }
+        try {
+            const metadata = await itemRef.getMetadata();
+            size = Number(metadata.size || 0);
+            contentType = metadata.contentType || '';
+        } catch (error) {
+            console.warn('Could not get metadata for', itemRef.fullPath, error);
+        }
+        files.push({
+            name: itemRef.name,
+            path: itemRef.fullPath,
+            url,
+            size,
+            contentType,
+            ref: itemRef
+        });
+    }
+
+    for (const prefixRef of result.prefixes) {
+        const nested = await listStorageFilesRecursive(prefixRef, prefixRef.fullPath);
+        files.push(...nested);
+    }
+
+    return files;
+}
+
+const STORAGE_AUDIT_LIMIT_BYTES = 10 * 1024 * 1024 * 1024;
+
+function formatBytes(bytes = 0) {
+    const value = Number(bytes || 0);
+    if (value >= 1024 * 1024 * 1024) return (value / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+    if (value >= 1024 * 1024) return (value / (1024 * 1024)).toFixed(1) + ' MB';
+    if (value >= 1024) return (value / 1024).toFixed(1) + ' KB';
+    return value + ' B';
+}
+
+function updateStorageUsageBar(files = []) {
+    const label = document.getElementById('storage-usage-label');
+    const fill = document.getElementById('storage-usage-fill');
+    if (!label || !fill) return;
+
+    const usedBytes = files.reduce((sum, file) => sum + Number(file.size || 0), 0);
+    const percent = Math.min(100, (usedBytes / STORAGE_AUDIT_LIMIT_BYTES) * 100);
+    label.textContent = `${formatBytes(usedBytes)} usados de 10 GB (${percent.toFixed(1)}%)`;
+    fill.style.width = `${percent}%`;
+    fill.classList.toggle('is-warning', percent >= 75);
+    fill.classList.toggle('is-danger', percent >= 90);
+}
+
+function renderStorageAudit(files, usedRefs) {
+    const summary = document.getElementById('storage-audit-summary');
+    const list = document.getElementById('storage-audit-list');
+    if (!summary || !list) return;
+
+    const rows = files.map(file => {
+        const inUse = usedRefs.paths.has(file.path) || usedRefs.urls.has(file.url);
+        return { ...file, inUse };
+    }).sort((a, b) => Number(a.inUse) - Number(b.inUse) || a.path.localeCompare(b.path));
+
+    const inUseCount = rows.filter(file => file.inUse).length;
+    const unusedCount = rows.length - inUseCount;
+
+    updateStorageUsageBar(rows);
+    summary.textContent = `${rows.length} ficheiros analisados: ${inUseCount} em uso, ${unusedCount} aparentemente não usados.`;
+
+    if (!rows.length) {
+        list.innerHTML = '<p class="field-help">Nenhum ficheiro encontrado no Storage.</p>';
+        return;
+    }
+
+    list.innerHTML = rows.map(file => {
+        const isImage = /^image\//i.test(file.contentType || '') || /\.(jpe?g|png|gif|webp|svg)$/i.test(file.path);
+        return `
+            <div class="storage-audit-item ${file.inUse ? 'is-used' : 'is-unused'}" data-storage-path="${escapeCmsAttr(file.path)}">
+                <div class="storage-audit-preview">
+                    ${isImage && file.url ? `<img src="${escapeCmsAttr(file.url)}" alt="">` : `<i data-lucide="file"></i>`}
+                </div>
+                <div class="storage-audit-info">
+                    <strong>${file.inUse ? 'Em uso' : 'Não usado'}</strong>
+                    <span>${escapeCmsAttr(file.path)}</span>
+                    <small>${formatBytes(file.size || 0)}</small>
+                </div>
+                <div class="storage-audit-actions">
+                    ${file.url ? `<a href="${escapeCmsAttr(file.url)}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm">Abrir</a>` : ''}
+                    ${!file.inUse ? `<button type="button" class="btn-delete" onclick="window.deleteStorageAuditFile('${escapeCmsAttr(file.path)}')">Apagar definitivamente</button>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    if (window.lucide) window.lucide.createIcons();
+}
+
+window.auditStorageFiles = async function () {
+    const summary = document.getElementById('storage-audit-summary');
+    const list = document.getElementById('storage-audit-list');
+    if (!summary || !list) return;
+    if (!window.db || !window.storage) {
+        summary.textContent = 'Firebase ainda não está disponível.';
+        return;
+    }
+
+    summary.textContent = 'A analisar Firestore e Firebase Storage...';
+    list.innerHTML = '';
+
+    try {
+        const usedRefs = await collectUsedStorageReferences();
+        const files = await listStorageFilesRecursive();
+        window.storageAuditCache = { files, usedRefs };
+        renderStorageAudit(files, usedRefs);
+    } catch (error) {
+        console.error('Storage audit failed:', error);
+        summary.textContent = 'Erro ao analisar Storage: ' + error.message;
+    }
+};
+
+window.deleteStorageAuditFile = async function (path) {
+    if (!path) return;
+    const ok = confirm(`Apagar definitivamente este ficheiro do Firebase Storage?\n\n${path}\n\nEsta ação não pode ser anulada.`);
+    if (!ok) return;
+
+    try {
+        await window.storage.ref().child(path).delete();
+        alert('Ficheiro apagado do Firebase Storage.');
+        if (window.storageAuditCache) {
+            window.storageAuditCache.files = window.storageAuditCache.files.filter(file => file.path !== path);
+            renderStorageAudit(window.storageAuditCache.files, window.storageAuditCache.usedRefs);
+        }
+    } catch (error) {
+        console.error('Storage delete failed:', error);
+        alert('Erro ao apagar ficheiro: ' + error.message);
+    }
+};
+
+window.validateMemoryGallerySelection = function () {
+    const existingInput = document.getElementById('mem-gallery-urls');
+    const fileInput = document.getElementById('mem-gallery-files');
+    if (!existingInput || !fileInput) return true;
+
+    const existingCount = memoryLines(existingInput.value).length;
+    const selectedCount = fileInput.files ? fileInput.files.length : 0;
+    const total = existingCount + selectedCount;
+
+    if (total > MEMORY_GALLERY_MAX_PHOTOS) {
+        alert(`Este registo pode ter no máximo ${MEMORY_GALLERY_MAX_PHOTOS} fotos.\n\nJá existem ${existingCount} fotos e selecionaste ${selectedCount}. Remove algumas fotos ou escolhe menos ficheiros.`);
+        fileInput.value = '';
+        return false;
+    }
+    return true;
+};
+
+async function handleMemorySubmit(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalText = btn.innerText;
+    btn.innerText = "A guardar...";
+    btn.disabled = true;
+
+    try {
+        const id = document.getElementById('mem-id').value;
+        const fileInput = document.getElementById('mem-image');
+        const galleryFileInput = document.getElementById('mem-gallery-files');
+        let imageUrl = document.getElementById('mem-image-url') ? window.getFileUrlInput('mem-image-url') : '';
+
+        if (fileInput && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const path = `event_memories/${Date.now()}_${file.name}`;
+            btn.innerText = "A enviar imagem...";
+            imageUrl = await uploadImageToStorage(file, path);
+        }
+
+        const existingGalleryUrls = id && window.memoriesCache[id] && Array.isArray(window.memoriesCache[id].gallery_urls)
+            ? window.memoriesCache[id].gallery_urls
+            : [];
+        const manualGalleryUrls = memoryLines(document.getElementById('mem-gallery-urls').value);
+        const uploadedGalleryUrls = [];
+        const plannedGalleryCount = manualGalleryUrls.length + (galleryFileInput ? galleryFileInput.files.length : 0);
+
+        if (plannedGalleryCount > MEMORY_GALLERY_MAX_PHOTOS) {
+            throw new Error(`Este registo pode ter no máximo ${MEMORY_GALLERY_MAX_PHOTOS} fotos na galeria.`);
+        }
+
+        if (galleryFileInput && galleryFileInput.files.length > 0) {
+            const files = Array.from(galleryFileInput.files);
+            for (let index = 0; index < files.length; index++) {
+                const file = files[index];
+                btn.innerText = `A enviar foto ${index + 1}/${files.length}...`;
+                const path = `event_memories/gallery/${Date.now()}_${index}_${file.name}`;
+                uploadedGalleryUrls.push(await uploadImageToStorage(file, path));
+            }
+        }
+
+        const galleryUrls = Array.from(new Set([
+            ...manualGalleryUrls,
+            ...uploadedGalleryUrls
+        ].filter(Boolean)));
+        const removedGalleryUrls = existingGalleryUrls.filter(url => !galleryUrls.includes(url));
+
+        const memoryData = {
+            title: document.getElementById('mem-title').value.trim(),
+            date: document.getElementById('mem-date').value,
+            dateDisplay: document.getElementById('mem-date-display').value.trim(),
+            service_id: document.getElementById('mem-service-id').value,
+            location: document.getElementById('mem-location').value.trim(),
+            summary: document.getElementById('mem-summary').value.trim(),
+            image_url: imageUrl || '',
+            gallery_urls: galleryUrls,
+            video_urls: memoryLines(document.getElementById('mem-video-urls').value),
+            messages: memoryBlocks(document.getElementById('mem-messages').value),
+            testimonials: memoryBlocks(document.getElementById('mem-testimonials').value),
+            testimonial_authors: memoryLines(document.getElementById('mem-testimonial-authors').value),
+            show_on_service: document.getElementById('mem-show-service').checked,
+            show_on_archive: document.getElementById('mem-show-archive').checked,
+            updated_at: new Date()
+        };
+
+        if (id) {
+            await window.db.collection("event_memories").doc(id).set(memoryData, { merge: true });
+            removedGalleryUrls.forEach(url => {
+                if (url && url.includes('firebasestorage')) window.deleteFileFromStorage(url).catch(() => { });
+            });
+            alert("Registo atualizado com sucesso!");
+        } else {
+            memoryData.created_at = new Date();
+            await window.db.collection("event_memories").add(memoryData);
+            alert("Registo criado com sucesso!");
+        }
+
+        window.resetMemoryForm();
+        loadEventMemories();
+        if (typeof window.updateEventMemoriesNavLinks === 'function') window.updateEventMemoriesNavLinks();
+        if (typeof window.updateSidebarEventMemoriesLink === 'function') window.updateSidebarEventMemoriesLink();
+    } catch (error) {
+        console.error("Error saving event memory:", error);
+        alert("Erro ao guardar registo: " + error.message);
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+
+async function loadEventMemories() {
+    const listContainer = document.getElementById('admin-memories-list');
+    if (!listContainer) return;
+    listContainer.innerHTML = '<p>A carregar registos...</p>';
+    window.memoriesCache = {};
+
+    try {
+        const querySnapshot = await window.db.collection("event_memories").get();
+        if (querySnapshot.empty) {
+            listContainer.innerHTML = '<p>Sem registos publicados.</p>';
+            return;
+        }
+
+        const memories = [];
+        querySnapshot.forEach(doc => {
+            const data = doc.data();
+            window.memoriesCache[doc.id] = data;
+            memories.push({ id: doc.id, ...data });
+        });
+
+        memories.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+
+        let html = '<ul class="admin-event-list">';
+        memories.forEach(data => {
+            const isHidden = data.show_on_service === false && data.show_on_archive === false;
+            const serviceLabel = getMemoryServiceLabel(data.service_id);
+            const opacityStyle = isHidden ? 'opacity: 0.6;' : '';
+            const galleryCount = Array.isArray(data.gallery_urls) ? data.gallery_urls.length : 0;
+            const videoCount = Array.isArray(data.video_urls) ? data.video_urls.length : (data.video_url ? 1 : 0);
+            html += `
+                <li class="admin-event-item" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:10px; border-bottom:1px solid #eee; ${opacityStyle}">
+                    <div class="event-info">
+                        <strong>${memoryAdminText(data.dateDisplay || data.date || '')}</strong> - ${memoryAdminText(data.title || '')}
+                        <span style="font-size:0.8rem; color:#777; margin-left:8px;">${serviceLabel}</span>
+                        <span style="font-size:0.75rem; color:#777; margin-left:8px;">${galleryCount} foto${galleryCount === 1 ? '' : 's'} · ${videoCount} vídeo${videoCount === 1 ? '' : 's'}</span>
+                        ${isHidden ? '<span style="color:#d32f2f; font-size:0.8rem; margin-left:10px; font-weight:bold;">(Oculto)</span>' : ''}
+                    </div>
+                    <div style="display:flex; align-items:center;">
+                        <button type="button" class="btn btn-outline btn-sm" onclick="window.editMemory('${data.id}')" style="margin-right:5px;">Editar</button>
+                        <button type="button" class="btn-delete" onclick="window.deleteMemory('${data.id}')" style="color:red; background:none; border:none; cursor:pointer;">Apagar</button>
+                    </div>
+                </li>
+            `;
+        });
+        html += '</ul>';
+        listContainer.innerHTML = html;
+        if (window.lucide) lucide.createIcons();
+    } catch (error) {
+        console.error("Error loading event memories:", error);
+        listContainer.innerHTML = '<p style="color:red">Erro ao carregar registos.</p>';
+    }
+}
+
+function getMemoryServiceLabel(serviceId) {
+    const labels = {
+        innerdance: 'Innerdance',
+        aura: 'Leitura de Aura',
+        constelacoes: 'Constelações',
+        geral: 'Geral'
+    };
+    return labels[serviceId] || 'Geral';
+}
+
+window.editMemory = function (id) {
+    const data = window.memoriesCache[id];
+    if (!data) return;
+
+    document.getElementById('mem-id').value = id;
+    document.getElementById('mem-title').value = data.title || '';
+    document.getElementById('mem-date').value = data.date || '';
+    document.getElementById('mem-date-display').value = data.dateDisplay || '';
+    document.getElementById('mem-service-id').value = data.service_id || 'geral';
+    document.getElementById('mem-location').value = data.location || '';
+    document.getElementById('mem-summary').value = data.summary || '';
+    const galleryUrls = Array.isArray(data.gallery_urls) ? data.gallery_urls : [];
+    document.getElementById('mem-gallery-urls').value = galleryUrls.join('\n');
+    window.renderMemoryGalleryExisting(galleryUrls);
+    document.getElementById('mem-gallery-files').value = '';
+    document.getElementById('mem-video-urls').value = Array.isArray(data.video_urls) ? data.video_urls.join('\n') : (data.video_url || '');
+    document.getElementById('mem-messages').value = Array.isArray(data.messages) ? data.messages.join('\n\n') : (data.message || '');
+    document.getElementById('mem-testimonials').value = Array.isArray(data.testimonials) ? data.testimonials.join('\n\n') : (data.testimonial || '');
+    document.getElementById('mem-testimonial-authors').value = Array.isArray(data.testimonial_authors) ? data.testimonial_authors.join('\n') : (data.testimonial_author || '');
+    document.getElementById('mem-show-service').checked = data.show_on_service !== false;
+    document.getElementById('mem-show-archive').checked = data.show_on_archive !== false;
+
+    const imageUrl = data.image_url || '';
+    document.getElementById('mem-image-url').value = imageUrl;
+    document.getElementById('mem-image').value = '';
+    if (window.renderFilePreview) {
+        window.renderFilePreview('mem-image-preview', imageUrl, { urlInputId: 'mem-image-url', fileInputId: 'mem-image' });
+    }
+    if (imageUrl && imageUrl.includes('firebasestorage')) {
+        document.getElementById('mem-image-url').placeholder = window.extractFilenameFromUrl(imageUrl);
+    } else {
+        document.getElementById('mem-image-url').placeholder = "URL da imagem (auto)";
+    }
+
+    const btn = document.querySelector('#memory-form button[type="submit"]');
+    if (btn) btn.innerText = "Guardar Alterações";
+    document.getElementById('memory-form').scrollIntoView({ behavior: 'smooth' });
+};
+
+window.resetMemoryForm = function () {
+    const form = document.getElementById('memory-form');
+    if (form) form.reset();
+    document.getElementById('mem-id').value = '';
+    document.getElementById('mem-show-service').checked = true;
+    document.getElementById('mem-show-archive').checked = true;
+    document.getElementById('mem-image-url').value = '';
+    document.getElementById('mem-image-url').placeholder = 'URL da imagem (auto)';
+    document.getElementById('mem-gallery-files').value = '';
+    document.getElementById('mem-gallery-urls').value = '';
+    window.renderMemoryGalleryExisting([]);
+    document.getElementById('mem-image-preview').innerHTML = '';
+    const btn = document.querySelector('#memory-form button[type="submit"]');
+    if (btn) btn.innerText = "Guardar Registo";
+};
+
+window.deleteMemory = async (id) => {
+    if (confirm("Tens a certeza que queres apagar este registo?")) {
+        try {
+            await window.db.collection("event_memories").doc(id).delete();
+            loadEventMemories();
+            if (typeof window.updateEventMemoriesNavLinks === 'function') window.updateEventMemoriesNavLinks();
+            if (typeof window.updateSidebarEventMemoriesLink === 'function') window.updateSidebarEventMemoriesLink();
+        } catch (error) {
+            alert("Erro ao apagar: " + error.message);
+        }
+    }
 };
 
 // Color Sync Helper
@@ -2138,6 +3148,27 @@ window.resetMeditationForm = () => {
 
 // --- Site Content (Home & About) ---
 
+function cleanCmsPlainText(value = '') {
+    const textarea = document.createElement('textarea');
+    let decoded = String(value || '');
+    for (let i = 0; i < 3; i += 1) {
+        textarea.innerHTML = decoded;
+        const next = textarea.value;
+        if (next === decoded) break;
+        decoded = next;
+    }
+    return decoded
+        .replace(/<\/p\s*>/gi, '\n\n')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\u00a0/g, ' ')
+        .replace(/[ \t]+\n/g, '\n')
+        .replace(/\n[ \t]+/g, '\n')
+        .replace(/[ \t]{2,}/g, ' ')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+}
+
 async function loadSiteContent() {
     // Wait for DB to initialize (Localhost race condition fix)
     if (!window.db) {
@@ -2209,6 +3240,60 @@ async function loadSiteContent() {
                 if (document.getElementById('about-intro-bg-hex')) document.getElementById('about-intro-bg-hex').value = document.getElementById('about-intro-bg').value;
                 if (document.getElementById('about-art-bg-hex')) document.getElementById('about-art-bg-hex').value = document.getElementById('about-art-bg').value;
 
+                const setValue = (id, value = '') => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = value || '';
+                };
+                const setChecked = (id, value = false) => {
+                    const el = document.getElementById(id);
+                    if (el) el.checked = Boolean(value);
+                };
+
+                setValue('about-intro-kicker-input', data.about.intro_kicker || '');
+                setValue('about-intro-title-input', data.about.intro_title || '');
+                setValue('about-art-kicker-input', data.about.art_kicker || '');
+                setValue('about-art-title-input', data.about.art_title || '');
+
+                const musicDefaults = {
+                    enabled: true,
+                    kicker: 'Música autoral',
+                    title: 'A voz como extensão do caminho criativo',
+                    text: 'Para além do trabalho terapêutico e artístico, Rita Barata explora também a música como espaço de expressão, presença e escuta interior. Como cantautora, a sua voz abre caminho a temas ligados à sensibilidade, à transformação e à intimidade com o mundo interno.',
+                    quote: 'Que a voz encontre casa no corpo, no silêncio e na expressão.',
+                    youtube_url: 'https://www.youtube.com/@_ritabarata/videos',
+                    spotify_url: 'https://open.spotify.com/artist/4PrCdnwvQQEn01MKOLuWwq'
+                };
+                const music = { ...musicDefaults, ...(data.about.music || {}) };
+                setChecked('about-music-enabled', music.enabled);
+                setValue('about-music-kicker-input', music.kicker);
+                setValue('about-music-title-input', music.title);
+                setValue('about-music-text-input', cleanCmsPlainText(music.text));
+                setValue('about-music-quote-input', music.quote);
+                setValue('about-music-youtube-input', music.youtube_url);
+                setValue('about-music-spotify-input', music.spotify_url);
+
+                const bookDefaults = {
+                    kicker: 'Livro publicado',
+                    title: 'Um dia acordei e não sabia quem era',
+                    subtitle: 'diário de bordo de uma viagem interna',
+                    publisher: 'Moonlight Edições',
+                    year: '2021',
+                    paper_price: '14 EUR'
+                };
+                const book = { ...bookDefaults, ...(data.about.book || {}) };
+                setChecked('about-book-enabled', book.enabled);
+                setValue('about-book-kicker-input', book.kicker);
+                setValue('about-book-title-input', book.title);
+                setValue('about-book-subtitle-input', book.subtitle);
+                setValue('about-book-publisher-input', book.publisher);
+                setValue('about-book-year-input', book.year);
+                setValue('about-book-synopsis-input', cleanCmsPlainText(book.synopsis));
+                setValue('about-book-paper-price-input', book.paper_price);
+                setValue('about-book-paper-link-input', book.paper_link);
+                setValue('about-book-trailer-url-input', book.trailer_url || book.book_trailer_url);
+                if (document.getElementById('about-book-cover-url')) window.setFileUrlInput('about-book-cover-url', book.cover_url || '');
+                window.renderFilePreview('about-book-cover-preview', book.cover_url || '', { urlInputId: 'about-book-cover-url', fileInputId: 'about-book-cover-file' });
+
             }
 
             // Populate Home Summary Form
@@ -2219,6 +3304,55 @@ async function loadSiteContent() {
                 if (document.getElementById('home-about-image-url')) window.setFileUrlInput('home-about-image-url', homeAboutImgUrl);
                 window.renderFilePreview('home-about-image-preview', homeAboutImgUrl, { urlInputId: 'home-about-image-url', fileInputId: 'home-about-image-file' });
             }
+
+            const membersDefaults = {
+                preview_visible: true,
+                summary_visible: true,
+                locker_visible: true,
+                access_visible: true,
+                cta_visible: true,
+                hero_kicker: 'Área reservada',
+                hero_title: 'Um espaço de continuidade para o teu caminho interior',
+                hero_text: 'A Área de Membros reúne meditações guiadas, áudios, práticas e recursos de apoio para regressares ao corpo, à escuta e à tua presença, ao teu ritmo.',
+                hero_primary: 'Pedir acesso',
+                hero_secondary: 'Entrar',
+                preview_kicker: 'O que encontras dentro',
+                preview_title: 'Conteúdos para voltar a ti sem pressa',
+                preview_text: 'A montra mostra apenas uma parte do que existe na área reservada. O acesso completo aos áudios, meditações e materiais acontece depois do registo e da aprovação pelo administrador.',
+                summary_1_label: 'Meditações guiadas',
+                summary_1_text: 'Escuta, presença e integração',
+                summary_2_label: 'Áudios de acompanhamento',
+                summary_2_text: 'Recursos para regressar ao centro',
+                summary_3_label: 'Práticas e propostas',
+                summary_3_text: 'Exercícios simples para o dia a dia',
+                card_1_type: 'Audio',
+                card_1_title: 'Meditações guiadas',
+                card_1_text: 'Viagens sonoras para apoiar momentos de pausa, clareza e reconexão interior.',
+                card_2_type: 'Pratica',
+                card_2_title: 'Exercícios de presença',
+                card_2_text: 'Propostas simples para observar o corpo, a energia, a respiração e os movimentos internos.',
+                card_3_type: 'Escrita',
+                card_3_title: 'Guias de journaling',
+                card_3_text: 'Perguntas e pequenos rituais de escrita para trazer mais verdade ao que estás a viver.',
+                access_kicker: 'Como funciona',
+                access_title: 'O acesso é cuidado, humano e aprovado pela equipa',
+                step_0_text: 'Acesso gratuito, apenas requer registo.',
+                step_1_text: 'Cria a tua conta com nome, email e password.',
+                step_2_text: 'O pedido fica pendente até ser validado pelo administrador.',
+                step_3_text: 'Depois da aprovação, entras na área completa e acedes aos recursos disponíveis.',
+                cta_kicker: 'Quando fizer sentido',
+                cta_title: 'Pede acesso e entra quando o teu processo pedir continuidade',
+                cta_primary: 'Pedir acesso'
+            };
+            const membersShowcase = data.members_showcase
+                ? { ...(data.members_showcase || {}) }
+                : { ...membersDefaults };
+            Object.entries(membersShowcase).forEach(([key, value]) => {
+                const el = document.getElementById(`members-${key.replaceAll('_', '-')}-input`);
+                if (!el) return;
+                if (el.type === 'checkbox') el.checked = value !== false;
+                else el.value = value || '';
+            });
 
             const footerTitle = document.getElementById('footer-title');
             const footerCopyright = document.getElementById('footer-copyright');
@@ -2380,16 +3514,55 @@ async function handleAboutSubmit(e) {
             imageArtUrl = await uploadImageToStorage(imageArtFile, path);
         }
 
+        let bookCoverUrl = window.getFileUrlInput('about-book-cover-url');
+        const bookCoverFile = document.getElementById('about-book-cover-file')?.files?.[0];
+        if (bookCoverFile) {
+            btn.textContent = "A enviar capa do livro...";
+            if (bookCoverUrl && bookCoverUrl.includes('firebasestorage')) {
+                await window.deleteFileFromStorage(bookCoverUrl);
+            }
+            const path = `about/book_${Date.now()}_${bookCoverFile.name}`;
+            bookCoverUrl = await uploadImageToStorage(bookCoverFile, path);
+        }
+
         const data = {
             about: {
                 title: document.getElementById('about-title').value,
+                intro_kicker: document.getElementById('about-intro-kicker-input')?.value || '',
+                intro_title: document.getElementById('about-intro-title-input')?.value || '',
                 text_intro: (window.tinymce && tinymce.get('about-text-intro')) ? tinymce.get('about-text-intro').getContent() : document.getElementById('about-text-intro').value,
+                art_kicker: document.getElementById('about-art-kicker-input')?.value || '',
+                art_title: document.getElementById('about-art-title-input')?.value || '',
                 text_art: (window.tinymce && tinymce.get('about-text-art')) ? tinymce.get('about-text-art').getContent() : document.getElementById('about-text-art').value,
                 image_url: imageUrl,
                 image_art_url: imageArtUrl,
                 // Colors
                 intro_bg: document.getElementById('about-intro-bg').value,
-                art_bg: document.getElementById('about-art-bg').value
+                art_bg: document.getElementById('about-art-bg').value,
+                music: {
+                    enabled: document.getElementById('about-music-enabled')?.checked !== false,
+                    kicker: document.getElementById('about-music-kicker-input')?.value || '',
+                    title: document.getElementById('about-music-title-input')?.value || '',
+                    text: document.getElementById('about-music-text-input')?.value || '',
+                    quote: document.getElementById('about-music-quote-input')?.value || '',
+                    youtube_url: document.getElementById('about-music-youtube-input')?.value || '',
+                    spotify_url: document.getElementById('about-music-spotify-input')?.value || ''
+                },
+                book: {
+                    enabled: document.getElementById('about-book-enabled')?.checked || false,
+                    kicker: document.getElementById('about-book-kicker-input')?.value || '',
+                    title: document.getElementById('about-book-title-input')?.value || '',
+                    subtitle: document.getElementById('about-book-subtitle-input')?.value || '',
+                    publisher: document.getElementById('about-book-publisher-input')?.value || '',
+                    year: document.getElementById('about-book-year-input')?.value || '',
+                    cover_url: bookCoverUrl || '',
+                    synopsis: cleanCmsPlainText(document.getElementById('about-book-synopsis-input')?.value || ''),
+                    paper_price: document.getElementById('about-book-paper-price-input')?.value || '',
+                    paper_link: 'mailto:floresceterapias@gmail.com',
+                    trailer_url: document.getElementById('about-book-trailer-url-input')?.value || '',
+                    ebook_price: '',
+                    ebook_link: ''
+                }
             }
         };
 
@@ -2459,6 +3632,67 @@ async function handleHomeAboutSubmit(e) {
     } finally {
         btn.textContent = originalText;
         btn.disabled = false;
+    }
+}
+
+async function handleMembersShowcaseSubmit(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    console.log('[Members Showcase] Guardar Montra acionado');
+
+    const btn = document.getElementById('members-showcase-save-btn');
+    if (!btn) return;
+    const originalText = btn.textContent;
+    btn.textContent = "A guardar...";
+    btn.disabled = true;
+
+    const fields = [
+        'preview_visible', 'summary_visible', 'locker_visible', 'access_visible', 'cta_visible',
+        'hero_kicker', 'hero_title', 'hero_text', 'hero_primary', 'hero_secondary',
+        'preview_kicker', 'preview_title', 'preview_text',
+        'summary_1_label', 'summary_1_text', 'summary_2_label', 'summary_2_text', 'summary_3_label', 'summary_3_text',
+        'card_1_type', 'card_1_title', 'card_1_text', 'card_2_type', 'card_2_title', 'card_2_text', 'card_3_type', 'card_3_title', 'card_3_text',
+        'access_kicker', 'access_title', 'step_0_text', 'step_1_text', 'step_2_text', 'step_3_text',
+        'cta_kicker', 'cta_title', 'cta_primary'
+    ];
+
+    try {
+        const members_showcase = {};
+        fields.forEach((key) => {
+            const el = document.getElementById(`members-${key.replaceAll('_', '-')}-input`);
+            members_showcase[key] = el?.type === 'checkbox' ? el.checked : (el?.value || '');
+        });
+
+        const ref = window.db.collection('site_content').doc('main');
+        const withTimeout = (promise, message) => Promise.race([
+            promise,
+            new Promise((_, reject) => setTimeout(() => reject(new Error(message)), 10000))
+        ]);
+        await withTimeout(ref.set({ members_showcase }, { merge: true }), 'A gravação demorou demasiado tempo. Verifica a ligação ao Firestore.');
+        const savedDoc = await withTimeout(ref.get(), 'A confirmação da gravação demorou demasiado tempo.');
+        const savedShowcase = savedDoc.exists ? (savedDoc.data().members_showcase || {}) : {};
+        console.log('[Members Showcase] Guardado no Firestore:', savedShowcase);
+        btn.textContent = "Guardado ✓";
+        btn.classList.add('save-success');
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.classList.remove('save-success');
+            btn.disabled = false;
+        }, 2500);
+        return;
+    } catch (error) {
+        console.error("Error saving members showcase:", error);
+        alert("Erro ao guardar: " + error.message);
+        btn.textContent = "Erro ao guardar";
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }, 2500);
+        return;
+    } finally {
+        if (btn.textContent === "A guardar...") {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
     }
 }
 
@@ -3334,6 +4568,15 @@ async function loadContactContent() {
 
 const homeAboutForm = document.getElementById('home-about-form');
 if (homeAboutForm) homeAboutForm.addEventListener('submit', handleHomeAboutSubmit);
+
+function bindMembersShowcaseForm() {
+    const membersShowcaseForm = document.getElementById('members-showcase-form');
+    if (!membersShowcaseForm || membersShowcaseForm.dataset.bound === 'true') return;
+    membersShowcaseForm.addEventListener('submit', handleMembersShowcaseSubmit);
+    membersShowcaseForm.dataset.bound = 'true';
+}
+bindMembersShowcaseForm();
+document.addEventListener('DOMContentLoaded', bindMembersShowcaseForm);
 
 // --- MISSING LISTENERS ADDED ---
 const homeContentForm = document.getElementById('home-content-form');
