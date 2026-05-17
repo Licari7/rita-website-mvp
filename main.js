@@ -776,12 +776,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const pause = () => clearInterval(window.serviceAutoScroll);
             const resume = () => startServiceAutoScroll();
+            let serviceTouchStartX = 0;
+            let serviceTouchStartY = 0;
+            let serviceTouchDeltaX = 0;
+            let serviceTouchDeltaY = 0;
+            let serviceTouchMoved = false;
 
             container.addEventListener('mousedown', pause);
-            container.addEventListener('touchstart', pause);
             container.addEventListener('mouseup', resume);
-            container.addEventListener('touchend', resume);
             container.addEventListener('mouseleave', resume);
+            container.addEventListener('touchstart', (event) => {
+                const touch = event.touches && event.touches[0];
+                if (!touch) return;
+                pause();
+                serviceTouchStartX = touch.clientX;
+                serviceTouchStartY = touch.clientY;
+                serviceTouchDeltaX = 0;
+                serviceTouchDeltaY = 0;
+                serviceTouchMoved = false;
+            }, { passive: true });
+            container.addEventListener('touchmove', (event) => {
+                const touch = event.touches && event.touches[0];
+                if (!touch) return;
+                serviceTouchDeltaX = touch.clientX - serviceTouchStartX;
+                serviceTouchDeltaY = touch.clientY - serviceTouchStartY;
+                serviceTouchMoved = Math.abs(serviceTouchDeltaX) > 12;
+                if (Math.abs(serviceTouchDeltaX) > Math.abs(serviceTouchDeltaY) * 1.2) {
+                    event.preventDefault();
+                }
+            }, { passive: false });
+            container.addEventListener('touchend', () => {
+                const isHorizontalSwipe = serviceTouchMoved
+                    && Math.abs(serviceTouchDeltaX) > 45
+                    && Math.abs(serviceTouchDeltaX) > Math.abs(serviceTouchDeltaY) * 1.2;
+
+                if (isHorizontalSwipe) {
+                    rotateServices(serviceTouchDeltaX < 0 ? 1 : -1);
+                }
+                resume();
+            });
+            container.addEventListener('touchcancel', resume);
 
             window.moveCarousel = (direction) => {
                 rotateServices(direction);

@@ -17,7 +17,27 @@
     <meta name="keywords" content="Rita Barata, Sobre Mim, Leitura de Aura, Innerdance, Constelações familiares e Sistémicas, Meditação das Rosas, Terapias Holísticas, Cura Energética, Bem-estar">
     <meta property="og:image" content="https://floresceterapias.pt/assets/images/og-image.jpg">
     <link rel="canonical" href="https://floresceterapias.pt/about-new">
-    <link rel="stylesheet" href="style.css?v=8.0.0">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Rita Barata",
+      "url": "https://floresceterapias.pt/about-new",
+      "jobTitle": ["Terapeuta holística", "Cantautora", "Criadora"],
+      "description": "Rita Barata integra terapias holísticas, expressão criativa, escrita e música autoral no projeto Floresce Terapias.",
+      "sameAs": [
+        "https://www.youtube.com/@_ritabarata/videos",
+        "https://open.spotify.com/artist/4PrCdnwvQQEn01MKOLuWwq",
+        "https://www.instagram.com/floresceterapias"
+      ],
+      "worksFor": {
+        "@type": "Organization",
+        "name": "Floresce Terapias",
+        "url": "https://floresceterapias.pt"
+      }
+    }
+    </script>
+    <link rel="stylesheet" href="style.css?v=8.4.5">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -79,6 +99,10 @@
 
                 <!-- Text Column -->
                 <div class="about-v2-col-text">
+                    <div class="about-section-heading hidden" id="about-intro-heading">
+                        <p class="svc-kicker" id="about-intro-kicker-display"></p>
+                        <h2 id="about-intro-title-display"></h2>
+                    </div>
                     <div id="about-text-intro-display" class="about-Formatted-text cms-pending"></div>
 
                     <div class="cta-actions cta-actions--left">
@@ -98,6 +122,10 @@
             <div class="container about-v2-grid reverse-mobile">
                 <!-- Text Column -->
                 <div class="about-v2-col-text">
+                    <div class="about-section-heading hidden" id="about-art-heading">
+                        <p class="svc-kicker" id="about-art-kicker-display"></p>
+                        <h2 id="about-art-title-display"></h2>
+                    </div>
                     <div id="about-text-art-display" class="about-Formatted-text cms-pending"></div>
                     <!-- Moved Bottom CTAs Inside Section -->
                     <div class="cta-actions cta-actions--left">
@@ -115,8 +143,73 @@
                         <img src="https://placehold.co/500x650/e0e0e0/999999?text=Arte+Floresce" alt="Arte Floresce"
                             class="about-split-img">
                     </div>
+                    <aside class="about-music-card about-music-card--art" aria-labelledby="about-music-title">
+                        <p class="svc-kicker">Música autoral</p>
+                        <h2 id="about-music-title">A voz como extensão do caminho criativo</h2>
+                        <p>Para além do trabalho terapêutico e artístico, Rita Barata explora também a música como
+                            espaço de expressão, presença e escuta interior. Como cantautora, a sua voz abre caminho a
+                            temas ligados à sensibilidade, à transformação e à intimidade com o mundo interno.</p>
+                        <blockquote>Que a voz encontre casa no corpo, no silêncio e na expressão.</blockquote>
+                        <div class="about-music-actions">
+                            <a href="https://www.youtube.com/@_ritabarata/videos" target="_blank"
+                                rel="noopener noreferrer" class="about-music-link">
+                                <i data-lucide="youtube"></i>
+                                Ouvir no YouTube
+                            </a>
+                            <a href="https://open.spotify.com/artist/4PrCdnwvQQEn01MKOLuWwq" target="_blank"
+                                rel="noopener noreferrer" class="about-music-link">
+                                <i data-lucide="music-2"></i>
+                                Ouvir no Spotify
+                            </a>
+                        </div>
+                    </aside>
                 </div>
             </div>
+
+            <section id="about-book-section" class="about-book-section hidden" aria-labelledby="about-book-title">
+                <div class="container about-book-container">
+                    <div class="about-book-cover" id="about-book-cover"></div>
+                    <div class="about-book-copy">
+                        <p class="svc-kicker" id="about-book-kicker">Livro publicado</p>
+                        <h2 id="about-book-title"></h2>
+                        <p class="about-book-meta" id="about-book-meta"></p>
+                        <div class="about-book-synopsis" id="about-book-synopsis"></div>
+                        <p class="about-book-price hidden" id="about-book-price"></p>
+                        <div class="about-book-actions" id="about-book-actions"></div>
+                        <form class="about-book-order-form hidden" id="about-book-order-form">
+                            <h3>Encomendar livro</h3>
+                            <div class="about-book-order-grid">
+                                <label>
+                                    Nome
+                                    <input type="text" id="about-book-order-name" required>
+                                </label>
+                                <label>
+                                    Contacto
+                                    <input type="text" id="about-book-order-contact" required>
+                                </label>
+                            </div>
+                            <label>
+                                Morada de envio
+                                <textarea id="about-book-order-address" rows="3" required></textarea>
+                            </label>
+                            <fieldset>
+                                <legend>Opção de pagamento</legend>
+                                <label>
+                                    <input type="radio" name="about-book-payment" value="MB Way 913 515 406" checked>
+                                    MB Way 913 515 406
+                                </label>
+                                <label>
+                                    <input type="radio" name="about-book-payment" value="Transferência bancária PT50 0007 0374 0000 3230 0189 4">
+                                    Transferência bancária PT50 0007 0374 0000 3230 0189 4
+                                </label>
+                            </fieldset>
+                            <p class="about-book-order-note">O pedido abre no teu email para confirmares e enviares para a Floresce Terapias.</p>
+                            <button type="submit" class="about-book-button">Enviar pedido</button>
+                        </form>
+                        <div class="about-book-trailer hidden" id="about-book-trailer"></div>
+                    </div>
+                </div>
+            </section>
 
             <!-- Integrated Footer -->
             <footer class="footer about-footer">
@@ -140,8 +233,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
-    <script src="init-firebase.js"></script>
-    <script src="main.js?v=7.1.1"></script>
+    <script src="init-firebase.js?v=3.1.8"></script>
+    <script src="main.js?v=7.4.7"></script>
     <script src="sidebar.js"></script>
     <script>
         lucide.createIcons();

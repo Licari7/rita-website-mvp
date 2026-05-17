@@ -3594,6 +3594,7 @@ body.auth-page {
     overflow: hidden;
     scroll-behavior: auto !important;
     padding: 0 30px 50px 30px;
+    touch-action: pan-y;
     /* Increased bottom padding */
     /* Added 30px padding Left/Right for edge gaps */
     -ms-overflow-style: none;
